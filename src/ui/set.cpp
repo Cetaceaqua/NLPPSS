@@ -191,7 +191,7 @@ void ui::setUpdate()
 
 void ui::setDrawTop()
 {
-    ui::drawUIBar(std::string(TITLE_TEXT) + getTxt("- 设置"), ui::SCREEN_TOP, true);
+    ui::drawUIBar(std::string(TITLE_TEXT) + " - " + getTxt("设置"), ui::SCREEN_TOP, true);
     setMenu.draw(0, 22, gfx::txtCont, 400);
 }
 

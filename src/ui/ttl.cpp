@@ -220,7 +220,7 @@ void ui::ttlUpdate()
 void ui::ttlDrawTop()
 {
     ttlView->draw();
-    ui::drawUIBar(TITLE_TEXT + getTxt("- 用户存档"), ui::SCREEN_TOP, true);
+    ui::drawUIBar(TITLE_TEXT + " - " + getTxt("用户存档"), ui::SCREEN_TOP, true);
 }
 
 void ui::ttlDrawBot()
