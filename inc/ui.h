@@ -32,22 +32,16 @@
 #include "ui/menu.h"
 #include "ui/ttlview.h"
 #include "ui/ttl.h"
-#include "ui/ext.h"
-#include "ui/sysview.h"
-#include "ui/boss.h"
-#include "ui/shrd.h"
 #include "ui/fld.h"
 #include "ui/set.h"
+#include "ui/nlpp_ui.h"
 
 enum states
 {
     DAT,
     USR,
-    EXT,
-    SYS,
-    BOS,
-    SHR,
-    SET
+    SET,
+    NLPP
 };
 
 enum selop
@@ -66,9 +60,6 @@ enum
 
 extern const std::string TITLE_TEXT;
 
-#ifdef ENABLE_DRIVE
-#define FLD_GUIDE_TEXT_DRIVE getTxt("\ue000 选择 \ue002 删除 \ue003 恢复 \ue005 上传 \ue001 关闭")
-#endif
 #define FLD_GUIDE_TEXT getTxt("\ue000 选择 \ue002 删除 \ue003 恢复 \ue001 关闭")
 
 namespace ui

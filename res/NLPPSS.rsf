@@ -1,6 +1,6 @@
 BasicInfo:
-  Title                   : "TYSS"
-  ProductCode             : "CTR-HB-TYSS"
+  Title                   : "NLPP Save Studio"
+  ProductCode             : "CTR-HB-LPSS"
   Logo                    : Nintendo
 
 RomFs:
@@ -8,7 +8,7 @@ RomFs:
 
 TitleInfo:
   Category                : Application
-  UniqueId                : 0xB5493
+  UniqueId                : 0xEC4E0
 
 Option:
   UseOnSD                 : true # true if App is to be installed to SD

@@ -1,88 +1,77 @@
-# TYSS for 3DS
-TYSS - 天涯的3DS存档工作室
+# NLPP Save Studio (NEWラブプラス+ Save Studio)
+Nintendo 3DS《新爱相随+》（NEWラブプラス+）专属专用存档编辑器
 
-<p align="left">
-<a href="http://www.gnu.org/copyleft/gpl.html"><img alt="license" src="https://img.shields.io/badge/license-GPL%20V3-blue.svg?style=flat"/></a>
-<a title="GitHub all releases" target="_blank" href="https://github.com/R-YaTian/TYSS/releases/latest"><img src="https://img.shields.io/github/downloads/R-YaTian/TYSS/total"></a>
-<a title="GitHub Workflow Status" href="https://github.com/R-YaTian/TYSS/actions/workflows/build.yaml"><img src="https://github.com/R-YaTian/TYSS/actions/workflows/build.yaml/badge.svg"></a>
-<a title="GitHub Workflow Status" href="https://github.com/R-YaTian/TYSS/actions/workflows/adrivehelper.yml"><img src="https://github.com/R-YaTian/TYSS/actions/workflows/adrivehelper.yml/badge.svg"></a>
-</p>
+## 简介
+**NLPP Save Studio (NLPPSS)** 是一款专为 Nintendo 3DS 恋爱模拟游戏《新爱相随+》（NEWラブプラス+ / Title ID `00040000000F4E00`）打造的掌机原生专用存档编辑器。
 
-<p align="center"><img src="res/preview.png" />
+基于成熟稳定的 Nintendo 3DS 原生开源工具底层，深度结合《存档系统逆向工程与数据规范手册》（`SAVE_REVERSE_ENGINEERING_MASTER.md`）中的全部汇编级确定性成果，支持实机游戏卡带（GameCard `CTR-P-AKNJ`）与 SD 数字版（Digital `CTR-N-AKNJ`）直读直改与无缝提交。
 
-<h4 align="right">
-  简体中文 | <a href="README.MD">English</a>
-</h4>
+---
 
-## 功能特性
-* 支持备份/恢复 3DS 和 DS 卡带存档
-* 支持 3DS 数字版游戏和试玩版游戏的存档管理，自动过滤无存档数据的自制软件或其他应用程序
-* 支持备份/恢复追加数据、BOSS追加数据、系统存档以及共享追加数据
-* 支持云端存档上传和下载（通过阿里云盘或是自建 Google Drive）
-* 支持备份/恢复 DSiWare 存档
-* 支持 GBAVC 存档管理（raw 原始格式 或 .sav 格式）
-* 多语言用户界面
-* 内置金手指数据库（英文和简体中文），支持安装金手指文件
-* 存档文件可压缩为 zip 格式
-* 提供浅色和深色两种 UI 主题色彩
-* 可配置游戏标题语言
-* 提供存档工作室工具箱，用于管理游玩时间历史记录、步数历史记录、缓存图标数据等：
-  * 修改游戏币数量
-  * 清除步数历史记录
-  * 清除游玩时间历史记录以及软件图鉴
-  * 清除共享图标缓存
-  * 清除主菜单图标缓存（老三需要使用 `Mode3` 版本）
-  * 重置试玩版游戏试玩次数
-  * 清除游戏笔记
-  * 移除软件更新通知
-  * 打开所有软件礼包
-  * 修改今日步数
-  * 重置 TYSS 的收藏列表以及黑名单列表
+## 核心特性
 
-## 操作控制
-* 操纵杆左/右、C摇杆左/右、ZL/ZR 切换视图类型。支持 L/R 按钮功能切换，允许老三用户使用 L/R 按钮切换视图类型
-* 在标题选择界面时：
-  * A 打开高亮的标题
-  * Y 将高亮标题添加到收藏夹
-  * X 打开选项菜单
+1. **原生卡带与数字版双模直读 (Live Save Access)**
+   - 启动自动检测插入的实体卡带与 SD 安装的数字版，支持无缝切换。
+   - 底层调用 3DS 原生存档服务，直接存取 `ARCHIVE_SAVEDATA` 与 `ARCHIVE_USER_SAVEDATA`。
 
-* 当备份项目选择界面打开时：
-  * A 覆盖已转储的备份或选择新建
-  * X 删除高亮显示的项目
-  * Y 恢复高亮显示的项目
-  * R 上传高亮显示的 zip/sav/bin 文件
-  * B 关闭并返回标题选择
+2. **强安全原子写回与防坏档保护 (Zero Corruption Policy)**
+   - **自动时间戳备份**：每次写回保存前，自动在 `sdmc:/NLPP_BACKUP/YYYYMMDD_HHMMSS/` 创建完整数据镜像，支持历史备份一键还原。
+   - **清除安全值 (Secure Value Wipe)**：对数字版自动执行 `FSUSER_ControlSecureSave(SECURESAVE_ACTION_DELETE)`，杜绝 `00040000` 防存档回滚校验坏档提示。
 
-## 云端存储
-* **请前往[发布页面](https://github.com/R-YaTian/TYSS/releases)获取 `adrivehelper`，该实用程序将会调用浏览器导航至阿里云盘账号登录页，请登录后按照网页指示完成授权。**
-* **自建 Google Drive 说明：** 请按照[此处](./GD_INSTRUCTIONS.MD)的指南操作(仅提供英文指南)。
-* **注意：** 云端存储功能需要启用 `导出到 ZIP` 选项创建的备份才能上传。
-* `adrivehelper` 实用程序的 `Windows` 版本使用 `VC-LTL5` 以及 `YY-Thunks` 进行构建, 以提高对旧版 Windows 的兼容性。(`Windows XP SP3` 下测试通过)
+3. **呼称三位一体强同步机制 (Appellation Synchronizer)**
+   - 修改女友对玩家的称呼时，系统自动联动执行：
+     1. `savedata9` 活体主档案 24 字节容器；
+     2. `savedata3` 全局地图与待机模型中对应女主的 6 种模式槽（走廊与碰头约会）；
+     3. `savedata21` 环形缓冲池最新活跃事件记录帧。
+   - 内置包含 5,628 个全量白名单读音字典，支持首音检索与分类挑选。
 
-## 下载和安装
-**请查看[发布页面](https://github.com/R-YaTian/TYSS/releases)获取最新版本。** 
+4. **彼氏力四维与资产极致注入**
+   - 运动、知识、感性、魅力四大属性（0..255）步进调节与「一键全满 (255)」。
+   - 所持金钱（Rich，最高 999,999 G）与 TODO 点数（最高 9,999 点）安全注入。
+   - **相机滤镜彻底卸除**：修复官方游戏无法卸下滤镜的设计缺陷，一键将滤镜槽置为 `-1` 并清除 `EquipMask` Bit 2，恢复纯净出厂画质。
 
-## 编译构建:
-* 安装 [devkitPro](https://www.3dbrew.org/wiki/Setting_up_Development_Environment)
-* 运行以下命令安装依赖：
-	* `dkp-pacman -S 3ds-curl 3ds-mbedtls 3ds-zlib` (根据操作系统的不同可能需要移除 `dkp`)
-	* `pip install zopflipy` (如果没有 python 和 pip, 请先安装)
-	* 使用任意包管理器安装 `gettext` 工具链
-  * 执行 `git clone -b 3ds-jtjson https://github.com/R-YaTian/3ds-jtjson.git && cd 3ds-jtjson && catnip -T 3ds -S . -B build install`
-* 直接执行 `make`
+5. **女友活体外观与 20 色官方发色方案**
+   - 好感度（Affection，0..255）调节，一键拉满 255 瞬间解除冷战闹别扭状态。
+   - 发长三阶形态（Short / Middle / Long）无缝切换。
+   - 17 种官方发型款式切换与好感度加权保护。
+   - **真实发色三位一体联动**：Color ID (0..19) + RGB 调色板 + 染色激活寄存器（`0x54C = 0x00`）。支持官方 20 种发色方案（包括自然黑、茶系、亮色系，以及粉红、天蓝、紫罗兰等特殊挑战色），并支持一键恢复初期默认发色。
+   - 性格 2D 坐标（横轴 X、纵轴 Y、模式 Z）微调。
 
-## 许可证
-**根据 GNU GPLv3 许可证分发。 打开 [LICENSE](./LICENSE) 查看更多内容。**
+6. **时间日程与 23 阶情侣称号直通车**
+   - 创档总天数（Timeline Days，卡片显示的 `%d日`）与实机主观交往打卡天数（Dating Days，决定女友百日/周年对白）自由调整。
+   - 最大离线天数一键清零，彻底避免长期未登录离线冷战惩罚。
+   - 23 级情侣称号（从 Lv 1 恋爱新手 至 Lv 23 最爱的二人）直接点选，一键直达满级并点亮 23 枚升级黄金勋章。
 
-**Copyright © 2024-2026 R-YaTian.**
+7. **513 件衣柜全解锁与 1,317 项全局主画廊全收集**
+   - **精准 513 件衣柜边界防护**：计数器写入 513，解锁 Block 1/2，严格清零越界区（513..559），清除 NEW 红点，杜绝游戏崩溃。
+   - **1,317 项全局卡带级画廊点亮**：一键解锁梦境画廊（60项）、特选梦境（60项）、回忆事件（243项）、旅行路线（123项）、比赛大会（255项）、心动名场面（576项），清除红点，同时严格完好保留玩家真实的旅行全景录像包（`0x0412~0x3A59`）。
 
-## 致谢
-* [R-YaTian](https://github.com/R-YaTian)：主要开发者，项目所有者
-* [J-D-K](https://github.com/J-D-K) 提供原始的 [JKSM](https://github.com/J-D-K/JKSM) 版本
-* [TuxSH](https://github.com/tuxsh) 提供 [TWLSaveTool](https://github.com/TuxSH/TWLSaveTool)，从中获取了 SPI 相关代码
-* 所有 [Checkpoint](https://github.com/BernardoGiordano/Checkpoint) 和 [PKSM](https://github.com/FlagBrew/PKSM) 贡献者，某些代码实现已移植到 TYSS
-* [WinterMute](https://github.com/WinterMute)、[fincs](https://github.com/fincs) 和 [devkitPro](https://devkitpro.org/) 贡献者提供 devkitARM 和 [libctru](https://github.com/devkitPro/libctru)
-* [Forget](https://github.com/James-Makoto) 进行测试并制作 TYSS 标志/图标
-* [FlagBrew](https://github.com/FlagBrew) 提供原始的 [Sharkive 金手指数据库](https://github.com/FlagBrew/Sharkive)
-* [天地人](https://github.com/realkkk)：[Sharkive 简中金手指数据库](https://github.com/R-YaTian/Sharkive) 主要翻译者
-* [Ryuzaki-MrL](https://github.com/Ryuzaki-MrL) 提供 [Cthulhu](https://github.com/Ryuzaki-MrL/Cthulhu) 自制软件
+---
+
+## 按键操作说明
+
+| 按键 | 功能说明 |
+| :--- | :--- |
+| **`[L]` / `[R]`** | 切换底部 7 大功能选项卡 |
+| **`十字键 [上]` / `[下]`** | 选择当前选项卡内的配置项 |
+| **`十字键 [左]` / `[右]`** | 调节选定数值（步进 / 步退） |
+| **`[A]`** | 确认选择 / 步进 / 打开原生软键盘输入文本 |
+| **`[X]`** | 一键极值 / 一键全满（当前模块满值注入） |
+| **`[Y]`** | 快速自主备份（打包归档至 `sdmc:/NLPP_BACKUP/`） |
+| **`[START]`** | 提交写回保存并同步至 3DS 存档 |
+| **触控屏** | 支持直接点选顶部 Tab 栏、列表项与快捷按钮 |
+
+---
+
+## 构建与编译
+
+本项目采用 devkitARM / libctru 工具链构建：
+
+```bash
+# 依赖环境：devkitPro (devkitARM, libctru, citro2d, citro3d)
+make -j$(nproc)
+```
+
+编译生成文件：
+- `NLPPSS.3dsx`：Homebrew Launcher 可执行文件
+- `NLPPSS.smdh`：包含图标与应用元数据的信息包

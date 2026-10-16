@@ -51,7 +51,7 @@ ui::progressBar *ui::prog;
 static ui::threadProcMngr *thrdMgr;
 static ui::button *ok, *yes, *no;
 
-const std::string TITLE_TEXT = "TY Save Studio - v1.1.7 ";
+const std::string TITLE_TEXT = "NLPP Save Studio - v1.0.0";
 
 uint32_t ui::down = 0, ui::held = 0;
 touchPosition ui::pos;
@@ -69,11 +69,8 @@ void ui::init()
 
 void ui::exit()
 {
+    ui::nlppExit();
     ui::ttlExit();
-    ui::extExit();
-    ui::sysExit();
-    ui::bossViewExit();
-    ui::shrdExit();
     ui::setExit();
     delete thrdMgr;
     delete ok;
@@ -116,24 +113,12 @@ void drawUI()
             ui::ttlDrawTop();
             break;
 
-        case EXT:
-            ui::extDrawTop();
-            break;
-
-        case SYS:
-            ui::sysDrawTop();
-            break;
-
-        case BOS:
-            ui::bossViewDrawTop();
-            break;
-
-        case SHR:
-            ui::shrdDrawTop();
-            break;
-
         case SET:
             ui::setDrawTop();
+            break;
+
+        case NLPP:
+            ui::nlppDrawTop();
             break;
 
         default:
@@ -153,24 +138,12 @@ void drawUI()
             ui::ttlDrawBot();
             break;
 
-        case EXT:
-            ui::extDrawBot();
-            break;
-
-        case SYS:
-            ui::sysDrawBot();
-            break;
-
-        case BOS:
-            ui::bossViewDrawBot();
-            break;
-
-        case SHR:
-            ui::shrdDrawBot();
-            break;
-
         case SET:
             ui::setDrawBottom();
+            break;
+
+        case NLPP:
+            ui::nlppDrawBot();
             break;
 
         default:
@@ -189,7 +162,7 @@ bool ui::runApp()
     thrdMgr->update();
     if(thrdMgr->empty())
     {
-        if(ui::padKeysDown() & KEY_START)
+        if(state != NLPP && (ui::padKeysDown() & KEY_START))
             return false;
 
         data::cartCheck();
@@ -200,24 +173,12 @@ bool ui::runApp()
                 ui::ttlUpdate();
                 break;
 
-            case EXT:
-                ui::extUpdate();
-                break;
-
-            case SYS:
-                ui::sysUpdate();
-                break;
-
-            case BOS:
-                ui::bossViewUpdate();
-                break;
-
-            case SHR:
-                ui::shrdUpdate();
-                break;
-
             case SET:
                 ui::setUpdate();
+                break;
+
+            case NLPP:
+                ui::nlppUpdate();
                 break;
         }
     }

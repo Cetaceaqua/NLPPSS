@@ -1,86 +1,76 @@
-# TYSS for 3DS
-TYSS or RYaTian's Save Studio for 3DS.
+# NLPP Save Studio (NEWラブプラス+ Save Studio)
+Dedicated Save Editor for *NEW LovePlus+* on Nintendo 3DS (`00040000000F4E00`).
 
-<p align="left">
-<a href="http://www.gnu.org/copyleft/gpl.html"><img alt="license" src="https://img.shields.io/badge/license-GPL%20V3-blue.svg?style=flat"/></a>
-<a title="GitHub all releases" target="_blank" href="https://github.com/R-YaTian/TYSS/releases/latest"><img src="https://img.shields.io/github/downloads/R-YaTian/TYSS/total"></a>
-<a title="GitHub Workflow Status" href="https://github.com/R-YaTian/TYSS/actions/workflows/build.yaml"><img src="https://github.com/R-YaTian/TYSS/actions/workflows/build.yaml/badge.svg"></a>
-<a title="GitHub Workflow Status" href="https://github.com/R-YaTian/TYSS/actions/workflows/adrivehelper.yml"><img src="https://github.com/R-YaTian/TYSS/actions/workflows/adrivehelper.yml/badge.svg"></a>
-</p>
+## Overview
+**NLPP Save Studio (NLPPSS)** is a dedicated Nintendo 3DS homebrew save editor tailored specifically for *NEW LovePlus+* (NEWラブプラス+ / `00040000000F4E00`).
 
-<p align="center"><img src="res/preview.png" />
+Based on the mature native 3DS homebrew stack and grounded in the reverse engineering master specification (`SAVE_REVERSE_ENGINEERING_MASTER.md`), it provides real-time dual-screen monitoring, touch controls, and direct live save archive editing for both physical GameCards (`CTR-P-AKNJ`) and digital eShop SD installations (`CTR-N-AKNJ`).
 
-<h4 align="right">
-  <a href="README_zh.MD">简体中文</a> | English
-</h4>
+---
 
 ## Features
-* Support backup/restore 3DS and DS cartridge saves
-* Support save management for 3DS digital titles and demo titles, with automatic filtering of homebrew or other applications without save data
-* Support backup/restore ExtData, BOSS ExtData, Sys Saves and Shared ExtData
-* Support cloud save upload and download (via Google Drive)
-* Support backup/restore DSiWare saves
-* Support GBAVC save management (raw and/or .sav)
-* Multi-language user interface
-* Built-in cheats database (English and Simplified Chinese), with support for installing cheat files
-* Save files can be compressed in zip format
-* Provide both light and dark UI themes color
-* Configurable game title language
-* Provide Save Studio Toolbox for managing play time history, step history, cached icon data and more:
-  * Modify play coin count
-  * Clear step history
-  * Clear play time history and software library
-  * Clear shared icon cache
-  * Clear HOME Menu icon cache (Old3DS consoles require `Mode3` version)
-  * Reset demo play count
-  * Clear game notes
-  * Remove software update notifications
-  * Unpack all gift-wrapped software on the HOME Menu
-  * Modify today's step count
-  * Reset favorites list and titles blacklist for TYSS
+
+1. **Dual Native Live Save Access**
+   - Direct access to active cartridge and SD digital save archives.
+   - Zero dump prerequisites: seamlessly reads and writes native 3DS CTR filesystem archives (`ARCHIVE_SAVEDATA` and `ARCHIVE_USER_SAVEDATA`).
+
+2. **Zero Corruption Policy & Anti-Rollback Protection**
+   - **Pre-commit Automated Backups**: creates full timestamped snapshots in `sdmc:/NLPP_BACKUP/YYYYMMDD_HHMMSS/` before every commit.
+   - **Secure Value Reset**: automatically executes `FSUSER_ControlSecureSave(SECURESAVE_ACTION_DELETE)` on SD digital versions to prevent system anti-save-restore error `00040000`.
+
+3. **Atomic Appellation Triad Synchronizer**
+   - Atomically synchronizes girlfriend appellation across:
+     1. Primary live record in `savedata9` (`0x281`);
+     2. Standby & map models in `savedata3` (`0x6ed + (heroine * 6 + mode) * 770`);
+     3. Historical event audit ring buffer in `savedata21` (latest sequence frame).
+   - Built-in compact 5,628 reading dictionary (`romfs:/dict/readings.bin`).
+
+4. **Boyfriend Stats & Assets**
+   - Four fundamental stats (Fitness, Knowledge, Sensibility, Charm, 0..255) with stepper and one-click max (255).
+   - Rich currency (0..999,999 G) and TODO points (0..9,999 points).
+   - **Permanent Camera Filter Removal**: fixes the infamous game defect where camera filters cannot be unequipped; resets filter ID to `-1` and clears `EquipMask` bit 2 to restore pure stock camera visuals.
+
+5. **Girlfriend Appearance & 20-Color Official Dyeing System**
+   - Affection level (0..255) with one-click restoration to 255 (resolves cold war / sulking states).
+   - Hair length stages (Short, Middle, Long) mapped to heroine-specific ladders.
+   - 17 official hairstyles with affinity protection.
+   - **Full 20-Color Hair Palette**: Color ID (0..19) + RGB triad + active state register (`0x54C = 0x00`), including official challenge shades (Pink, Blue, Purple, Orange, Green, Cyan) and one-click default reset.
+   - Personality 2D coordinates (X, Y, Z).
+
+6. **Timeline & 23-Tier Couple Titles**
+   - Timeline Days (`%d日` on file select card) and active Dating Days (triggers 100-day / anniversary dialogues).
+   - Reset Max Absence to 0 to prevent absence penalties.
+   - Jump directly to Lv. 23 "最愛のふたり" (Most Beloved Couple) and unlock all 23 Gold Medals.
+
+7. **Safe 513 Wardrobe & 1,317 Master Gallery Unlock**
+   - **Strict 513-Item Boundary Guard**: sets counter to 513, enables bitmasks 0..512, strictly zeros out items 513..559 to prevent out-of-bounds pointer crashes, and clears NEW indicators.
+   - **1,317 Master Gallery Elements**: lights up Dreams (60), After-Dreams (60), Memories (243), Trip CGs (123), Contests (255), and Specials (576) while strictly preserving authentic trip replay logs (`0x0412~0x3A59`).
+
+---
 
 ## Controls
-* Circle Pad Left/Right, C-Stick Left Left/Right or ZL/ZR Changes View Type. Introduces L/R button function toggle, which allows Old 3DS users to switch View Type using the L/R buttons.
-* While in title selection:
-    * A Opens the highlighted title
-	* Y Adds the highlighted title to favorites.
-	* X Open options menu
 
-* While Backup Item Selection is open:
-    * A Overwrites an already dumped backup or selects New
-	* X Deletes the highlighted item
-	* Y Restores the highlighted item
-	* R Upload the highlighted zip/sav/bin file
-	* B Closes and returns to title selection
+| Buttons | Action |
+| :--- | :--- |
+| **`[L]` / `[R]`** | Cycle between 7 editing tabs |
+| **`D-Pad [Up]` / `[Down]`** | Navigate items in current tab |
+| **`D-Pad [Left]` / `[Right]`** | Adjust selected parameter value |
+| **`[A]`** | Confirm / Step / Launch Software Keyboard (`swkbd`) |
+| **`[X]`** | One-Click MAX / Extreme values for active tab |
+| **`[Y]`** | Quick manual snapshot backup to `sdmc:/NLPP_BACKUP/` |
+| **`[START]`** | Commit changes to 3DS save archive |
+| **Touch Screen** | Direct tap for tabs, item rows, and action triggers |
 
-## Cloud Save
-* **Google Drive Instructions:** Follow the guide [here](./GD_INSTRUCTIONS.MD).
-	* NOTE: Cloud Drive feature requires backup created with the `Export To Zip` option turned on are uploadable.
+---
 
-## Download and Installation
-**See [releases](https://github.com/R-YaTian/TYSS/releases) for the latest version.** 
+## Building
 
-## Building:
-* Setup [devkitPro](https://www.3dbrew.org/wiki/Setting_up_Development_Environment)
-* Run this command to install dependencies:
-	* `dkp-pacman -S 3ds-curl 3ds-mbedtls 3ds-zlib` (You may need to remove `dkp`)
-	* `pip install zopflipy` (You may need to install python and pip first)
-	* Install `gettext` toolchain via your package manager
-  * `git clone -b 3ds-jtjson https://github.com/R-YaTian/3ds-jtjson.git && cd 3ds-jtjson && catnip -T 3ds -S . -B build install`
-* Then simply run `make`
+Requires devkitARM and libctru:
 
-## License
-**Distributed under the GNU GPLv3. See [LICENSE](./LICENSE) for more information.**
+```bash
+make -j$(nproc)
+```
 
-**Copyright © 2024-2026 R-YaTian.**
-
-## Credits
-* [R-YaTian](https://github.com/R-YaTian): Main Developer
-* [J-D-K](https://github.com/J-D-K) for the original [JKSM](https://github.com/J-D-K/JKSM) version.
-* [TuxSH](https://github.com/tuxsh) for [TWLSaveTool](https://github.com/TuxSH/TWLSaveTool), from which SPI code has been taken.
-* All [Checkpoint](https://github.com/BernardoGiordano/Checkpoint) and [PKSM](https://github.com/FlagBrew/PKSM) contributors for some code that has been ported to TYSS.
-* [WinterMute](https://github.com/WinterMute), [fincs](https://github.com/fincs) and [devkitPro](https://devkitpro.org/) contributors for devkitARM and [libctru](https://github.com/devkitPro/libctru).
-* [James-Makoto](https://github.com/James-Makoto) for testing and the TYSS logo/icon.
-* [FlagBrew](https://github.com/FlagBrew) for the original [Sharkive DB](https://github.com/FlagBrew/Sharkive).
-* [realworld](https://github.com/realkkk): Main Translator of [Sharkive DB CHS](https://github.com/R-YaTian/Sharkive).
-* [Ryuzaki-MrL](https://github.com/Ryuzaki-MrL) for the [Cthulhu](https://github.com/Ryuzaki-MrL/Cthulhu) homebrew.
+Outputs:
+- `NLPPSS.3dsx`
+- `NLPPSS.smdh`

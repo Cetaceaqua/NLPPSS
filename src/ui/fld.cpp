@@ -49,49 +49,17 @@ static void fldMenuNew_t(void *a)
     else
         newFolder = util::safeString(util::toUtf16(util::getString(getTxt("输入新备份名称"), true)));
 
-    if(!newFolder.empty()
-        && cfg::config["zip"]
-        && !data::curData.getExtInfos().isDSCard
-        && !data::curData.isAGB())
-    {
-        std::u16string fullOut = targetDir + newFolder + util::toUtf16(".zip");
-        std::u16string svOut = fullOut + util::toUtf16(".sv");
-        fs::exportSv(fs::getSaveMode(), svOut, data::curData); // export secure value if found
-        fs::copyArchToZipThreaded(fs::getSaveArch(), util::toUtf16("/"), fullOut);
-    }
-    else if(!newFolder.empty())
+    if(!newFolder.empty())
     {
         std::u16string fullOut = targetDir + newFolder;
-        if (data::curData.isAGB()) {
-            t->status->setStatus(getTxt("正在备份 GBAVC 存档数据..."));
-            bool res = fs::pxiFileToSaveFile(fullOut);
-            if (!res)
-                ui::showMessage(getTxt("GBAVC 存档数据无效, 备份失败!"));
-            else {
-                ui::showMessage(getTxt("GBAVC 存档数据备份成功!"));
-                if (cfg::config["rawvcsave"]) {
-                    std::u16string savPath = fullOut + util::toUtf16(".bin");
-                    fs::copyFileThreaded(fs::getSaveArch(), util::toUtf16(getTxt("原始 GBAVC 存档数据")), fs::getSDMCArch(), savPath, false, true);
-                }
-            }
-        } else if (!data::curData.getExtInfos().isDSCard) {
-            std::u16string svOut = fullOut + util::toUtf16(".sv");
-            fs::exportSv(fs::getSaveMode(), svOut, data::curData); // export secure value if found
+        std::u16string svOut = fullOut + util::toUtf16(".sv");
+        fs::exportSv(fs::getSaveMode(), svOut, data::curData); // export secure value if found
 
-            FS_Path crDir = fsMakePath(PATH_UTF16, fullOut.c_str());
-            FSUSER_CreateDirectory(fs::getSDMCArch(), crDir, 0);
-            fullOut += util::toUtf16("/");
+        FS_Path crDir = fsMakePath(PATH_UTF16, fullOut.c_str());
+        FSUSER_CreateDirectory(fs::getSDMCArch(), crDir, 0);
+        fullOut += util::toUtf16("/");
 
-            fs::copyDirToDirThreaded(fs::getSaveArch(), util::toUtf16("/"), fs::getSDMCArch(), fullOut, false);
-        } else {
-            t->status->setStatus(getTxt("正在导出 DS 卡带存档数据..."));
-            std::u16string savPath = fullOut + util::toUtf16(".sav");
-            CardType cardType = data::curData.getExtInfos().spiCardType;
-            if (cardType != NO_CHIP)
-                fs::backupSPI(savPath, cardType);
-            else
-                ui::showMessage(getTxt("不支持该 DS 游戏卡带的存档芯片类型\n或是该卡带不存在存档芯片!"));
-        }
+        fs::copyDirToDirThreaded(fs::getSaveArch(), util::toUtf16("/"), fs::getSDMCArch(), fullOut, false);
     }
 
     t->finished = true;
@@ -118,38 +86,6 @@ void fldMenuOverwrite_t(void *a)
         FSUSER_CreateDirectory(fs::getSDMCArch(), delPath, 0);
         overwrite += util::toUtf16("/");
         fs::copyDirToDir(fs::getSaveArch(), util::toUtf16("/"), fs::getSDMCArch(), overwrite, false, NULL);
-    }
-    else
-    {
-        std::u16string overwrite = targetDir + in->name;
-        FS_Path targetPath = fsMakePath(PATH_UTF16, overwrite.c_str());
-        FSUSER_DeleteFile(fs::getSDMCArch(), targetPath);
-
-        if (data::curData.isAGB()) {
-            if (util::endsWith(overwrite, util::toUtf16(".bin")))
-                fs::copyFileThreaded(fs::getSaveArch(), util::toUtf16(getTxt("原始 GBAVC 存档数据")), fs::getSDMCArch(), overwrite, false, true);
-            else {
-                t->status->setStatus(getTxt("正在备份 GBAVC 存档数据..."));
-                std::u16string savPath = util::removeSuffix(overwrite, util::toUtf16(".sav"));
-                bool res = fs::pxiFileToSaveFile(savPath);
-                if (!res)
-                    ui::showMessage(getTxt("GBAVC 存档数据无效, 备份失败!"));
-                else
-                    ui::showMessage(getTxt("GBAVC 存档数据备份成功!"));
-            }
-        } else if (!data::curData.getExtInfos().isDSCard) {
-            std::u16string svOut = overwrite + util::toUtf16(".sv");
-            fs::exportSv(fs::getSaveMode(), svOut, data::curData); // export secure value if found
-
-            fs::copyArchToZipThreaded(fs::getSaveArch(), util::toUtf16("/"), overwrite);
-        } else {
-            t->status->setStatus(getTxt("正在导出 DS 卡带存档数据..."));
-            CardType cardType = data::curData.getExtInfos().spiCardType;
-            if (cardType != NO_CHIP)
-                fs::backupSPI(overwrite, cardType);
-            else
-                ui::showMessage(getTxt("不支持该 DS 游戏卡带的存档芯片类型\n或是该卡带不存在存档芯片!"));
-        }
     }
     t->finished = true;
 }
@@ -200,35 +136,6 @@ void fldMenuRestore_t(void *a)
         // Try to import secure value if exists
         std::u16string svIn = targetDir + in->name + util::toUtf16(".sv");
         fs::importSv(fs::getSaveMode(), svIn, data::curData);
-    }
-    else
-    {
-        if (data::curData.isAGB()) {
-            std::u16string savPath = targetDir + in->name;
-            if (util::endsWith(savPath, util::toUtf16(".bin")))
-                fs::copyFileThreaded(fs::getSDMCArch(), savPath, fs::getSaveArch(), util::toUtf16("/"), false, true);
-            else {
-                t->status->setStatus(getTxt("正在恢复 GBAVC 存档数据..."));
-                bool res = fs::saveFileToPxiFile(savPath);
-                if (!res)
-                    ui::showMessage(getTxt("GBAVC 存档数据无效, 恢复失败!"));
-                else
-                    ui::showMessage(getTxt("GBAVC 存档数据恢复成功!"));
-            }
-        } else if (!data::curData.getExtInfos().isDSCard) {
-            fs::delDirRec(fs::getSaveArch(), util::toUtf16("/"));
-            fs::commitData(fs::getSaveMode());
-
-            std::u16string rest = targetDir + in->name;
-            fs::copyZipToArchThreaded(fs::getSaveArch(), rest);
-        } else {
-            t->status->setStatus(getTxt("正在恢复数据到 DS 游戏卡带..."));
-            CardType cardType = data::curData.getExtInfos().spiCardType;
-            if (cardType != NO_CHIP)
-                fs::restoreSPI(targetDir + in->name, cardType);
-            else
-                ui::showMessage(getTxt("不支持该 DS 游戏卡带的存档芯片类型\n或是该卡带不存在存档芯片!"));
-        }
     }
     t->finished = true;
 }

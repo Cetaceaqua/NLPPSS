@@ -7,6 +7,8 @@ adrivehelper/VC-LTL
 adrivehelper/YY-Thunks
 *.cbp
 *.layout
+*.3ds
+*.cci
 *.elf
 *.3dsx
 *.cia
@@ -17,3 +19,4 @@ Cargo.lock
 *.pot
 *.mo
 *.lst
+msgfmt.py

@@ -20,38 +20,13 @@
 #define FS_H
 
 #include <3ds.h>
-#include <minizip/zip.h>
-#include <minizip/unzip.h>
 #include <string>
 #include "data.h"
 #include "ui.h"
-
-#ifdef ENABLE_DRIVE
-#include <memory>
-#include "drive/IDrive.h"
-#include "drive/gd.h"
-#include "drive/adrive.h"
-#endif
-
-#define DRIVE_TYSS_DIR "TYSS"
-#define DRIVE_USER_SAVE_DIR "Saves"
-#define DRIVE_EXTDATA_DIR "ExtData"
-#define DRIVE_SYSTEM_DIR "SysSave"
-#define DRIVE_BOSS_DIR "Boss"
-#define DRIVE_SHARED_DIR "Shared"
-
 namespace fs
 {
     void init();
     void exit();
-
-#ifdef ENABLE_DRIVE
-    void driveInit(void *a);
-    void driveExit();
-    void debugWriteDriveList(drive::DriveBase* driveBase);
-    extern std::unique_ptr<drive::DriveBase> netDrive;
-    extern std::string tyssDirID, usrSaveDirID, extDataDirID, sysSaveDirID, bossExtDirID, sharedExtID, currentDirID;
-#endif
 
     enum fsSeek
     {
@@ -162,22 +137,8 @@ namespace fs
     void copyDirToDir(const FS_Archive& _srcArch, const std::u16string& _src, const FS_Archive& _dstArch, const std::u16string& _dst, bool commit, threadInfo *t, bool isRecursion = false);
     void copyDirToDirThreaded(const FS_Archive& _srcArch, const std::u16string& _src, const FS_Archive& _dstArch, const std::u16string& _dst, bool commit);
 
-    void copyArchToZip(const FS_Archive& _arch, const std::u16string& _src, zipFile _zip, const std::u16string* _dir, threadInfo *t, bool isRecursion = false);
-    void copyArchToZipThreaded(const FS_Archive& _arch, const std::u16string& _src, const std::u16string& _dst);
-    void copyZipToArch(const FS_Archive& _arch, unzFile _unz, threadInfo *t);
-    void copyZipToArchThreaded(const FS_Archive& _arch, const std::u16string& _src);
-
-    void backupAGBSaves_t(void *a);
     void backupTitles_t(void *a);
     void backupTitles(std::vector<data::titleData>& vect, const uint32_t &mode, BunchType type);
-    void backupSPI(const std::u16string& savPath, const CardType& cardType);
-    void restoreSPI(const std::u16string& savPath, const CardType& cardType);
-    bool pxiFileToSaveFile(const std::u16string& _dst);
-    bool saveFileToPxiFile(const std::u16string& _src);
-}
-
-extern "C" {
-    Result svcControlService(uint32_t op, uint32_t* outHandle, const char* name);
 }
 
 #endif // FS_H
