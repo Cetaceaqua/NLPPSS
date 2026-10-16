@@ -181,10 +181,40 @@ namespace nlpp
         return true;
     }
 
+    static bool isSlotDataEmpty(const SlotData &sd)
+    {
+        // 1. Unset or invalid prefecture (valid indices in Japan are 0..46; 0xFFFF indicates empty/uninitialized)
+        if (sd.profile.prefecture == 0xFFFF || sd.profile.prefecture > 46)
+            return true;
+
+        // 2. Both first and last names empty
+        if (sd.profile.firstName.empty() && sd.profile.lastName.empty())
+            return true;
+
+        // 3. Name placeholder: lastName is empty and firstName is "*PR*@"
+        if (sd.profile.lastName.empty() && sd.profile.firstName == "*PR*@")
+            return true;
+
+        // 4. Factory default placeholder group:
+        // lastName == "ぷれいや" && firstName == "太郎" && hn == "ぷれ" &&
+        // birthMonth == 1 && birthDay == 1 && blood == 0 && prefecture == 12 &&
+        // lastNameReadingId == 0 && firstNameReadingId == 0
+        if (sd.profile.lastName == "ぷれいや" && sd.profile.firstName == "太郎" &&
+            sd.profile.hn == "ぷれ" && sd.profile.birthMonth == 1 && sd.profile.birthDay == 1 &&
+            (int)sd.profile.blood == 0 && sd.profile.prefecture == 12 &&
+            sd.stats.readings[0] == 0 && sd.stats.readings[1] == 0)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     bool SaveManager::parseSlot(int slot)
     {
         if (slot < 0 || slot >= NUM_SLOTS) return false;
         SlotData &sd = m_slots[slot];
+        sd = SlotData();
         sd.slotIndex = slot;
 
         int profFile = getSlotFile(FILE_BASE_PROFILE, slot);
@@ -202,15 +232,6 @@ namespace nlpp
 
         const uint8_t *pbuf = m_files[profFile].data();
         sd.profile.prefecture = *(const uint16_t *)&pbuf[0x90];
-        if (sd.profile.prefecture == 0xFFFF)
-        {
-            sd.empty = true;
-            sd.profile.empty = true;
-            return true;
-        }
-
-        sd.empty = false;
-        sd.profile.empty = false;
 
         // Names (12B max, null-terminated UTF-8)
         char tmp[16] = {0};
@@ -296,6 +317,18 @@ namespace nlpp
             sd.timeline.loverTimeline  = *(const uint32_t *)&tbuf[0x2E];
             sd.timeline.homeTimeline   = *(const uint32_t *)&tbuf[0x32];
             sd.timeline.datingDays     = *(const uint32_t *)&tbuf[0x39];
+        }
+
+        // Comprehensive empty slot detection
+        if (isSlotDataEmpty(sd))
+        {
+            sd.empty = true;
+            sd.profile.empty = true;
+        }
+        else
+        {
+            sd.empty = false;
+            sd.profile.empty = false;
         }
 
         return true;

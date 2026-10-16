@@ -627,82 +627,65 @@ namespace ui
                 case 6: drawMode2Top_Collection(); break;
             }
         }
+
+        if (s_confirm.active || s_alert.active || s_picker.active)
+        {
+            C2D_DrawRectSolid(0, 0, GFX_DEPTH_DEFAULT + 0.9f, 400, 240, 0xBB000000);
+        }
     }
 
     // =========================================================================
     // Dialog Drawing (Strictly TYSS Style)
     // =========================================================================
 
+    static void drawDialogBtn(int x, int y, int w, int h, const std::string &text, bool selected)
+    {
+        C2D_DrawRectSolid(x, y, GFX_DEPTH_DEFAULT + 0.18f, w, h, selected ? gfx::btnSel : gfx::btnClr);
+        unsigned tw = gfx::getTextWidth(text);
+        unsigned th = 14;
+        unsigned tx = x + (w / 2) - (tw / 2);
+        unsigned ty = y + (h / 2) - (th / 2);
+        gfx::drawText(text, tx, ty, GFX_DEPTH_DEFAULT + 0.2f, 0.5f, gfx::txtCont);
+    }
+
     static void drawConfirmDialog()
     {
-        // Darken backdrop
-        C2D_DrawRectSolid(0, 0, GFX_DEPTH_DEFAULT + 0.1f, 320, 240, C2D_Color32(0, 0, 0, 160));
+        // Darken backdrop (0xBB000000 strictly matching TYSS thrdMgr)
+        C2D_DrawRectSolid(0, 0, GFX_DEPTH_DEFAULT + 0.1f, 320, 240, 0xBB000000);
 
         // Window matching TYSS confirmDrawFunc: x=24, y=24, w=272, h=200
         C2D_DrawRectSolid(24, 24, GFX_DEPTH_DEFAULT + 0.15f, 272, 200, gfx::clearClr);
-        C2D_DrawRectSolid(24, 24, GFX_DEPTH_DEFAULT + 0.15f, 272, 1, gfx::divClr);
-        C2D_DrawRectSolid(24, 223, GFX_DEPTH_DEFAULT + 0.15f, 272, 1, gfx::divClr);
-        C2D_DrawRectSolid(24, 24, GFX_DEPTH_DEFAULT + 0.15f, 1, 200, gfx::divClr);
-        C2D_DrawRectSolid(295, 24, GFX_DEPTH_DEFAULT + 0.15f, 1, 200, gfx::divClr);
 
         // Wrapped message text
         gfx::drawTextWrap(s_confirm.message, 32, 32, GFX_DEPTH_DEFAULT + 0.2f, 0.5f, 256, gfx::txtCont);
 
         // Buttons matching TYSS: Yes (32, 184, 120, 32) and No (168, 184, 120, 32)
-        bool fYes = (s_confirm.selectedBtn == 0);
-        bool fNo = (s_confirm.selectedBtn == 1);
-        uint32_t rectClr = getPulseBoundingBoxColor();
-
-        C2D_DrawRectSolid(32, 184, GFX_DEPTH_DEFAULT + 0.18f, 120, 32, fYes ? gfx::btnSel : gfx::btnClr);
-        if (fYes)
-        {
-            gfx::drawBoundingBox(32, 184, 120, 32, GFX_DEPTH_DEFAULT + 0.2f, rectClr);
-            C2D_DrawRectSolid(36, 188, GFX_DEPTH_DEFAULT + 0.22f, 2, 24, 0xFFC5FF00);
-        }
-        gfx::drawText("是 \ue000", 68, 192, GFX_DEPTH_DEFAULT + 0.25f, 0.5f, gfx::txtCont);
-
-        C2D_DrawRectSolid(168, 184, GFX_DEPTH_DEFAULT + 0.18f, 120, 32, fNo ? gfx::btnSel : gfx::btnClr);
-        if (fNo)
-        {
-            gfx::drawBoundingBox(168, 184, 120, 32, GFX_DEPTH_DEFAULT + 0.2f, rectClr);
-            C2D_DrawRectSolid(172, 188, GFX_DEPTH_DEFAULT + 0.22f, 2, 24, 0xFFC5FF00);
-        }
-        gfx::drawText("否 \ue001", 204, 192, GFX_DEPTH_DEFAULT + 0.25f, 0.5f, gfx::txtCont);
+        // Strictly NO blue bounding box and NO accent bar, only solid color btnSel vs btnClr
+        drawDialogBtn(32, 184, 120, 32, "是 \ue000", s_confirm.selectedBtn == 0);
+        drawDialogBtn(168, 184, 120, 32, "否 \ue001", s_confirm.selectedBtn == 1);
     }
 
     static void drawAlertDialog()
     {
-        // Darken backdrop
-        C2D_DrawRectSolid(0, 0, GFX_DEPTH_DEFAULT + 0.1f, 320, 240, C2D_Color32(0, 0, 0, 160));
+        // Darken backdrop (0xBB000000 strictly matching TYSS thrdMgr)
+        C2D_DrawRectSolid(0, 0, GFX_DEPTH_DEFAULT + 0.1f, 320, 240, 0xBB000000);
 
         // Window matching TYSS messageDrawFunc: x=24, y=24, w=272, h=200
         C2D_DrawRectSolid(24, 24, GFX_DEPTH_DEFAULT + 0.15f, 272, 200, gfx::clearClr);
-        C2D_DrawRectSolid(24, 24, GFX_DEPTH_DEFAULT + 0.15f, 272, 1, gfx::divClr);
-        C2D_DrawRectSolid(24, 223, GFX_DEPTH_DEFAULT + 0.15f, 272, 1, gfx::divClr);
-        C2D_DrawRectSolid(24, 24, GFX_DEPTH_DEFAULT + 0.15f, 1, 200, gfx::divClr);
-        C2D_DrawRectSolid(295, 24, GFX_DEPTH_DEFAULT + 0.15f, 1, 200, gfx::divClr);
 
         // Message text
         gfx::drawTextWrap(s_alert.message, 32, 32, GFX_DEPTH_DEFAULT + 0.2f, 0.5f, 256, gfx::txtCont);
 
-        // OK button: (96, 184, 128, 32)
-        uint32_t rectClr = getPulseBoundingBoxColor();
-        C2D_DrawRectSolid(96, 184, GFX_DEPTH_DEFAULT + 0.18f, 128, 32, gfx::btnSel);
-        gfx::drawBoundingBox(96, 184, 128, 32, GFX_DEPTH_DEFAULT + 0.2f, rectClr);
-        C2D_DrawRectSolid(100, 188, GFX_DEPTH_DEFAULT + 0.22f, 2, 24, 0xFFC5FF00);
-        gfx::drawText("确定 \ue000", 132, 192, GFX_DEPTH_DEFAULT + 0.25f, 0.5f, gfx::txtCont);
+        // OK button: (96, 184, 128, 32) - Strictly NO bounding box
+        drawDialogBtn(96, 184, 128, 32, "确定 \ue000", true);
     }
 
     static void drawPickerDialog()
     {
-        C2D_DrawRectSolid(0, 0, GFX_DEPTH_DEFAULT + 0.1f, 320, 240, C2D_Color32(0, 0, 0, 160));
+        C2D_DrawRectSolid(0, 0, GFX_DEPTH_DEFAULT + 0.1f, 320, 240, 0xBB000000);
 
         // Window: x=24, y=24, w=272, h=200
         C2D_DrawRectSolid(24, 24, GFX_DEPTH_DEFAULT + 0.15f, 272, 200, gfx::clearClr);
-        C2D_DrawRectSolid(24, 24, GFX_DEPTH_DEFAULT + 0.15f, 272, 1, gfx::divClr);
-        C2D_DrawRectSolid(24, 223, GFX_DEPTH_DEFAULT + 0.15f, 272, 1, gfx::divClr);
-        C2D_DrawRectSolid(24, 24, GFX_DEPTH_DEFAULT + 0.15f, 1, 200, gfx::divClr);
-        C2D_DrawRectSolid(295, 24, GFX_DEPTH_DEFAULT + 0.15f, 1, 200, gfx::divClr);
 
         // Header Title
         gfx::drawText(s_picker.title, 32, 28, GFX_DEPTH_DEFAULT + 0.2f, 0.5f, gfx::txtCont);
@@ -761,9 +744,24 @@ namespace ui
                 }
                 else
                 {
-                    const char *hName = (sd.girlfriend.heroine == nlpp::HEROINE_MANAKA) ? "愛花" :
-                                        ((sd.girlfriend.heroine == nlpp::HEROINE_RINKO) ? "凛子" : "寧々");
-                    sText = "槽位 " + std::to_string(s + 1) + ": " + hName + " (" + std::to_string(sd.timeline.datingDays) + "日)";
+                    std::string playerName;
+                    if (!sd.profile.lastName.empty() && !sd.profile.firstName.empty())
+                    {
+                        playerName = sd.profile.lastName + " " + sd.profile.firstName;
+                    }
+                    else if (!sd.profile.lastName.empty())
+                    {
+                        playerName = sd.profile.lastName;
+                    }
+                    else if (!sd.profile.firstName.empty())
+                    {
+                        playerName = sd.profile.firstName;
+                    }
+                    else
+                    {
+                        playerName = "无名氏";
+                    }
+                    sText = "槽位 " + std::to_string(s + 1) + ": " + playerName;
                 }
 
                 drawMenuItem(0, 4 + s * 18, 320, sText, (s == s_selectedItem));
@@ -1071,6 +1069,12 @@ namespace ui
                 if (down & KEY_X) // 复制/克隆
                 {
                     int srcSlot = s_selectedItem;
+                    const auto &srcSlotData = nlpp::g_saveMgr.getSlotData(srcSlot);
+                    if (srcSlotData.empty)
+                    {
+                        showAlert("该槽位为空存档，无法进行克隆！");
+                        return;
+                    }
                     std::vector<PickerItem> opts;
                     for (int s = 0; s < 3; ++s)
                     {
