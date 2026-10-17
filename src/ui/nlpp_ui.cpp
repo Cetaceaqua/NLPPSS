@@ -17,13 +17,13 @@
 namespace ui
 {
     // =========================================================================
-    // Mode 1: Main Menu - 存档 (Save Slots) & 备份管理 (Backup Management)
+    // Mode 1: Main Menu - 存档 (Save Slots) & 备份 (Backup Management)
     // =========================================================================
 
     static nlpp::SaveSource s_currentSource = nlpp::SOURCE_SD;
+    static ui::menu s_mediaMenu;
     static ui::menu s_slotMenu;
-    static ui::button *s_btnDigital = nullptr;
-    static ui::button *s_btnCartridge = nullptr;
+    static bool s_slotSelectOpen = false;
 
     // Submenu for slot operations (e.g. choose destination slot for copy)
     static bool s_slotCopyOpen = false;
@@ -43,30 +43,21 @@ namespace ui
             else
             {
                 const auto &sd = nlpp::g_saveMgr.getSlotData(i);
-                std::string fullName = sd.profile.lastName + " " + sd.profile.firstName;
-                snprintf(itemBuf, sizeof(itemBuf), "%s %d: %s", getTxt("槽位"), i + 1, fullName.c_str());
+                std::string playerName;
+                if (!sd.profile.lastName.empty() && !sd.profile.firstName.empty())
+                    playerName = sd.profile.lastName + " " + sd.profile.firstName;
+                else if (!sd.profile.lastName.empty())
+                    playerName = sd.profile.lastName;
+                else if (!sd.profile.firstName.empty())
+                    playerName = sd.profile.firstName;
+                else if (!sd.profile.hn.empty())
+                    playerName = sd.profile.hn;
+                else
+                    playerName = "无名氏";
+
+                snprintf(itemBuf, sizeof(itemBuf), "%s %d: %s", getTxt("槽位"), i + 1, playerName.c_str());
             }
-            s_slotMenu.addOpt(itemBuf, 300);
-        }
-    }
-
-    static void onSwitchToDigital(void *)
-    {
-        if (s_currentSource != nlpp::SOURCE_SD)
-        {
-            s_currentSource = nlpp::SOURCE_SD;
-            nlpp::g_saveMgr.switchSource(nlpp::SOURCE_SD);
-            refreshSlotMenu();
-        }
-    }
-
-    static void onSwitchToCartridge(void *)
-    {
-        if (s_currentSource != nlpp::SOURCE_GAMECARD)
-        {
-            s_currentSource = nlpp::SOURCE_GAMECARD;
-            nlpp::g_saveMgr.switchSource(nlpp::SOURCE_GAMECARD);
-            refreshSlotMenu();
+            s_slotMenu.addOpt(itemBuf, 320);
         }
     }
 
@@ -93,16 +84,36 @@ namespace ui
         ui::confirm(msg, onConfirmSlotCopy_t, nullptr, a);
     }
 
+    static void onConfirmBackupSlot_t(void *a)
+    {
+        threadInfo *t = (threadInfo *)a;
+        std::string bakName;
+        if (nlpp::g_saveMgr.createAutoBackup(&bakName))
+        {
+            char msg[128];
+            snprintf(msg, sizeof(msg), getTxt("存档备份成功！\n%s"), bakName.c_str());
+            ui::showMessage(msg);
+        }
+        else
+        {
+            ui::showMessage(getTxt("存档备份失败！"));
+        }
+        t->finished = true;
+    }
+
     void saveSelectInit(void *)
     {
+        nlpp::g_saveMgr.detectSources();
         s_currentSource = (cfg::config["default_type"] == 1) ? nlpp::SOURCE_GAMECARD : nlpp::SOURCE_SD;
         nlpp::g_saveMgr.switchSource(s_currentSource);
 
-        delete s_btnDigital;
-        delete s_btnCartridge;
-        s_btnDigital = new ui::button(getTxt("数字版"), 20, 10, 130, 24);
-        s_btnCartridge = new ui::button(getTxt("实体版"), 170, 10, 130, 24);
+        s_mediaMenu.reset();
+        s_mediaMenu.addOpt(getTxt("数字版"), 400);
+        s_mediaMenu.addOpt(getTxt("实体版"), 400);
+        s_mediaMenu.setSelected((cfg::config["default_type"] == 1) ? 1 : 0);
 
+        s_slotSelectOpen = false;
+        s_slotCopyOpen = false;
         refreshSlotMenu();
 
         s_copyDstMenu.reset();
@@ -112,33 +123,39 @@ namespace ui
             snprintf(buf, sizeof(buf), "%s %d", getTxt("目标槽位"), i + 1);
             s_copyDstMenu.addOpt(buf, 200);
         }
-        s_slotCopyOpen = false;
+
+        // Auto-load on boot logic if enabled
+        if (cfg::config["autoload"] == 1)
+        {
+            nlpp::SaveSource defaultSrc = (cfg::config["default_type"] == 1) ? nlpp::SOURCE_GAMECARD : nlpp::SOURCE_SD;
+            bool srcAvailable = (defaultSrc == nlpp::SOURCE_GAMECARD) ? nlpp::g_saveMgr.hasGameCard() : nlpp::g_saveMgr.hasSD();
+
+            if (srcAvailable)
+            {
+                nlpp::g_saveMgr.switchSource(defaultSrc);
+                int defaultSlot = cfg::config["default_slot"];
+                if (defaultSlot < 0 || defaultSlot >= 3) defaultSlot = 0;
+
+                const auto &slotData = nlpp::g_saveMgr.getSlotData(defaultSlot);
+                if (!slotData.empty)
+                {
+                    nlpp::g_saveMgr.selectSlot(defaultSlot);
+                    ui::editorInit(defaultSlot);
+                    ui::state = SLOT_EDITOR;
+                }
+            }
+        }
     }
 
     void saveSelectExit()
     {
-        delete s_btnDigital;
-        delete s_btnCartridge;
-        s_btnDigital = nullptr;
-        s_btnCartridge = nullptr;
+        s_slotSelectOpen = false;
+        s_slotCopyOpen = false;
     }
 
     void saveSelectUpdate()
     {
         uint32_t down = ui::padKeysDown();
-
-        // Page switching (L / R)
-        if (down & KEY_PAGE_LEFT)
-        {
-            ui::state = SET;
-            return;
-        }
-        else if (down & KEY_PAGE_RIGHT)
-        {
-            ui::state = BACKUP_MGR;
-            backupMgrRefresh();
-            return;
-        }
 
         if (s_slotCopyOpen)
         {
@@ -156,104 +173,98 @@ namespace ui
             return;
         }
 
-        // Toggle source with touch or D-pad Left/Right
-        s_btnDigital->update();
-        s_btnCartridge->update();
-
-        if (s_btnDigital->getEvent() == BUTTON_RELEASED || (down & KEY_DLEFT))
+        if (!s_slotSelectOpen)
         {
-            onSwitchToDigital(nullptr);
-            return;
-        }
-        if (s_btnCartridge->getEvent() == BUTTON_RELEASED || (down & KEY_DRIGHT))
-        {
-            onSwitchToCartridge(nullptr);
-            return;
-        }
-
-        // A: Enter Editor
-        if (down & KEY_A)
-        {
-            int slot = s_slotMenu.getSelected();
-            if (nlpp::g_saveMgr.isSlotEmpty(slot))
+            // Page switching (L / R / Circle Pad)
+            if (down & KEY_PAGE_LEFT)
             {
-                ui::showMessage(getTxt("该槽位为空，无法编辑！"));
+                ui::state = SET;
                 return;
             }
-            ui::editorInit(slot);
-            ui::state = SLOT_EDITOR;
-            return;
-        }
-
-        // X: Copy Slot
-        if (down & KEY_X)
-        {
-            int slot = s_slotMenu.getSelected();
-            if (nlpp::g_saveMgr.isSlotEmpty(slot))
+            else if (down & KEY_PAGE_RIGHT)
             {
-                ui::showMessage(getTxt("该槽位为空，无法复制！"));
+                ui::state = BACKUP_MGR;
+                backupMgrRefresh();
                 return;
             }
-            s_copySrcSlot = slot;
-            s_slotCopyOpen = true;
-            s_copyDstMenu.setSelected((slot + 1) % nlpp::NUM_SLOTS);
-            return;
-        }
 
-        // Y: Backup Save
-        if (down & KEY_Y)
+            if (down & KEY_A)
+            {
+                nlpp::g_saveMgr.detectSources();
+                int mediaSel = s_mediaMenu.getSelected();
+                nlpp::SaveSource targetSrc = (mediaSel == 0) ? nlpp::SOURCE_SD : nlpp::SOURCE_GAMECARD;
+                bool available = (targetSrc == nlpp::SOURCE_GAMECARD) ? nlpp::g_saveMgr.hasGameCard() : nlpp::g_saveMgr.hasSD();
+
+                if (!available)
+                {
+                    const char *failMsg = (mediaSel == 0) ?
+                        getTxt("未检测到数字版存档！") :
+                        getTxt("未插入游戏卡带或未检测到卡带存档！");
+                    ui::showMessage(failMsg);
+                    return;
+                }
+
+                nlpp::g_saveMgr.switchSource(targetSrc);
+                s_currentSource = targetSrc;
+                refreshSlotMenu();
+                s_slotSelectOpen = true;
+                s_slotMenu.setSelected(0);
+                return;
+            }
+
+            s_mediaMenu.update();
+        }
+        else
         {
-            std::string bakName;
-            if (nlpp::g_saveMgr.createAutoBackup(&bakName))
+            // Lower screen slot selection
+            if (down & KEY_B)
             {
-                char msg[128];
-                snprintf(msg, sizeof(msg), getTxt("存档备份成功！\n%s"), bakName.c_str());
-                ui::showMessage(msg);
+                s_slotSelectOpen = false;
+                return;
             }
-            else
-            {
-                ui::showMessage(getTxt("存档备份失败！"));
-            }
-            return;
-        }
 
-        s_slotMenu.update();
+            if (down & KEY_A)
+            {
+                int slot = s_slotMenu.getSelected();
+                if (nlpp::g_saveMgr.isSlotEmpty(slot))
+                {
+                    ui::showMessage(getTxt("该槽位为空，无法编辑！"));
+                    return;
+                }
+                nlpp::g_saveMgr.selectSlot(slot);
+                ui::editorInit(slot);
+                ui::state = SLOT_EDITOR;
+                return;
+            }
+
+            if (down & KEY_X) // 复制
+            {
+                int slot = s_slotMenu.getSelected();
+                if (nlpp::g_saveMgr.isSlotEmpty(slot))
+                {
+                    ui::showMessage(getTxt("该槽位为空，无法复制！"));
+                    return;
+                }
+                s_copySrcSlot = slot;
+                s_slotCopyOpen = true;
+                s_copyDstMenu.setSelected((slot + 1) % nlpp::NUM_SLOTS);
+                return;
+            }
+
+            if (down & KEY_Y) // 备份
+            {
+                ui::confirm(getTxt("确定要备份此存档吗？"), onConfirmBackupSlot_t, nullptr, nullptr);
+                return;
+            }
+
+            s_slotMenu.update();
+        }
     }
 
     void saveSelectDrawTop()
     {
         ui::drawUIBar(TITLE_TEXT + " - " + getTxt("存档"), ui::SCREEN_TOP, true);
-
-        // Header info on top screen
-        std::string srcText = (s_currentSource == nlpp::SOURCE_SD) ? getTxt("当前介质: 数字版") : getTxt("当前介质: 实体版");
-        gfx::drawText(srcText, 20, 36, GFX_DEPTH_DEFAULT, 0.55f, gfx::txtCont);
-
-        // Display 3 slot summaries on top screen
-        for (int i = 0; i < nlpp::NUM_SLOTS; ++i)
-        {
-            int y = 70 + i * 50;
-            char titleLine[64];
-            snprintf(titleLine, sizeof(titleLine), "[%s %d]", getTxt("槽位"), i + 1);
-            gfx::drawText(titleLine, 20, y, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
-
-            if (nlpp::g_saveMgr.isSlotEmpty(i))
-            {
-                gfx::drawText(getTxt("空存档槽位"), 100, y, GFX_DEPTH_DEFAULT, 0.5f, gfx::divClr);
-            }
-            else
-            {
-                const auto &sd = nlpp::g_saveMgr.getSlotData(i);
-                std::string pName = sd.profile.lastName + " " + sd.profile.firstName + " (HN: " + sd.profile.hn + ")";
-                gfx::drawText(pName, 100, y, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
-
-                char subLine[128];
-                const char *hName = (sd.girlfriend.heroine == nlpp::HEROINE_MANAKA) ? "高岭爱花" :
-                                    (sd.girlfriend.heroine == nlpp::HEROINE_RINKO)  ? "小早川凛子" :
-                                    (sd.girlfriend.heroine == nlpp::HEROINE_NENE)   ? "姐崎宁宁" : "无";
-                snprintf(subLine, sizeof(subLine), "%s: %s  |  %s: %d %s", getTxt("女友"), hName, getTxt("天数"), (int)sd.timeline.timelineDays, getTxt("日"));
-                gfx::drawText(subLine, 100, y + 20, GFX_DEPTH_DEFAULT, 0.45f, gfx::divClr);
-            }
-        }
+        s_mediaMenu.draw(0, 22, gfx::txtCont, 400);
     }
 
     void saveSelectDrawBot()
@@ -264,33 +275,24 @@ namespace ui
             snprintf(prompt, sizeof(prompt), "%s %d -> %s", getTxt("复制槽位"), s_copySrcSlot + 1, getTxt("选择目标槽位"));
             gfx::drawText(prompt, 20, 16, GFX_DEPTH_DEFAULT, 0.55f, gfx::txtCont);
             s_copyDstMenu.draw(20, 50, gfx::txtCont, 280, true);
-            ui::drawUIBar(getTxt("\ue000 确定复制 \ue001 取消"), ui::SCREEN_BOT, true);
+            ui::drawUIBar(getTxt("\ue000 确定  \ue001 取消"), ui::SCREEN_BOT, true);
             return;
         }
 
-        // Draw source buttons
-        if (s_btnDigital) s_btnDigital->draw();
-        if (s_btnCartridge) s_btnCartridge->draw();
-
-        // Draw bounding highlight for selected source button
-        if (s_currentSource == nlpp::SOURCE_SD && s_btnDigital)
+        if (!s_slotSelectOpen)
         {
-            gfx::drawBoundingBox(s_btnDigital->getX() - 2, s_btnDigital->getY() - 2, s_btnDigital->getW() + 4, s_btnDigital->getH() + 4, GFX_DEPTH_DEFAULT, 0xFF00C5FF);
+            // Clean bottom screen, no redundant elements
+            ui::drawUIBar(getTxt("\ue000 选择  \ue01A\ue077\ue019 切换页面"), ui::SCREEN_BOT, true);
         }
-        else if (s_currentSource == nlpp::SOURCE_GAMECARD && s_btnCartridge)
+        else
         {
-            gfx::drawBoundingBox(s_btnCartridge->getX() - 2, s_btnCartridge->getY() - 2, s_btnCartridge->getW() + 4, s_btnCartridge->getH() + 4, GFX_DEPTH_DEFAULT, 0xFF00C5FF);
+            s_slotMenu.draw(0, 22, gfx::txtCont, 320, true);
+            ui::drawUIBar(getTxt("\ue000 选择  \ue002 复制  \ue003 备份  \ue001 关闭"), ui::SCREEN_BOT, true);
         }
-
-        // Draw slot selection menu
-        s_slotMenu.draw(10, 50, gfx::txtCont, 300, true);
-
-        // Guide text on bottom bar
-        ui::drawUIBar(getTxt("\ue000 编辑  \ue002 复制槽位  \ue003 备份存档  \ue01A\ue019 切换页面"), ui::SCREEN_BOT, true);
     }
 
     // =========================================================================
-    // Mode 1: Main Menu - 备份管理 (Backup Management)
+    // Mode 1: Main Menu - 备份 (Backup Management)
     // =========================================================================
 
     static ui::menu s_bakMenu;
@@ -304,7 +306,7 @@ namespace ui
         s_bakMenu.reset();
         for (const auto &b : s_backups)
         {
-            s_bakMenu.addOpt(b.dirName, 380, b.fullPath);
+            s_bakMenu.addOpt(b.dirName, 400, b.fullPath);
         }
     }
 
@@ -319,6 +321,7 @@ namespace ui
 
     void backupMgrExit()
     {
+        s_restoreMenuOpen = false;
     }
 
     static void onConfirmRestore_t(void *a)
@@ -326,6 +329,18 @@ namespace ui
         threadInfo *t = (threadInfo *)a;
         int dstChoice = s_restoreMenu.getSelected();
         nlpp::SaveSource targetSource = (dstChoice == 0) ? nlpp::SOURCE_SD : nlpp::SOURCE_GAMECARD;
+
+        if (targetSource == nlpp::SOURCE_GAMECARD)
+        {
+            nlpp::g_saveMgr.detectSources();
+            if (!nlpp::g_saveMgr.hasGameCard())
+            {
+                ui::showMessage(getTxt("未插入游戏卡带或未检测到卡带存档！"));
+                s_restoreMenuOpen = false;
+                t->finished = true;
+                return;
+            }
+        }
 
         int sel = s_bakMenu.getSelected();
         if (sel >= 0 && sel < (int)s_backups.size())
@@ -415,7 +430,7 @@ namespace ui
 
     void backupMgrDrawTop()
     {
-        ui::drawUIBar(TITLE_TEXT + " - " + getTxt("备份管理"), ui::SCREEN_TOP, true);
+        ui::drawUIBar(TITLE_TEXT + " - " + getTxt("备份"), ui::SCREEN_TOP, true);
 
         if (s_backups.empty())
         {
@@ -423,7 +438,7 @@ namespace ui
             return;
         }
 
-        s_bakMenu.draw(10, 26, gfx::txtCont, 380, true);
+        s_bakMenu.draw(0, 22, gfx::txtCont, 400, true);
     }
 
     void backupMgrDrawBot()
@@ -432,7 +447,7 @@ namespace ui
         {
             gfx::drawText(getTxt("请选择恢复目标介质："), 20, 20, GFX_DEPTH_DEFAULT, 0.55f, gfx::txtCont);
             s_restoreMenu.draw(20, 60, gfx::txtCont, 280, true);
-            ui::drawUIBar(getTxt("\ue000 确定恢复 \ue001 取消"), ui::SCREEN_BOT, true);
+            ui::drawUIBar(getTxt("\ue000 确定  \ue001 取消"), ui::SCREEN_BOT, true);
             return;
         }
 
@@ -450,7 +465,7 @@ namespace ui
             gfx::drawTextWrap(infoBuf, 16, 20, GFX_DEPTH_DEFAULT, 0.5f, 288, gfx::txtCont);
         }
 
-        ui::drawUIBar(getTxt("\ue000 恢复备份  \ue002 删除备份  \ue01A\ue019 切换页面"), ui::SCREEN_BOT, true);
+        ui::drawUIBar(getTxt("\ue000 恢复  \ue002 删除  \ue01A\ue077\ue019 切换页面"), ui::SCREEN_BOT, true);
     }
 
     // =========================================================================
@@ -812,7 +827,7 @@ namespace ui
             return;
         }
 
-        // L / R: Page switching
+        // L / R / Circle Pad: Page switching
         if (down & KEY_PAGE_LEFT)
         {
             s_editorPage = (s_editorPage + 3) % 4;
@@ -1046,7 +1061,7 @@ namespace ui
                      "%s: %d %s\n"
                      "%s: %d %s\n\n"
                      "%s: %d\n"
-                     "%s: %d\n"
+                     "%s: %d\n\n"
                      "%s: %d\n"
                      "%s: %d\n\n"
                      "%s: %d G\n"
@@ -1070,11 +1085,11 @@ namespace ui
         if (s_editorSubMenuOpen)
         {
             s_editorSubMenu.draw(20, 16, gfx::txtCont, 280, true);
-            ui::drawUIBar(getTxt("\ue000 确定 \ue001 取消"), ui::SCREEN_BOT, true);
+            ui::drawUIBar(getTxt("\ue000 确定  \ue001 取消"), ui::SCREEN_BOT, true);
             return;
         }
 
         s_editorMenu.draw(10, 16, gfx::txtCont, 300, true);
-        ui::drawUIBar(getTxt("\ue000 修改/执行  \ue001 返回  \ue01A\ue019 切换分页"), ui::SCREEN_BOT, true);
+        ui::drawUIBar(getTxt("\ue000 修改/执行  \ue001 返回  \ue01A\ue077\ue019 切换页面"), ui::SCREEN_BOT, true);
     }
 }

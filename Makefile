@@ -167,9 +167,9 @@ all: mo $(ROMFS_T3XFILES) $(T3XHFILES)
 	@$(MAKE) --no-print-directory -C $(BUILD) -f ../Makefile $(OUTPUT).3dsx
 
 ifeq ($(wildcard /mnt/d/Files/NLPP_CHS/3DS\ Toolkit/tools/makerom.exe),)
-	MAKEROM ?= makerom
+MAKEROM ?= makerom
 else
-	MAKEROM ?= "/mnt/d/Files/NLPP_CHS/3DS Toolkit/tools/makerom.exe"
+MAKEROM ?= "/mnt/d/Files/NLPP_CHS/3DS Toolkit/tools/makerom.exe"
 endif
 STRIP   ?= $(DEVKITARM)/bin/arm-none-eabi-strip
 

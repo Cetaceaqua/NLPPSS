@@ -65,6 +65,7 @@ void fs::init()
     FSUSER_OpenArchive(&sdmcArch, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""));
 
     createDir("/NLPPSS");
+    createDir("/NLPPSS/Saves");
     createDir("/NLPP_BACKUP");
 }
 
@@ -335,6 +336,7 @@ void fs::createDirRec(const FS_Archive& _arch, const std::u16string& path)
         FSUSER_CreateDirectory(_arch, fsMakePath(PATH_UTF16, path.substr(0, pos).c_str()), 0);
         ++pos;
     }
+    FSUSER_CreateDirectory(_arch, fsMakePath(PATH_UTF16, path.c_str()), 0);
 }
 
 fs::fsfile::fsfile(const FS_Archive& _arch, const std::string& _path, const uint32_t& openFlags)

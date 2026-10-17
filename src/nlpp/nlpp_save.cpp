@@ -48,32 +48,76 @@ namespace nlpp
         m_modified = false;
     }
 
+    static std::string sanitizeUtf8(const uint8_t *buf, size_t maxLen)
+    {
+        size_t len = 0;
+        while (len < maxLen && buf[len] != 0) ++len;
+        if (len == 0) return "";
+
+        size_t validLen = 0;
+        size_t i = 0;
+        while (i < len)
+        {
+            uint8_t c = buf[i];
+            size_t charLen = 1;
+            if ((c & 0x80) == 0) charLen = 1;
+            else if ((c & 0xE0) == 0xC0) charLen = 2;
+            else if ((c & 0xF0) == 0xE0) charLen = 3;
+            else if ((c & 0xF8) == 0xF0) charLen = 4;
+            else break;
+
+            if (i + charLen > len) break;
+
+            bool seqOk = true;
+            for (size_t k = 1; k < charLen; ++k)
+            {
+                if ((buf[i + k] & 0xC0) != 0x80) { seqOk = false; break; }
+            }
+            if (!seqOk) break;
+
+            i += charLen;
+            validLen = i;
+        }
+
+        return std::string((const char *)buf, validLen);
+    }
+
     bool SaveManager::detectSources()
     {
         m_hasGameCard = false;
         m_hasSD = false;
 
-        // Check GameCard (ARCHIVE_SAVEDATA)
-        FS_Archive testArch = 0;
-        Result res = FSUSER_OpenArchive(&testArch, ARCHIVE_SAVEDATA, fsMakePath(PATH_EMPTY, ""));
-        if (R_SUCCEEDED(res))
+        // 1. Check GameCard with card slot insertion check
+        bool ins = false;
+        Result res = FSUSER_CardSlotIsInserted(&ins);
+        if (R_SUCCEEDED(res) && ins)
         {
-            // Verify Title ID or prod code if possible
-            char prod[16] = {0};
-            AM_GetTitleProductCode(MEDIATYPE_GAME_CARD, TITLE_ID, prod);
-            if (strncmp(prod, "CTR-P-AKNJ", 10) == 0 || strncmp(prod, "CTR-", 4) == 0)
+            FS_CardType cardType;
+            res = FSUSER_GetCardType(&cardType);
+            if (R_SUCCEEDED(res) && cardType == CARD_CTR)
             {
-                m_hasGameCard = true;
+                u32 count = 0;
+                res = AM_GetTitleCount(MEDIATYPE_GAME_CARD, &count);
+                if (R_SUCCEEDED(res) && count > 0)
+                {
+                    uint64_t cartID = 0;
+                    res = AM_GetTitleList(NULL, MEDIATYPE_GAME_CARD, 1, &cartID);
+                    if (R_SUCCEEDED(res) && cartID == TITLE_ID)
+                    {
+                        FS_Archive testArch = 0;
+                        res = FSUSER_OpenArchive(&testArch, ARCHIVE_SAVEDATA, fsMakePath(PATH_EMPTY, ""));
+                        if (R_SUCCEEDED(res))
+                        {
+                            m_hasGameCard = true;
+                            FSUSER_CloseArchive(testArch);
+                        }
+                    }
+                }
             }
-            else
-            {
-                // Accept as gamecard if archive opens successfully
-                m_hasGameCard = true;
-            }
-            FSUSER_CloseArchive(testArch);
         }
 
-        // Check SD Digital installed title (ARCHIVE_USER_SAVEDATA)
+        // 2. Check SD Digital installed title (ARCHIVE_USER_SAVEDATA)
+        FS_Archive testArch = 0;
         uint32_t path[3] = {MEDIATYPE_SD, (uint32_t)TITLE_ID, (uint32_t)(TITLE_ID >> 32)};
         FS_Path binData = {PATH_BINARY, 12, path};
         res = FSUSER_OpenArchive(&testArch, ARCHIVE_USER_SAVEDATA, binData);
@@ -85,8 +129,8 @@ namespace nlpp
 
         if (m_source == SOURCE_NONE)
         {
-            if (m_hasGameCard) m_source = SOURCE_GAMECARD;
-            else if (m_hasSD) m_source = SOURCE_SD;
+            if (m_hasSD) m_source = SOURCE_SD;
+            else if (m_hasGameCard) m_source = SOURCE_GAMECARD;
         }
 
         return (m_hasGameCard || m_hasSD);
@@ -233,21 +277,10 @@ namespace nlpp
         const uint8_t *pbuf = m_files[profFile].data();
         sd.profile.prefecture = *(const uint16_t *)&pbuf[0x90];
 
-        // Names (12B max, null-terminated UTF-8)
-        char tmp[16] = {0};
-        memcpy(tmp, &pbuf[0x04], 12);
-        tmp[12] = '\0';
-        sd.profile.firstName = tmp;
-
-        memset(tmp, 0, sizeof(tmp));
-        memcpy(tmp, &pbuf[0x14], 12);
-        tmp[12] = '\0';
-        sd.profile.lastName = tmp;
-
-        memset(tmp, 0, sizeof(tmp));
-        memcpy(tmp, &pbuf[0x64], 12);
-        tmp[12] = '\0';
-        sd.profile.hn = tmp;
+        // Names (12B max, null-terminated UTF-8, sanitize against incomplete multi-byte sequences)
+        sd.profile.firstName = sanitizeUtf8(&pbuf[0x04], 12);
+        sd.profile.lastName  = sanitizeUtf8(&pbuf[0x14], 12);
+        sd.profile.hn        = sanitizeUtf8(&pbuf[0x64], 12);
 
         sd.profile.birthMonth = pbuf[0x84];
         sd.profile.birthDay = pbuf[0x85];
@@ -741,7 +774,7 @@ namespace nlpp
 
         char prefix = (m_source == SOURCE_GAMECARD) ? 'C' : 'D';
         char dirName[128];
-        snprintf(dirName, sizeof(dirName), "sdmc:/NLPPSS/Saves/%c_%04d_%02d_%02d_%02d_%02d_%02d",
+        snprintf(dirName, sizeof(dirName), "/NLPPSS/Saves/%c_%04d_%02d_%02d_%02d_%02d_%02d",
                  prefix,
                  ti->tm_year + 1900, ti->tm_mon + 1, ti->tm_mday,
                  ti->tm_hour, ti->tm_min, ti->tm_sec);
@@ -776,7 +809,7 @@ namespace nlpp
     std::vector<BackupInfo> SaveManager::listBackups()
     {
         std::vector<BackupInfo> list;
-        std::string root = "sdmc:/NLPPSS/Saves";
+        std::string root = "/NLPPSS/Saves";
 
         Handle dirHandle;
         Result res = FSUSER_OpenDirectory(&dirHandle, fs::getSDMCArch(), fsMakePath(PATH_ASCII, root.c_str()));

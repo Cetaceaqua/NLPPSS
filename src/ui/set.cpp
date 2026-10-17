@@ -84,6 +84,15 @@ static std::string getUILangMessage(const int& g)
     }
 }
 
+static std::string getDeflateLevelText(const int& g)
+{
+    std::string s = std::string(getTxt("ZIP 压缩等级")) + ": " + std::to_string(g);
+    if (g == 1) s += getTxt(" (最快速度)");
+    else if (g == 6) s += getTxt(" (标准压缩)");
+    else if (g == 9) s += getTxt(" (极限压缩)");
+    return s;
+}
+
 static void setMenuSaveCommon(void *a)
 {
     threadInfo *t = (threadInfo *)a;
@@ -138,6 +147,18 @@ static void setMenuDecreaseUILang(void *a)
     ui::newThread(setMenuDecreaseUILang_t, a, NULL);
 }
 
+static void setMenuIncreaseDeflateLevel(void *a)
+{
+    u8 *lvl = (u8 *)a;
+    *lvl = (*lvl >= 9) ? 1 : (*lvl + 1);
+}
+
+static void setMenuDecreaseDeflateLevel(void *a)
+{
+    u8 *lvl = (u8 *)a;
+    *lvl = (*lvl <= 1) ? 9 : (*lvl - 1);
+}
+
 static void setMenuToggleBOOL(void *a)
 {
     toggleBool(a);
@@ -158,24 +179,35 @@ void ui::setInit(void *a)
     sconfig = cfg::config;
 
     setMenu.reset();
+
     setMenu.addOpt(getTxt("自动备份存档"), 320);
     setMenu.addOptEvent(0, KEY_A, setMenuToggleBOOL, &cfg::config["autobackup"]);
 
+    setMenu.addOpt(getTxt("导出到 ZIP"), 320);
+    setMenu.addOptEvent(1, KEY_A, setMenuToggleBOOL, &cfg::config["zip"]);
+
+    setMenu.addOpt(getTxt("ZIP 压缩等级"), 320);
+    setMenu.addOptEvent(2, KEY_B, setMenuDecreaseDeflateLevel, &cfg::config["deflateLevel"]);
+    setMenu.addOptEvent(2, KEY_A, setMenuIncreaseDeflateLevel, &cfg::config["deflateLevel"]);
+
     setMenu.addOpt(getTxt("界面主题色"), 320);
-    setMenu.addOptEvent(1, KEY_A, setMenuToggleColor, &cfg::config["lightback"]);
+    setMenu.addOptEvent(3, KEY_A, setMenuToggleColor, &cfg::config["lightback"]);
 
     setMenu.addOpt(getTxt("界面语言"), 320);
-    setMenu.addOptEvent(2, KEY_B, setMenuDecreaseUILang, &cfg::config["uilang"]);
-    setMenu.addOptEvent(2, KEY_A, setMenuIncreaseUILang, &cfg::config["uilang"]);
+    setMenu.addOptEvent(4, KEY_B, setMenuDecreaseUILang, &cfg::config["uilang"]);
+    setMenu.addOptEvent(4, KEY_A, setMenuIncreaseUILang, &cfg::config["uilang"]);
+
+    setMenu.addOpt(getTxt("启动时加载存档"), 320);
+    setMenu.addOptEvent(5, KEY_A, setMenuToggleBOOL, &cfg::config["autoload"]);
 
     setMenu.addOpt(getTxt("默认存档类型"), 320);
-    setMenu.addOptEvent(3, KEY_A, setMenuToggleType, &cfg::config["default_type"]);
+    setMenu.addOptEvent(6, KEY_A, setMenuToggleType, &cfg::config["default_type"]);
 
     setMenu.addOpt(getTxt("默认存档槽位"), 320);
-    setMenu.addOptEvent(4, KEY_A, setMenuToggleSlot, &cfg::config["default_slot"]);
+    setMenu.addOptEvent(7, KEY_A, setMenuToggleSlot, &cfg::config["default_slot"]);
 
     setMenu.addOpt(getTxt("切换LR按键功能"), 320);
-    setMenu.addOptEvent(5, KEY_A, setMenuToggleBOOL, &cfg::config["swaplrfunc"]);
+    setMenu.addOptEvent(8, KEY_A, setMenuToggleBOOL, &cfg::config["swaplrfunc"]);
 
     if (a)
     {
@@ -206,17 +238,20 @@ void ui::setUpdate()
     }
 
     setMenu.editOpt(0, getTxt("自动备份存档") + std::string(": ") + getBoolText(cfg::config["autobackup"]));
-    setMenu.editOpt(1, getTxt("界面主题色") + std::string(": ") + getLightDarkText(cfg::config["lightback"]));
-    setMenu.editOpt(2, getUILangText(cfg::config["uilang"]));
+    setMenu.editOpt(1, getTxt("导出到 ZIP") + std::string(": ") + getBoolText(cfg::config["zip"]));
+    setMenu.editOpt(2, getDeflateLevelText(cfg::config["deflateLevel"]));
+    setMenu.editOpt(3, getTxt("界面主题色") + std::string(": ") + getLightDarkText(cfg::config["lightback"]));
+    setMenu.editOpt(4, getUILangText(cfg::config["uilang"]));
+    setMenu.editOpt(5, getTxt("启动时加载存档") + std::string(": ") + getBoolText(cfg::config["autoload"]));
 
     std::string typeTxt = (cfg::config["default_type"] == 1) ? getTxt("实体版") : getTxt("数字版");
-    setMenu.editOpt(3, getTxt("默认存档类型") + std::string(": ") + typeTxt);
+    setMenu.editOpt(6, getTxt("默认存档类型") + std::string(": ") + typeTxt);
 
     char slotBuf[32];
     snprintf(slotBuf, sizeof(slotBuf), "%s %d", getTxt("槽位"), (int)cfg::config["default_slot"] + 1);
-    setMenu.editOpt(4, getTxt("默认存档槽位") + std::string(": ") + slotBuf);
+    setMenu.editOpt(7, getTxt("默认存档槽位") + std::string(": ") + slotBuf);
 
-    setMenu.editOpt(5, getTxt("切换LR按键功能") + std::string(": ") + getBoolText(cfg::config["swaplrfunc"]));
+    setMenu.editOpt(8, getTxt("切换LR按键功能") + std::string(": ") + getBoolText(cfg::config["swaplrfunc"]));
 
     setMenu.update();
 }
@@ -224,7 +259,7 @@ void ui::setUpdate()
 void ui::setDrawTop()
 {
     ui::drawUIBar(std::string(TITLE_TEXT) + " - " + getTxt("设置"), ui::SCREEN_TOP, true);
-    setMenu.draw(0, 26, gfx::txtCont, 400);
+    setMenu.draw(0, 22, gfx::txtCont, 400);
 }
 
 void ui::setDrawBottom()
@@ -236,18 +271,27 @@ void ui::setDrawBottom()
             setOptsDesc = getTxt("修改并保存存档数据时，是否自动在 sdmc:/NLPPSS/Saves 生成安全备份。");
             break;
         case 1:
-            setOptsDesc = getTxt("选择 UI 界面主题色。\n(浅色系 / 深色系)");
+            setOptsDesc = getTxt("备份存档时是否使用 ZIP 压缩存储。");
             break;
         case 2:
-            setOptsDesc = getTxt("选择 UI 界面显示语言。\n(简体中文 / English / 繁體中文)");
+            setOptsDesc = getTxt("选择 ZIP 压缩等级 (1~9)。\n(按 A 键增加，按 B 键减少)");
             break;
         case 3:
-            setOptsDesc = getTxt("启动软件时默认选中的存档介质类型。\n(数字版 / 实体版)");
+            setOptsDesc = getTxt("选择 UI 界面主题色。\n(浅色系 / 深色系)");
             break;
         case 4:
-            setOptsDesc = getTxt("启动软件时默认选中的存档槽位编号。\n(槽位 1 / 槽位 2 / 槽位 3)");
+            setOptsDesc = getTxt("选择 UI 界面显示语言。\n(简体中文 / English / 繁體中文)");
             break;
         case 5:
+            setOptsDesc = getTxt("启动时跳过菜单直接载入默认存档。");
+            break;
+        case 6:
+            setOptsDesc = getTxt("启动软件时默认选中的存档介质类型。\n(数字版 / 实体版)");
+            break;
+        case 7:
+            setOptsDesc = getTxt("启动软件时默认选中的存档槽位编号。\n(槽位 1 / 槽位 2 / 槽位 3)");
+            break;
+        case 8:
             setOptsDesc = getTxt("切换 L/R 按键和 Left/Right 按键在界面切换中的功能映射。");
             break;
         default:
@@ -257,5 +301,5 @@ void ui::setDrawBottom()
     if(!setOptsDesc.empty())
         gfx::drawTextWrap(setOptsDesc, 20, 20, GFX_DEPTH_DEFAULT, 0.5f, 280, gfx::txtCont);
 
-    ui::drawUIBar(getTxt("\ue000 切换/选择  \ue01A\ue019 切换页面"), ui::SCREEN_BOT, true);
+    ui::drawUIBar(getTxt("\ue000 切换/选择  \ue01A\ue077\ue019 切换页面"), ui::SCREEN_BOT, true);
 }
