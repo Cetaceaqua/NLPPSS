@@ -23,7 +23,6 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include <zlib.h>
 #include <future>
 
 #include "util.h"
@@ -32,14 +31,13 @@
 #include "ui.h"
 #include "gfx.h"
 #include "type.h"
-#include "cheatmanager.h"
 #include "makercode.h"
 
 #define ICON_BUFF_SIZE 0x2000
 
-const char *blPath    = "/TYSS/blacklist.txt";
-const char *favPath   = "/TYSS/favorites.txt";
-const char *titlePath = "/TYSS/cache.bin";
+const char *blPath    = "/NLPPSS/blacklist.txt";
+const char *favPath   = "/NLPPSS/favorites.txt";
+const char *titlePath = "/NLPPSS/cache.bin";
 static bool cartValid = false;
 static bool titleLoaded = false;
 
@@ -183,7 +181,6 @@ static C3D_Tex *loadIcon(smdh_s *smdh)
 
 void data::init()
 {
-    CheatManager::getInstance();
 }
 
 void data::exit()
@@ -310,11 +307,7 @@ bool data::titleData::initTWL(const uint64_t& _id, const FS_MediaType& mt)
 
     if (m == MEDIATYPE_GAME_CARD)
     {
-        res = SPIGetCardType(&extInfo.spiCardType, (_gameCode[0] == 'I') ? 1 : 0);
-        if (R_FAILED(res)) {
-            return false;
-        }
-        extInfo.isDSCard = true;
+        extInfo.isDSCard = false;
         types.hasUser = true;
     } else if(fs::openArchive(*this, ARCHIVE_NAND_TWL_FS, false))
     {
@@ -502,7 +495,6 @@ static void loadcart()
                         if(tmp.hasExt)
                         {
                             data::extDataTitles.insert(data::extDataTitles.begin(), cartData);
-                            ui::extRefresh(SEL_BACK_TO_TOP);
                         }
 
                         cartValid = true;
@@ -566,7 +558,6 @@ void data::cartCheck()
         {
             data::extDataTitles[0].freeIcon();
             data::extDataTitles.erase(data::extDataTitles.begin());
-            ui::extRefresh(SEL_AUTO);
         }
 
         cartValid = false;
@@ -599,19 +590,6 @@ static inline bool checkHigh(const uint64_t& id)
 {
     uint32_t high = (uint32_t)(id >> 32);
     return (high == 0x00040000 || high == 0x00040002);
-}
-
-void data::loadCheatsDB(void *a)
-{
-    threadInfo *t = (threadInfo *)a;
-    t->status->setStatus(getTxt("正在加载金手指数据库..."));
-
-    auto future = std::async(std::launch::async, []() {
-        CheatManager::getInstance().init(); // Initialize the cheats db
-    });
-    future.get();
-
-    t->finished = true;
 }
 
 void data::loadTitles(void *a)
@@ -672,9 +650,6 @@ void data::loadTitles(void *a)
         titleLoaded = true;
     else {
         ui::ttlRefresh(SEL_BACK_TO_TOP);
-        ui::extRefresh(SEL_BACK_TO_TOP);
-        ui::sysRefresh(SEL_BACK_TO_TOP);
-        ui::bossViewRefresh(SEL_BACK_TO_TOP);
         if (cartValid) cartValid = false;
     }
     t->finished = true;
@@ -761,8 +736,6 @@ void data::deleteExtData(void *a)
         }
         std::sort(extDataTitles.begin(), extDataTitles.end(), sortTitles);
 
-        ui::extRefresh();
-        ui::extOptBack();
         ui::showMessage(getTxt("追加数据删除成功!"));
     } else
         ui::showMessage(getTxt("追加数据删除失败!\n错误: 0x%08X"), (unsigned) res);
@@ -847,13 +820,7 @@ void data::blacklistAdd(void *a)
     std::sort(bossDataTitles.begin(), bossDataTitles.end(), sortTitles);
 
     ui::ttlRefresh();
-    if (ui::state == USR) ui::ttlOptBack();
-    ui::extRefresh();
-    if (ui::state == EXT) ui::extOptBack();
-    ui::sysRefresh();
-    if (ui::state == SYS) ui::sysOptBack();
-    ui::bossViewRefresh();
-    if (ui::state == BOS) ui::bossViewOptBack();
+    // if (ui::state == USR) ui::ttlOptBack();
 
     t->lock();
     t->argPtr = NULL;
@@ -911,15 +878,9 @@ void data::clearFav(void *a)
 
     // resort with new fav
     std::sort(data::usrSaveTitles.begin(), data::usrSaveTitles.end(), sortTitles);
-    std::sort(data::extDataTitles.begin(), data::extDataTitles.end(), sortTitles);
-    std::sort(data::bossDataTitles.begin(), data::bossDataTitles.end(), sortTitles);
-    std::sort(data::sysDataTitles.begin(), data::sysDataTitles.end(), sortTitles);
 
     // refresh
-    ui::extRefresh();
-    ui::sysRefresh();
     ui::ttlRefresh();
-    ui::bossViewRefresh();
 
     t->finished = true;
 }
@@ -1011,7 +972,6 @@ void data::createCache(std::vector<titleData>& vect, const std::string& path)
 
     // Buffer to compress icons
     size_t iconCmpSize = 0;
-    uint8_t *iconOut = new uint8_t[ICON_BUFF_SIZE];
 
     uint16_t countOut = vect.size();
     cache.write(&countOut, sizeof(uint16_t));
@@ -1042,11 +1002,9 @@ void data::createCache(std::vector<titleData>& vect, const std::string& path)
 
         if (t.getIconFlag())
         {
-            memset(iconOut, 0, ICON_BUFF_SIZE);
-            iconCmpSize = ICON_BUFF_SIZE;
-            compress2(iconOut, (uLongf *)&iconCmpSize, t.getIconData(), t.getIconSize(), Z_BEST_COMPRESSION);
+            iconCmpSize = t.getIconSize();
             cache.write(&iconCmpSize, sizeof(size_t));
-            cache.write(iconOut, iconCmpSize);
+            cache.write(t.getIconData(), iconCmpSize);
         } else {
             iconCmpSize = 0xFFFFFFFF;
             cache.write(&iconCmpSize, sizeof(size_t));
@@ -1059,7 +1017,6 @@ void data::createCache(std::vector<titleData>& vect, const std::string& path)
     cache.putByte(0x4F);
     cache.putByte(0x46);
     cache.close();
-    delete[] iconOut;
 }
 
 bool data::readCache(std::vector<titleData>& vect, const std::string& path)
@@ -1081,7 +1038,6 @@ bool data::readCache(std::vector<titleData>& vect, const std::string& path)
     cache.read(&count, sizeof(uint16_t));
     cache.getByte();
 
-    uint8_t *readBuff = new uint8_t[ICON_BUFF_SIZE];
 
     titles.reserve(count);
 
@@ -1117,7 +1073,6 @@ bool data::readCache(std::vector<titleData>& vect, const std::string& path)
         cache.read(&mediaType, sizeof(uint8_t));
 
         size_t iconSize = 0;
-        memset(readBuff, 0x00, ICON_BUFF_SIZE);
         cache.read(&iconSize, sizeof(size_t));
 
         if (isBlacklisted(newID))
@@ -1129,8 +1084,6 @@ bool data::readCache(std::vector<titleData>& vect, const std::string& path)
         if (iconSize == 0xFFFFFFFF)
             newData.setIcon(gfx::noIcon());
         else {
-            cache.read(readBuff, iconSize);
-
             bool res = false;
             C3D_Tex *icon = new C3D_Tex;
             res = (((newID >> 44) & 0x08) == 0x08)
@@ -1138,12 +1091,13 @@ bool data::readCache(std::vector<titleData>& vect, const std::string& path)
                     : C3D_TexInit(icon, 64, 64, GPU_RGB565);
             if (res)
             {
-                uLongf sz = ICON_BUFF_SIZE;
-                uncompress((uint8_t *)icon->data, &sz, readBuff, iconSize);
+                cache.read((uint8_t *)icon->data, iconSize);
                 newData.assignIcon(icon, ((newID >> 44) & 0x08) == 0x08);
                 newData.setIconFlag(true);
-            } else
+            } else {
+                cache.seek(iconSize, fs::seek_cur);
                 newData.setIcon(gfx::noIcon());
+            }
         }
 
         newData.initFromCache(newID, title, pub, prodCode, tmp, mediaType);
@@ -1153,7 +1107,6 @@ bool data::readCache(std::vector<titleData>& vect, const std::string& path)
     uint32_t eof = 0;
     cache.read(&eof, sizeof(uint32_t));
     cache.close();
-    delete[] readBuff;
 
     if(eof != 0x464F4500)
         return false;

@@ -939,3 +939,339 @@ msgstr " Select  Delete  Restore  Upload  Back"
 #: inc/ui.h:72
 msgid " 选择  删除  恢复  关闭"
 msgstr " Select  Delete  Restore  Back"
+
+msgid "(空)"
+msgstr "(Empty)"
+
+msgid "0 姓氏称呼"
+msgstr "0 Surname Appellation"
+
+msgid "1 名字称呼"
+msgstr "1 Given Name Appellation"
+
+msgid "2 后缀称呼"
+msgstr "2 Suffix Appellation"
+
+msgid "3 预设称呼"
+msgstr "3 Preset Appellation"
+
+msgid "4 特殊称呼"
+msgstr "4 Special Appellation"
+
+msgid "TODO"
+msgstr "TODO"
+
+msgid "\ue000 修改/执行  \ue001 返回  \ue01A\ue019 切换分页"
+msgstr "\ue000 Edit/Exec  \ue001 Back  \ue01A\ue019 Switch Page"
+
+msgid "\ue000 切换/选择  \ue01A\ue019 切换页面"
+msgstr "\ue000 Toggle/Select  \ue01A\ue019 Switch Screen"
+
+msgid "\ue000 恢复备份  \ue002 删除备份  \ue01A\ue019 切换页面"
+msgstr "\ue000 Restore  \ue002 Delete  \ue01A\ue019 Switch Screen"
+
+msgid "\ue000 确定 \ue001 取消"
+msgstr "\ue000 OK  \ue001 Cancel"
+
+msgid "\ue000 确定复制 \ue001 取消"
+msgstr "\ue000 Confirm Copy  \ue001 Cancel"
+
+msgid "\ue000 确定恢复 \ue001 取消"
+msgstr "\ue000 Confirm Restore  \ue001 Cancel"
+
+msgid "\ue000 编辑  \ue002 复制槽位  \ue003 备份存档  \ue01A\ue019 切换页面"
+msgstr "\ue000 Edit  \ue002 Clone Slot  \ue003 Backup  \ue01A\ue019 Switch Screen"
+
+msgid "\ue000 选择 \ue002 删除 \ue003 恢复 \ue001 关闭"
+msgstr "\ue000 Select \ue002 Delete \ue003 Restore \ue001 Close"
+
+msgid "\ue000 选择 \ue002 删除 \ue003 恢复 \ue005 上传 \ue001 关闭"
+msgstr "\ue000 Select \ue002 Delete \ue003 Restore \ue005 Upload \ue001 Close"
+
+msgid "★ 重新读取"
+msgstr "★ Reload from Save"
+
+msgid "♥ 保存修改"
+msgstr "♥ Save Changes"
+
+msgid "上线天数"
+msgstr "Companion Days"
+
+msgid "佩戴中"
+msgstr "Equipped"
+
+msgid "修改保存失败！"
+msgstr "Failed to save changes!"
+
+msgid "修改保存成功！"
+msgstr "Changes saved successfully!"
+
+msgid "修改并保存存档数据时，是否自动在 sdmc:/NLPPSS/Saves 生成安全备份。"
+msgstr "Automatically create backup in sdmc:/NLPPSS/Saves when saving."
+
+msgid "出身地"
+msgstr "Hometown"
+
+msgid "切换 L/R 按键和 Left/Right 按键在界面切换中的功能映射。"
+msgstr "Swap L/R and Left/Right button mappings."
+
+msgid "卸下滤镜 (佩戴中)"
+msgstr "Remove Filter (Equipped)"
+
+msgid "卸下滤镜 (无滤镜)"
+msgstr "Remove Filter (None)"
+
+msgid "发型"
+msgstr "Hairstyle"
+
+msgid "发色"
+msgstr "Hair Color"
+
+msgid "发长"
+msgstr "Hair Length"
+
+msgid "名字"
+msgstr "First Name"
+
+msgid "否 \ue001"
+msgstr "No \ue001"
+
+msgid "启动软件时默认选中的存档介质类型。\n(数字版 / 实体版)"
+msgstr "Default save source at startup.\n(Digital / Cartridge)"
+
+msgid "启动软件时默认选中的存档槽位编号。\n(槽位 1 / 槽位 2 / 槽位 3)"
+msgstr "Default save slot at startup.\n(Slot 1 / Slot 2 / Slot 3)"
+
+msgid "型"
+msgstr " Type"
+
+msgid "备份名称"
+msgstr "Backup Name"
+
+msgid "备份已删除！"
+msgstr "Backup deleted!"
+
+msgid "备份来源"
+msgstr "Source"
+
+msgid "备份管理"
+msgstr "Backup Manager"
+
+msgid "复制槽位"
+msgstr "Clone Slot"
+
+msgid "天"
+msgstr " Days"
+
+msgid "天数"
+msgstr "Days"
+
+msgid "女友"
+msgstr "Girlfriend"
+
+msgid "姓名"
+msgstr "Player Name"
+
+msgid "姓氏"
+msgstr "Last Name"
+
+msgid "存储路径"
+msgstr "Path"
+
+msgid "存档"
+msgstr "Saves"
+
+msgid "存档备份失败！"
+msgstr "Backup failed!"
+
+msgid "存档备份成功！\n%s"
+msgstr "Backup created successfully!\n%s"
+
+msgid "存档恢复失败！"
+msgstr "Restore failed!"
+
+msgid "存档恢复成功！"
+msgstr "Restore completed successfully!"
+
+msgid "实体版"
+msgstr "Cartridge"
+
+msgid "已成功卸下相机滤镜！"
+msgstr "Camera filter removed!"
+
+msgid "已重新读取当前存档数据！"
+msgstr "Reloaded slot data from save!"
+
+msgid "已重置女友发型和发色！"
+msgstr "Girlfriend hairstyle & color reset!"
+
+msgid "当前介质: 实体版"
+msgstr "Current Media: Cartridge"
+
+msgid "当前介质: 数字版"
+msgstr "Current Media: Digital"
+
+msgid "当前使用"
+msgstr "Currently Used"
+
+msgid "总天数"
+msgstr "Total Days"
+
+msgid "恢复到实体版"
+msgstr "Restore to Cartridge"
+
+msgid "恢复到数字版"
+msgstr "Restore to Digital"
+
+msgid "感性属性值"
+msgstr "Sensibility"
+
+msgid "数字版"
+msgstr "Digital"
+
+msgid "无滤镜"
+msgstr "No Filter"
+
+msgid "日"
+msgstr " Day"
+
+msgid "是 \ue000"
+msgstr "Yes \ue000"
+
+msgid "暂无存档备份数据"
+msgstr "No backup archives found"
+
+msgid "月"
+msgstr " Month"
+
+msgid "有未保存的修改，确定要返回吗？"
+msgstr "You have unsaved changes. Return anyway?"
+
+msgid "未找到匹配的称呼读音！"
+msgstr "No matching appellation pronunciation found!"
+
+msgid "槽位"
+msgstr "Slot"
+
+msgid "槽位复制成功！"
+msgstr "Slot cloned successfully!"
+
+msgid "滤镜"
+msgstr "Filter"
+
+msgid "点"
+msgstr " Pts"
+
+msgid "生日"
+msgstr "Birthday"
+
+msgid "目标槽位"
+msgstr "Target Slot"
+
+msgid "知识属性值"
+msgstr "Knowledge"
+
+msgid "确定 \ue000"
+msgstr "OK \ue000"
+
+msgid "确定要保存对当前槽位的修改吗？\n将写回存档介质并自动生成安全备份。"
+msgstr "Save changes to this slot?\nWill write to save media and create a backup."
+
+msgid "确定要删除备份 %s 吗？\n此操作无法撤销！"
+msgstr "Delete backup %s?\nThis cannot be undone!"
+
+msgid "确定要将槽位 %d 复制到槽位 %d 吗？\n目标槽位的数据将被覆盖！"
+msgstr "Clone slot %d to slot %d?\nTarget slot will be overwritten!"
+
+msgid "确定要恢复此备份到%s吗？\n现有存档将被覆盖！"
+msgstr "Restore this backup to %s?\nExisting save will be overwritten!"
+
+msgid "确定要重置女友的发型和发色为初始状态吗？"
+msgstr "Reset girlfriend hairstyle and color to defaults?"
+
+msgid "空存档槽位"
+msgstr "Empty Slot"
+
+msgid "自动备份存档"
+msgstr "Auto Backup"
+
+msgid "血型"
+msgstr "Blood Type"
+
+msgid "设置"
+msgstr "Settings"
+
+msgid "该槽位为空，无法复制！"
+msgstr "Slot is empty, cannot clone!"
+
+msgid "该槽位为空，无法编辑！"
+msgstr "Slot is empty, cannot edit!"
+
+msgid "请选择恢复目标介质："
+msgstr "Select destination media:"
+
+msgid "输入TODO点数 (0-9999)"
+msgstr "Enter TODO points (0-9999)"
+
+msgid "输入上线天数 (1-9999)"
+msgstr "Enter companion days (1-9999)"
+
+msgid "输入假名或罗马字搜索 (留空显示推荐)"
+msgstr "Search by kana or romaji (leave blank for all)"
+
+msgid "输入名字 (最多4汉字/12字节)"
+msgstr "Enter first name (max 4 kanji / 12 bytes)"
+
+msgid "输入姓氏 (最多4汉字/12字节)"
+msgstr "Enter last name (max 4 kanji / 12 bytes)"
+
+msgid "输入总天数 (1-9999)"
+msgstr "Enter total days (1-9999)"
+
+msgid "输入感性属性值 (0-255)"
+msgstr "Enter sensibility (0-255)"
+
+msgid "输入知识属性值 (0-255)"
+msgstr "Enter knowledge (0-255)"
+
+msgid "输入运动属性值 (0-255)"
+msgstr "Enter fitness (0-255)"
+
+msgid "输入通讯昵称 (最多4汉字/12字节)"
+msgstr "Enter communication nickname (HN, max 12 bytes)"
+
+msgid "输入金钱 (0-999999)"
+msgstr "Enter money (0-999999)"
+
+msgid "输入魅力属性值 (0-255)"
+msgstr "Enter charm (0-255)"
+
+msgid "运动属性值"
+msgstr "Fitness"
+
+msgid "选择 UI 界面主题色。\n(浅色系 / 深色系)"
+msgstr "Select UI theme.\n(Light / Dark)"
+
+msgid "选择 UI 界面显示语言。\n(简体中文 / English / 繁體中文)"
+msgstr "Select UI language.\n(简体中文 / English / 繁體中文)"
+
+msgid "选择目标槽位"
+msgstr "Select Target Slot"
+
+msgid "通讯昵称(HN)"
+msgstr "Nickname (HN)"
+
+msgid "重置为初始发型"
+msgstr "Reset to Initial Hairstyle"
+
+msgid "金钱"
+msgstr "Money"
+
+msgid "魅力属性值"
+msgstr "Charm"
+
+msgid "默认存档槽位"
+msgstr "Default Slot"
+
+msgid "默认存档类型"
+msgstr "Default Type"

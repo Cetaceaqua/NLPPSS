@@ -31,30 +31,23 @@ include $(DEVKITARM)/3ds_rules
 #     - icon.png
 #     - <libctru folder>/default_icon.png
 #---------------------------------------------------------------------------------
-TARGET		:=	TYSS
+TARGET		:=	NLPPSS
 BUILD		:=	build
-SOURCES		:=	src src/ui src/drive src/ctr
-INCLUDES	:=	inc inc/ui inc/drive inc/ctr
+SOURCES		:=	src src/ui src/ctr src/nlpp
+INCLUDES	:=	inc inc/ui inc/ctr inc/nlpp
 GRAPHICS	:=	gfx
 ROMFS		:=	romfs
 GFXBUILD	:=	$(ROMFS)/gfx
 ICON		:=	res/icon.png
-APP_TITLE   :=	TYSS
-APP_AUTHOR  :=	R-YaTian
-APP_DESCRIPTION :=	3DS Save Studio
+APP_TITLE   :=	NLPP Save Studio
+APP_AUTHOR  :=	Cetaceaqua
+APP_DESCRIPTION :=	NEW LovePlus+ Save Studio for 3DS
 
 VERSION_MAJOR	:=	1
-VERSION_MINOR	:=	1
-VERSION_MICRO	:=	5
+VERSION_MINOR	:=	0
+VERSION_MICRO	:=	0
 MAKEROM_VERARGS := -major $(VERSION_MAJOR) -minor $(VERSION_MINOR) -micro $(VERSION_MICRO)
 APP_VERSION		:= v$(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_MICRO)
-
-ifeq ($(NO_DRIVE),)
-	WITH_DRIVE := -DENABLE_DRIVE -DCURL_NO_OLDIES=1
-else
-	SOURCES := $(filter-out src/drive, $(SOURCES))
-	INCLUDES := $(filter-out inc/drive, $(INCLUDES))
-endif
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -63,17 +56,16 @@ ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
 CFLAGS	:=	-g -Wall -O2 -mword-relocations -flto=auto \
 			-fomit-frame-pointer -ffunction-sections \
-			-DADRIVE_SECRET_ID=\"$(ADRIVE_SECRET_ID)\" \
 			$(ARCH)
 
-CFLAGS	+=	$(INCLUDE) -D__3DS__ $(WITH_DRIVE)
+CFLAGS	+=	$(INCLUDE) -D__3DS__
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -Wno-psabi -std=gnu++26
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
-LIBS	:= -lcitro2d -lcitro3d -lcurl -lmbedtls -lmbedcrypto -lmbedx509 -lminizip -lctru -lz -lm -ljtjson
+LIBS	:= -lcitro2d -lcitro3d -lctru -lm
 
 MO_FILES	:=  $(foreach lang,en_US zh_Hant,$(ROMFS)/locale/$(lang).mo)
 
@@ -88,17 +80,17 @@ LIBDIRS	:= $(CTRULIB) $(PORTLIBS)
 # no real need to edit anything past this point unless you need to add additional
 # rules for different file extensions
 #---------------------------------------------------------------------------------
-ifneq ($(BUILD),$(notdir $(CURDIR)))
+ifneq ($(BUILD),$(lastword $(subst /, ,$(CURDIR))))
 #---------------------------------------------------------------------------------
 
-export OUTPUT	:=	$(CURDIR)/$(TARGET)
-export TOPDIR	:=	$(CURDIR)
+export OUTPUT	:=	../$(TARGET)
+export TOPDIR	:=	..
 
-export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
-			$(foreach dir,$(GRAPHICS),$(CURDIR)/$(dir)) \
-			$(foreach dir,$(DATA),$(CURDIR)/$(dir))
+export VPATH	:=	$(foreach dir,$(SOURCES),../$(dir)) \
+			$(foreach dir,$(GRAPHICS),../$(dir)) \
+			$(foreach dir,$(DATA),../$(dir))
 
-export DEPSDIR	:=	$(CURDIR)/$(BUILD)
+export DEPSDIR	:=	.
 
 CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
@@ -107,10 +99,6 @@ PICAFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.v.pica)))
 SHLISTFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.shlist)))
 GFXFILES	:=	$(foreach dir,$(GRAPHICS),$(notdir $(wildcard $(dir)/*.t3s)))
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
-
-ifneq ($(NO_DRIVE),)
-	CPPFILES := $(filter-out gd.cpp adrive.cpp curlhelper.cpp, $(CPPFILES))
-endif
 
 #---------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C
@@ -143,9 +131,9 @@ export HFILES	:=	$(PICAFILES:.v.pica=_shbin.h) $(SHLISTFILES:.shlist=_shbin.h) \
 			$(addsuffix .h,$(subst .,_,$(BINFILES))) \
 			$(GFXFILES:.t3s=.h)
 
-export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
+export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I../$(dir)) \
 			$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
-			-I$(CURDIR)/$(BUILD)
+			-I.
 
 export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
@@ -154,64 +142,64 @@ export _3DSXDEPS	:=	$(if $(NO_SMDH),,$(OUTPUT).smdh)
 ifeq ($(strip $(ICON)),)
 	icons := $(wildcard *.png)
 	ifneq (,$(findstring $(TARGET).png,$(icons)))
-		export APP_ICON := $(TOPDIR)/$(TARGET).png
+		export APP_ICON := ../$(TARGET).png
 	else
 		ifneq (,$(findstring icon.png,$(icons)))
-			export APP_ICON := $(TOPDIR)/icon.png
+			export APP_ICON := ../icon.png
 		endif
 	endif
 else
-	export APP_ICON := $(TOPDIR)/$(ICON)
+	export APP_ICON := ../$(ICON)
 endif
 
 ifeq ($(strip $(NO_SMDH)),)
-	export _3DSXFLAGS += --smdh=$(CURDIR)/$(TARGET).smdh
+	export _3DSXFLAGS += --smdh=$(OUTPUT).smdh
 endif
 
 ifneq ($(ROMFS),)
-	export _3DSXFLAGS += --romfs=$(CURDIR)/$(ROMFS)
+	export _3DSXFLAGS += --romfs=../$(ROMFS)
 endif
 
-.PHONY: all clean cheats pot mo
+.PHONY: all clean pot mo
 
 #---------------------------------------------------------------------------------
-all: cheats mo $(ROMFS_T3XFILES) $(T3XHFILES)
-	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+all: mo $(ROMFS_T3XFILES) $(T3XHFILES)
+	@$(MAKE) --no-print-directory -C $(BUILD) -f ../Makefile $(OUTPUT).3dsx
 
-#---------------------------------------------------------------------------------
+ifeq ($(wildcard /mnt/d/Files/NLPP_CHS/3DS\ Toolkit/tools/makerom.exe),)
+	MAKEROM ?= makerom
+else
+	MAKEROM ?= "/mnt/d/Files/NLPP_CHS/3DS Toolkit/tools/makerom.exe"
+endif
+STRIP   ?= $(DEVKITARM)/bin/arm-none-eabi-strip
+
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(GFXBUILD) $(ROMFS)/cheats $(ROMFS)/locale $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf $(TARGET)-strip.elf $(TARGET).cia $(TARGET)_mode3.cia
+	@rm -fr $(BUILD) $(GFXBUILD) $(ROMFS)/locale $(TARGET).3dsx $(OUTPUT).smdh $(TARGET).elf $(TARGET)-strip.elf $(TARGET).cia $(TARGET).cci $(TARGET).3ds $(TARGET)_mode3.cia
 
-cheats:
-	@mkdir -p $(BUILD) $(ROMFS)/cheats
-ifeq ($(OS),Windows_NT)
-	@cd Sharkive && py -3 joiner.py
-else
-	@cd Sharkive && python3 joiner.py
-endif
-	@cd Sharkive/$(BUILD) && mv 3ds_chs.json.zip ../../$(ROMFS)/cheats/cheats00.json.zip && mv 3ds_eng.json.zip ../../$(ROMFS)/cheats/cheats01.json.zip
-
-$(TARGET)-strip.elf: $(BUILD)
+$(TARGET)-strip.elf: $(TARGET).elf
 	@$(STRIP) $(TARGET).elf -o $(TARGET)-strip.elf
 
 cia: $(TARGET)-strip.elf
-	@makerom -f cia -o $(TARGET).cia -elf $(TARGET)-strip.elf -rsf res/$(TARGET).rsf -exefslogo -target t -icon $(TARGET).smdh -banner res/$(TARGET).bnr -DAPP_SYSTEM_MODE="64MB" $(MAKEROM_VERARGS)
-	@echo Built TYSS.cia
+	@$(MAKEROM) -f cia -o $(TARGET).cia -elf $(TARGET)-strip.elf -rsf res/$(TARGET).rsf -exefslogo -target t -icon $(TARGET).smdh -banner res/$(TARGET).bnr -DAPP_SYSTEM_MODE="64MB" $(MAKEROM_VERARGS)
+	@echo Built $(TARGET).cia
 
-mode3: $(TARGET)-strip.elf
-	@makerom -f cia -o $(TARGET)_mode3.cia -elf $(TARGET)-strip.elf -rsf res/$(TARGET).rsf -exefslogo -target t -icon $(TARGET).smdh -banner res/$(TARGET).bnr -DAPP_SYSTEM_MODE="80MB" $(MAKEROM_VERARGS)
-	@echo Built TYSS_mode3.cia
+cci: $(TARGET)-strip.elf
+	@$(MAKEROM) -f cci -o $(TARGET).cci -elf $(TARGET)-strip.elf -rsf res/$(TARGET).rsf -exefslogo -target t -icon $(TARGET).smdh -banner res/$(TARGET).bnr -DAPP_SYSTEM_MODE="64MB" $(MAKEROM_VERARGS)
+	@cp -f $(TARGET).cci $(TARGET).3ds
+	@echo Built $(TARGET).cci and $(TARGET).3ds
+
+all_formats: $(OUTPUT).3dsx cia cci
 
 send:
 	@3dslink $(TARGET).3dsx
 
-$(MO_FILES): $(ROMFS)/locale/%.mo: $(TOPDIR)/po/%.po
+$(MO_FILES): $(ROMFS)/locale/%.mo: po/%.po
 	@echo "Building $@"
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
-	msgfmt -c --output-file=$@ $<
+	python3 msgfmt.py -o $@ $<
 
-po/%.po: $(TOPDIR)/$(notdir $(TARGET)).pot
+po/%.po: $(notdir $(TARGET)).pot
 	@echo "Building $@"
 	@[ -d $(dir $@) ] || mkdir -p $(dir $@)
 	@if [ -f $@ ]; \
@@ -233,11 +221,11 @@ pot: $(CFILES) $(CPPFILES)
 mo: $(MO_FILES)
 
 #---------------------------------------------------------------------------------
-$(GFXBUILD)/%.t3x	$(BUILD)/%.h	:	%.t3s
+$(GFXBUILD)/%.t3x	$(BUILD)/%.h	:	$(GRAPHICS)/%.t3s
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	@mkdir -p $(BUILD) $(GFXBUILD)
-	@tex3ds -i $< -H $(BUILD)/$*.h -d $(DEPSDIR)/$*.d -o $(GFXBUILD)/$*.t3x
+	@tex3ds -i $< -H $(BUILD)/$*.h -d $(BUILD)/$*.d -o $(GFXBUILD)/$*.t3x
 
 #---------------------------------------------------------------------------------
 else

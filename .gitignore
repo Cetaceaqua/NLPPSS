@@ -11,6 +11,8 @@ adrivehelper/YY-Thunks
 *.3dsx
 *.cia
 *.zcia
+*.cci
+*.3ds
 *.smdh
 3dslink.exe
 Cargo.lock

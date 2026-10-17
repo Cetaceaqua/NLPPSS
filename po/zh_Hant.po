@@ -1223,3 +1223,357 @@ msgstr " 選擇  刪除  恢復  上傳  關閉"
 #: inc/ui.h:72
 msgid " 选择  删除  恢复  关闭"
 msgstr " 選擇  刪除  恢復  關閉"
+
+msgid "(空)"
+msgstr "(空)"
+
+msgid "0 姓氏称呼"
+msgstr "0 姓氏稱呼"
+
+msgid "1 名字称呼"
+msgstr "1 名字稱呼"
+
+msgid "2 后缀称呼"
+msgstr "2 後綴稱呼"
+
+msgid "3 预设称呼"
+msgstr "3 預設稱呼"
+
+msgid "4 特殊称呼"
+msgstr "4 特殊稱呼"
+
+msgid "TODO"
+msgstr "TODO"
+
+msgid "\ue000 修改/执行  \ue001 返回  \ue01A\ue019 切换分页"
+msgstr "\ue000 修改/執行  \ue001 返回  \ue01A\ue019 切換分頁"
+
+msgid "\ue000 切换/选择  \ue01A\ue019 切换页面"
+msgstr "\ue000 切換/選擇  \ue01A\ue019 切換頁面"
+
+msgid "\ue000 恢复备份  \ue002 删除备份  \ue01A\ue019 切换页面"
+msgstr "\ue000 恢復備份  \ue002 刪除備份  \ue01A\ue019 切換頁面"
+
+msgid "\ue000 确定 \ue001 取消"
+msgstr "\ue000 確定 \ue001 取消"
+
+msgid "\ue000 确定复制 \ue001 取消"
+msgstr "\ue000 確定複製 \ue001 取消"
+
+msgid "\ue000 确定恢复 \ue001 取消"
+msgstr "\ue000 確定恢復 \ue001 取消"
+
+msgid "\ue000 编辑  \ue002 复制槽位  \ue003 备份存档  \ue01A\ue019 切换页面"
+msgstr "\ue000 編輯  \ue002 複製槽位  \ue003 備份存檔  \ue01A\ue019 切換頁面"
+
+msgid "\ue000 选择 \ue002 删除 \ue003 恢复 \ue001 关闭"
+msgstr "\ue000 選擇 \ue002 刪除 \ue003 恢復 \ue001 關閉"
+
+msgid "\ue000 选择 \ue002 删除 \ue003 恢复 \ue005 上传 \ue001 关闭"
+msgstr "\ue000 選擇 \ue002 刪除 \ue003 恢復 \ue005 上傳 \ue001 關閉"
+
+msgid "★ 重新读取"
+msgstr "★ 重新讀取"
+
+msgid "♥ 保存修改"
+msgstr "♥ 保存修改"
+
+msgid "上线天数"
+msgstr "上線天數"
+
+msgid "佩戴中"
+msgstr "配戴中"
+
+msgid "修改保存失败！"
+msgstr "修改保存失敗！"
+
+msgid "修改保存成功！"
+msgstr "修改保存成功！"
+
+msgid "修改并保存存档数据时，是否自动在 sdmc:/NLPPSS/Saves 生成安全备份。"
+msgstr "修改並保存存檔數據時，是否自動在 sdmc:/NLPPSS/Saves 生成安全備份。"
+
+msgid "出身地"
+msgstr "出身地"
+
+msgid "切换 L/R 按键和 Left/Right 按键在界面切换中的功能映射。"
+msgstr "切換 L/R 按鍵和 Left/Right 按鍵在介面切換中的功能映射。"
+
+msgid "删除安全值失败.\n错误: 0x%08X"
+msgstr "刪除安全值失敗.\n錯誤: 0x%08X"
+
+msgid "卸下滤镜 (佩戴中)"
+msgstr "卸下濾鏡 (配戴中)"
+
+msgid "卸下滤镜 (无滤镜)"
+msgstr "卸下濾鏡 (無濾鏡)"
+
+msgid "发型"
+msgstr "髮型"
+
+msgid "发色"
+msgstr "髮色"
+
+msgid "发长"
+msgstr "髮長"
+
+msgid "名字"
+msgstr "名字"
+
+msgid "否 \ue001"
+msgstr "否 \ue001"
+
+msgid "启动软件时默认选中的存档介质类型。\n(数字版 / 实体版)"
+msgstr "啟動軟體時預設選中的存檔介質類型。\n(數位版 / 實體版)"
+
+msgid "启动软件时默认选中的存档槽位编号。\n(槽位 1 / 槽位 2 / 槽位 3)"
+msgstr "啟動軟體時預設選中的存檔槽位編號。\n(槽位 1 / 槽位 2 / 槽位 3)"
+
+msgid "型"
+msgstr "型"
+
+msgid "备份名称"
+msgstr "備份名稱"
+
+msgid "备份已删除！"
+msgstr "備份已刪除！"
+
+msgid "备份来源"
+msgstr "備份來源"
+
+msgid "备份管理"
+msgstr "備份管理"
+
+msgid "复制槽位"
+msgstr "複製槽位"
+
+msgid "天"
+msgstr "天"
+
+msgid "天数"
+msgstr "天數"
+
+msgid "女友"
+msgstr "女友"
+
+msgid "姓名"
+msgstr "姓名"
+
+msgid "姓氏"
+msgstr "姓氏"
+
+msgid "存储路径"
+msgstr "存儲路徑"
+
+msgid "存档"
+msgstr "存檔"
+
+msgid "存档备份失败！"
+msgstr "存檔備份失敗！"
+
+msgid "存档备份成功！\n%s"
+msgstr "存檔備份成功！\n%s"
+
+msgid "存档恢复失败！"
+msgstr "存檔恢復失敗！"
+
+msgid "存档恢复成功！"
+msgstr "存檔恢復成功！"
+
+msgid "实体版"
+msgstr "實體版"
+
+msgid "导入安全值失败.\n错误: 0x%08X"
+msgstr "導入安全值失敗.\n錯誤: 0x%08X"
+
+msgid "已成功卸下相机滤镜！"
+msgstr "已成功卸下相機濾鏡！"
+
+msgid "已重新读取当前存档数据！"
+msgstr "已重新讀取當前存檔數據！"
+
+msgid "已重置女友发型和发色！"
+msgstr "已重置女友髮型和髮色！"
+
+msgid "当前介质: 实体版"
+msgstr "當前介質: 實體版"
+
+msgid "当前介质: 数字版"
+msgstr "當前介質: 數位版"
+
+msgid "当前使用"
+msgstr "當前使用"
+
+msgid "总天数"
+msgstr "總天數"
+
+msgid "恢复到实体版"
+msgstr "恢復到實體版"
+
+msgid "恢复到数字版"
+msgstr "恢復到數位版"
+
+msgid "感性属性值"
+msgstr "感性屬性值"
+
+msgid "提交存档数据失败!\n错误: 0x%08X"
+msgstr "提交存檔數據失敗!\n錯誤: 0x%08X"
+
+msgid "数字版"
+msgstr "數位版"
+
+msgid "无法打开该存档位. 该存档类型可能不存在适用此 title 的数据.\n错误: 0x%08X\nTitle: %s"
+msgstr "無法打開該存檔位. 該存檔類型可能不存在適用此 title 的數據.\n錯誤: 0x%08X\nTitle: %s"
+
+msgid "无滤镜"
+msgstr "無濾鏡"
+
+msgid "日"
+msgstr "日"
+
+msgid "是 \ue000"
+msgstr "是 \ue000"
+
+msgid "暂无存档备份数据"
+msgstr "暫無存檔備份數據"
+
+msgid "月"
+msgstr "月"
+
+msgid "有未保存的修改，确定要返回吗？"
+msgstr "有未保存的修改，確定要返回嗎？"
+
+msgid "未找到匹配的称呼读音！"
+msgstr "未找到匹配的稱呼讀音！"
+
+msgid "槽位"
+msgstr "槽位"
+
+msgid "槽位复制成功！"
+msgstr "槽位複製成功！"
+
+msgid "滤镜"
+msgstr "濾鏡"
+
+msgid "点"
+msgstr "點"
+
+msgid "生日"
+msgstr "生日"
+
+msgid "目标槽位"
+msgstr "目標槽位"
+
+msgid "知识属性值"
+msgstr "知識屬性值"
+
+msgid "确定 \ue000"
+msgstr "確定 \ue000"
+
+msgid "确定要保存对当前槽位的修改吗？\n将写回存档介质并自动生成安全备份。"
+msgstr "確定要保存對當前槽位的修改嗎？\n將寫回存檔介質並自動生成安全備份。"
+
+msgid "确定要删除备份 %s 吗？\n此操作无法撤销！"
+msgstr "確定要刪除備份 %s 嗎？\n此操作無法撤銷！"
+
+msgid "确定要将槽位 %d 复制到槽位 %d 吗？\n目标槽位的数据将被覆盖！"
+msgstr "確定要將槽位 %d 複製到槽位 %d 嗎？\n目標槽位的數據將被覆蓋！"
+
+msgid "确定要恢复此备份到%s吗？\n现有存档将被覆盖！"
+msgstr "確定要恢復此備份到%s嗎？\n現有存檔將被覆蓋！"
+
+msgid "确定要重置女友的发型和发色为初始状态吗？"
+msgstr "確定要重置女友的髮型和髮色為初始狀態嗎？"
+
+msgid "空存档槽位"
+msgstr "空存檔槽位"
+
+msgid "自动备份存档"
+msgstr "自動備份存檔"
+
+msgid "获取安全值失败.\n错误: 0x%08X"
+msgstr "獲取安全值失敗.\n錯誤: 0x%08X"
+
+msgid "血型"
+msgstr "血型"
+
+msgid "设置"
+msgstr "設置"
+
+msgid "该槽位为空，无法复制！"
+msgstr "該槽位為空，無法複製！"
+
+msgid "该槽位为空，无法编辑！"
+msgstr "該槽位為空，無法編輯！"
+
+msgid "请选择恢复目标介质："
+msgstr "請選擇恢復目標介質："
+
+msgid "输入TODO点数 (0-9999)"
+msgstr "輸入TODO點數 (0-9999)"
+
+msgid "输入上线天数 (1-9999)"
+msgstr "輸入上線天數 (1-9999)"
+
+msgid "输入假名或罗马字搜索 (留空显示推荐)"
+msgstr "輸入假名或羅馬字搜尋 (留空顯示推薦)"
+
+msgid "输入名字 (最多4汉字/12字节)"
+msgstr "輸入名字 (最多4漢字/12字節)"
+
+msgid "输入姓氏 (最多4汉字/12字节)"
+msgstr "輸入姓氏 (最多4漢字/12字節)"
+
+msgid "输入总天数 (1-9999)"
+msgstr "輸入總天數 (1-9999)"
+
+msgid "输入感性属性值 (0-255)"
+msgstr "輸入感性屬性值 (0-255)"
+
+msgid "输入知识属性值 (0-255)"
+msgstr "輸入知識屬性值 (0-255)"
+
+msgid "输入运动属性值 (0-255)"
+msgstr "輸入運動屬性值 (0-255)"
+
+msgid "输入通讯昵称 (最多4汉字/12字节)"
+msgstr "輸入通訊暱稱 (最多4漢字/12字節)"
+
+msgid "输入金钱 (0-999999)"
+msgstr "輸入金錢 (0-999999)"
+
+msgid "输入魅力属性值 (0-255)"
+msgstr "輸入魅力屬性值 (0-255)"
+
+msgid "运动属性值"
+msgstr "運動屬性值"
+
+msgid "追加数据删除失败!\n错误: 0x%08X"
+msgstr "追加數據刪除失敗!\n錯誤: 0x%08X"
+
+msgid "选择 UI 界面主题色。\n(浅色系 / 深色系)"
+msgstr "選擇 UI 介面主題色。\n(淺色系 / 深色系)"
+
+msgid "选择 UI 界面显示语言。\n(简体中文 / English / 繁體中文)"
+msgstr "選擇 UI 介面顯示語言。\n(簡體中文 / English / 繁體中文)"
+
+msgid "选择目标槽位"
+msgstr "選擇目標槽位"
+
+msgid "通讯昵称(HN)"
+msgstr "通訊暱稱(HN)"
+
+msgid "重置为初始发型"
+msgstr "重置為初始髮型"
+
+msgid "金钱"
+msgstr "金錢"
+
+msgid "魅力属性值"
+msgstr "魅力屬性值"
+
+msgid "默认存档槽位"
+msgstr "預設存檔槽位"
+
+msgid "默认存档类型"
+msgstr "預設存檔類型"

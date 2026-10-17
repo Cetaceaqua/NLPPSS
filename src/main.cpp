@@ -27,12 +27,8 @@
 #include "sys.h"
 #include "cfg.h"
 
-extern int state;
-
-#ifdef ENABLE_DRIVE
-#include <curl/curl.h>
-static uint32_t *socBuffer;
-#endif
+#include "nlpp_save.h"
+#include "nlpp_dict.h"
 
 int main(int argc, const char *argv[])
 {
@@ -43,47 +39,20 @@ int main(int argc, const char *argv[])
     cfg::initToDefault();
     cfg::load();
     cfg::setUILanguage(cfg::config["uilang"]);
+
+    nlpp::Dict::init();
+    nlpp::g_saveMgr.init();
     ui::init();
-
-#ifdef ENABLE_DRIVE
-    // Need to init soc so curl and drive work
-    socBuffer = (uint32_t *)memalign(SOCU_ALIGN, SOCU_BUFFERSIZE);
-    socInit(socBuffer, SOCU_BUFFERSIZE);
-
-    curl_global_init(CURL_GLOBAL_ALL);
-#endif
-
-    ui::newThread(data::loadTitles, NULL, NULL);
-    ui::newThread(ui::ttlInit, NULL, NULL);
-    ui::newThread(ui::extInit, NULL, NULL);
-    ui::newThread(ui::sysInit, NULL, NULL);
-    ui::newThread(ui::bossViewInit, NULL, NULL);
-    ui::newThread(ui::shrdInit, NULL, NULL);
-    ui::newThread(ui::setInit, NULL, NULL);
-    if (cfg::config["bootwithcheatdb"])
-        ui::newThread(data::loadCheatsDB, NULL, NULL);
-
-#ifdef ENABLE_DRIVE
-    if(cfg::driveInitOnBoot && fs::fexists("/TYSS/drive.json"))
-        ui::newThread(fs::driveInit, NULL, NULL);
-#endif
 
     while(aptMainLoop() && ui::runApp()){ }
 
-#ifdef ENABLE_DRIVE
-    curl_global_cleanup();
-#endif
-
+    nlpp::g_saveMgr.exit();
+    nlpp::Dict::exit();
     data::saveFav();
     sys::exit();
     gfx::exit();
-#ifdef ENABLE_DRIVE
-    fs::driveExit();
-#endif
     fs::exit();
     data::exit();
     ui::exit();
-#ifdef ENABLE_DRIVE
-    socExit();
-#endif
+    return 0;
 }

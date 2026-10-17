@@ -1,4 +1,4 @@
-name: Build TYSS
+name: Build NLPPSS
 
 on:
   push:
@@ -54,12 +54,12 @@ jobs:
           cd libjtjson
           catnip -S . -B build install
 
-      - name: Build TYSS
+      - name: Build NLPPSS
         run: |
-          make ADRIVE_SECRET_ID=${{ secrets.ADRIVE_SECRET_ID }} -j$(nproc)
+          make -j$(nproc)
 
       - uses: actions/upload-artifact@master
         with:
-          name: TYSS
-          path: TYSS.3dsx
+          name: NLPPSS
+          path: NLPPSS.3dsx
           if-no-files-found: error

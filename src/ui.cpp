@@ -36,9 +36,6 @@
 #include "ctr/smdh.h"
 #include "cfg.h"
 
-#include "ui/ttlview.h"
-#include "ui/ttl.h"
-
 //8
 const std::string ui::loadGlyphArray[] =
 {
@@ -46,12 +43,12 @@ const std::string ui::loadGlyphArray[] =
     "\ue024", "\ue025", "\ue026", "\ue027"
 };
 
-int ui::state = DAT, ui::prev = DAT;
+int ui::state = SAVE_SELECT, ui::prev = SAVE_SELECT;
 ui::progressBar *ui::prog;
 static ui::threadProcMngr *thrdMgr;
 static ui::button *ok, *yes, *no;
 
-const std::string TITLE_TEXT = "TY Save Studio - v1.1.7 ";
+const std::string TITLE_TEXT = "NLPP Save Studio - v1.0.0";
 
 uint32_t ui::down = 0, ui::held = 0;
 touchPosition ui::pos;
@@ -64,16 +61,18 @@ void ui::init()
     no  = new ui::button(getText("否 \ue001"), 168, 184, 120, 32);
     prog = new ui::progressBar(100);
 
+    ui::saveSelectInit();
+    ui::backupMgrInit();
+    ui::setInit(NULL);
+    ui::state = SAVE_SELECT;
+
     gfx::setColor(cfg::config["lightback"]);
 }
 
 void ui::exit()
 {
-    ui::ttlExit();
-    ui::extExit();
-    ui::sysExit();
-    ui::bossViewExit();
-    ui::shrdExit();
+    ui::saveSelectExit();
+    ui::backupMgrExit();
     ui::setExit();
     delete thrdMgr;
     delete ok;
@@ -108,32 +107,20 @@ void drawUI()
     gfx::frameStartTop();
     switch(ui::state)
     {
-        case DAT:
-            data::datDrawTop();
+        case SAVE_SELECT:
+            ui::saveSelectDrawTop();
             break;
 
-        case USR:
-            ui::ttlDrawTop();
-            break;
-
-        case EXT:
-            ui::extDrawTop();
-            break;
-
-        case SYS:
-            ui::sysDrawTop();
-            break;
-
-        case BOS:
-            ui::bossViewDrawTop();
-            break;
-
-        case SHR:
-            ui::shrdDrawTop();
+        case BACKUP_MGR:
+            ui::backupMgrDrawTop();
             break;
 
         case SET:
             ui::setDrawTop();
+            break;
+
+        case SLOT_EDITOR:
+            ui::editorDrawTop();
             break;
 
         default:
@@ -145,32 +132,20 @@ void drawUI()
     gfx::frameStartBot();
     switch(ui::state)
     {
-        case DAT:
-            data::datDrawBot();
+        case SAVE_SELECT:
+            ui::saveSelectDrawBot();
             break;
 
-        case USR:
-            ui::ttlDrawBot();
-            break;
-
-        case EXT:
-            ui::extDrawBot();
-            break;
-
-        case SYS:
-            ui::sysDrawBot();
-            break;
-
-        case BOS:
-            ui::bossViewDrawBot();
-            break;
-
-        case SHR:
-            ui::shrdDrawBot();
+        case BACKUP_MGR:
+            ui::backupMgrDrawBot();
             break;
 
         case SET:
             ui::setDrawBottom();
+            break;
+
+        case SLOT_EDITOR:
+            ui::editorDrawBot();
             break;
 
         default:
@@ -189,35 +164,27 @@ bool ui::runApp()
     thrdMgr->update();
     if(thrdMgr->empty())
     {
-        if(ui::padKeysDown() & KEY_START)
+        if(ui::state != SLOT_EDITOR && (ui::padKeysDown() & KEY_START))
             return false;
 
         data::cartCheck();
 
         switch(state)
         {
-            case USR:
-                ui::ttlUpdate();
+            case SAVE_SELECT:
+                ui::saveSelectUpdate();
                 break;
 
-            case EXT:
-                ui::extUpdate();
-                break;
-
-            case SYS:
-                ui::sysUpdate();
-                break;
-
-            case BOS:
-                ui::bossViewUpdate();
-                break;
-
-            case SHR:
-                ui::shrdUpdate();
+            case BACKUP_MGR:
+                ui::backupMgrUpdate();
                 break;
 
             case SET:
                 ui::setUpdate();
+                break;
+
+            case SLOT_EDITOR:
+                ui::editorUpdate();
                 break;
         }
     }

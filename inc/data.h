@@ -24,7 +24,6 @@
 #include <vector>
 #include <string>
 
-#include "ctr/spi.h"
 #include "ctr/smdh.h"
 
 bool isFavorite(const uint64_t& id);
@@ -45,7 +44,7 @@ namespace data
     typedef struct
     {
         bool isDSCard = false;
-        CardType spiCardType = NO_CHIP;
+        int spiCardType = 0;
     } titleExtInfos;
 
     class titleData
@@ -115,7 +114,6 @@ namespace data
     extern titleData curData;
 
     smdh_s *loadSMDH(const uint32_t& low, const uint32_t& high, const uint8_t& media);
-    void loadCheatsDB(void *a);
     void loadTitles(void *a);
     void scanTitles(std::vector<titleData>& titles);
     void deleteExtData(void *a);

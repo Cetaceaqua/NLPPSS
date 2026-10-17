@@ -54,6 +54,14 @@ namespace ui
             {
                 return y;
             }
+            unsigned getW()
+            {
+                return w;
+            }
+            unsigned getH()
+            {
+                return h;
+            }
             unsigned getTx()
             {
                 return tx;

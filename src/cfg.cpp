@@ -23,13 +23,7 @@
 #include "fs.h"
 #include "ctr/3dsgettext.h"
 
-#ifdef ENABLE_DRIVE
-#include <jtjson.h>
-std::string cfg::driveClientID, cfg::driveClientSecret, cfg::driveAuthCode, cfg::driveRefreshToken, cfg::driveDiskID;
-bool cfg::driveInitOnBoot = true;
-#endif
-
-#define TYSS_CFG_VER 2
+#define NLPPSS_CFG_VER 2
 
 std::unordered_map<std::string, u8> cfg::config;
 
@@ -38,15 +32,16 @@ void cfg::initToDefault()
     u8 syslang = CFG_LANGUAGE_EN;
     CFGU_GetSystemLanguage(&syslang);
 
+    cfg::config["autobackup"] = 1; // 自动备份存档：开
     cfg::config["zip"] = (u8) false;
-    cfg::config["deflateLevel"] = 1;
+    cfg::config["deflateLevel"] = 6; // 默认 6 (标准压缩)
     cfg::config["lightback"] = (u8) false;
-    cfg::config["rawvcsave"] = (u8) false;
-    cfg::config["bootwithcheatdb"] = (u8) false;
     cfg::config["swaplrfunc"] = (u8) false;
     cfg::config["titlelang"] = syslang;
     cfg::config["uilang"] = (syslang == CFG_LANGUAGE_ZH ? 0 : (syslang == CFG_LANGUAGE_TW ? 2 : 1));
-    cfg::config["cheatdblang"] = (syslang == CFG_LANGUAGE_ZH ? 0 : 1);
+    cfg::config["autoload"] = 0; // 启动时加载存档：关
+    cfg::config["default_type"] = 0; // 默认存档类型：0 数字版, 1 实体版
+    cfg::config["default_slot"] = 0; // 默认存档槽位：0 (槽位 1)
 }
 
 void cfg::setUILanguage(u8 langIndex)
@@ -67,12 +62,12 @@ void cfg::setUILanguage(u8 langIndex)
 
 void cfg::load()
 {
-    FILE *cfgIn = fopen("/TYSS/config.bin", "rb");
+    FILE *cfgIn = fopen("/NLPPSS/config.bin", "rb");
     if(cfgIn)
     {
         u8 getVal = 0;
         fread(&getVal, sizeof(u8), 1, cfgIn);
-        if (TYSS_CFG_VER == getVal)
+        if (getVal >= 1)
         {
             fread(&getVal, sizeof(u8), 1, cfgIn);
             cfg::config["zip"] = getVal;
@@ -84,12 +79,6 @@ void cfg::load()
             cfg::config["lightback"] = getVal;
 
             fread(&getVal, sizeof(u8), 1, cfgIn);
-            cfg::config["rawvcsave"] = getVal;
-
-            fread(&getVal, sizeof(u8), 1, cfgIn);
-            cfg::config["bootwithcheatdb"] = getVal;
-
-            fread(&getVal, sizeof(u8), 1, cfgIn);
             cfg::config["swaplrfunc"] = getVal;
 
             fread(&getVal, sizeof(u8), 1, cfgIn);
@@ -98,86 +87,44 @@ void cfg::load()
             fread(&getVal, sizeof(u8), 1, cfgIn);
             cfg::config["uilang"] = getVal;
 
-            fread(&getVal, sizeof(u8), 1, cfgIn);
-            cfg::config["cheatdblang"] = getVal;
+            if (getVal >= 2)
+            {
+                fread(&getVal, sizeof(u8), 1, cfgIn);
+                cfg::config["autobackup"] = getVal;
+
+                fread(&getVal, sizeof(u8), 1, cfgIn);
+                cfg::config["autoload"] = getVal;
+
+                fread(&getVal, sizeof(u8), 1, cfgIn);
+                cfg::config["default_type"] = getVal;
+
+                fread(&getVal, sizeof(u8), 1, cfgIn);
+                cfg::config["default_slot"] = getVal;
+            }
         }
 
         fclose(cfgIn);
     }
-
-#ifdef ENABLE_DRIVE
-    fs::fsfile drvCfg(fs::getSDMCArch(), "/TYSS/drive.json", FS_OPEN_READ);
-    if(drvCfg.isOpen())
-    {
-        u64 size = drvCfg.getSize();
-        char *jsonBuff = new char[size + 1];
-        drvCfg.read(jsonBuff, size);
-        jsonBuff[size] = '\0';
-
-        jt::Json parse = jt::Json::parse(jsonBuff);
-
-        if(parse.contains("driveClientID"))
-            driveClientID = parse["driveClientID"];
-
-        if(parse.contains("driveClientSecret"))
-            driveClientSecret = parse["driveClientSecret"];
-
-        if(parse.contains("driveAuthCode"))
-            driveAuthCode = parse["driveAuthCode"];
-
-        if(parse.contains("driveRefreshToken"))
-            driveRefreshToken = parse["driveRefreshToken"];
-
-        if(parse.contains("driveDiskID"))
-            driveDiskID = parse["driveDiskID"];
-
-        if(parse.contains("driveInitOnBoot"))
-            driveInitOnBoot = parse["driveInitOnBoot"].get<bool>();
-
-        delete[] jsonBuff;
-    }
-#endif
 }
 
 void cfg::saveCommon()
 {
-    FILE *cfgOut = fopen("/TYSS/config.bin", "wb");
+    FILE *cfgOut = fopen("/NLPPSS/config.bin", "wb");
     if(cfgOut)
     {
-        u8 cfgver = TYSS_CFG_VER;
+        u8 cfgver = NLPPSS_CFG_VER;
         fwrite(&cfgver, sizeof(u8), 1, cfgOut);
         fwrite(&cfg::config["zip"], sizeof(u8), 1, cfgOut);
         fwrite(&cfg::config["deflateLevel"], sizeof(u8), 1, cfgOut);
         fwrite(&cfg::config["lightback"], sizeof(u8), 1, cfgOut);
-        fwrite(&cfg::config["rawvcsave"], sizeof(u8), 1, cfgOut);
-        fwrite(&cfg::config["bootwithcheatdb"], sizeof(u8), 1, cfgOut);
         fwrite(&cfg::config["swaplrfunc"], sizeof(u8), 1, cfgOut);
         fwrite(&cfg::config["titlelang"], sizeof(u8), 1, cfgOut);
         fwrite(&cfg::config["uilang"], sizeof(u8), 1, cfgOut);
-        fwrite(&cfg::config["cheatdblang"], sizeof(u8), 1, cfgOut);
+        fwrite(&cfg::config["autobackup"], sizeof(u8), 1, cfgOut);
+        fwrite(&cfg::config["autoload"], sizeof(u8), 1, cfgOut);
+        fwrite(&cfg::config["default_type"], sizeof(u8), 1, cfgOut);
+        fwrite(&cfg::config["default_slot"], sizeof(u8), 1, cfgOut);
         fclose(cfgOut);
     }
 }
 
-#ifdef ENABLE_DRIVE
-void cfg::saveDrive()
-{
-    if(!driveRefreshToken.empty())
-    {
-        jt::Json drvCfg;
-        if (!driveClientID.empty())
-            drvCfg["driveClientID"] = driveClientID;
-        if (!driveClientSecret.empty())
-            drvCfg["driveClientSecret"] = driveClientSecret;
-        if (!driveDiskID.empty())
-            drvCfg["driveDiskID"] = driveDiskID;
-        drvCfg["driveRefreshToken"] = driveRefreshToken;
-        drvCfg["driveInitOnBoot"] = driveInitOnBoot;
-        auto json_str = drvCfg.dump(2);
-
-        FILE *drvOut = fopen("/TYSS/drive.json", "w");
-        fputs(json_str.c_str(), drvOut);
-        fclose(drvOut);
-    }
-}
-#endif

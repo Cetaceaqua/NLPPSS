@@ -30,24 +30,15 @@
 
 #include "ui/button.h"
 #include "ui/menu.h"
-#include "ui/ttlview.h"
-#include "ui/ttl.h"
-#include "ui/ext.h"
-#include "ui/sysview.h"
-#include "ui/boss.h"
-#include "ui/shrd.h"
-#include "ui/fld.h"
 #include "ui/set.h"
+#include "ui/nlpp_ui.h"
 
 enum states
 {
-    DAT,
-    USR,
-    EXT,
-    SYS,
-    BOS,
-    SHR,
-    SET
+    SAVE_SELECT,
+    BACKUP_MGR,
+    SET,
+    SLOT_EDITOR
 };
 
 enum selop
@@ -73,6 +64,10 @@ extern const std::string TITLE_TEXT;
 
 namespace ui
 {
+    inline void ttlRefresh(int = 0) {}
+    inline void ttlOptBack() {}
+    inline void fldRefresh() {}
+
     enum
     {
         SCREEN_TOP,

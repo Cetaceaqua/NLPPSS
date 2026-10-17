@@ -31,10 +31,4 @@ namespace cfg
     void saveCommon();
 
     extern std::unordered_map<std::string, u8> config;
-
-#ifdef ENABLE_DRIVE
-    void saveDrive();
-    extern std::string driveClientID, driveClientSecret, driveAuthCode, driveRefreshToken, driveDiskID;
-    extern bool driveInitOnBoot;
-#endif
 }
