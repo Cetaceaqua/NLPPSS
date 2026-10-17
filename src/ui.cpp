@@ -64,7 +64,8 @@ void ui::init()
     ui::saveSelectInit();
     ui::backupMgrInit();
     ui::setInit(NULL);
-    ui::state = SAVE_SELECT;
+    if (ui::state != SLOT_EDITOR)
+        ui::state = SAVE_SELECT;
 
     gfx::setColor(cfg::config["lightback"]);
 }

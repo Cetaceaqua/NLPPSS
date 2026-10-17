@@ -10,15 +10,19 @@
 
 namespace nlpp
 {
-    static C3D_Tex s_portraitTex;
-    static Tex3DS_SubTexture s_portraitSubtex;
-    static bool s_texInitialized = false;
-    static bool s_portraitLoaded = false;
+    static C3D_Tex s_styleTex;
+    static Tex3DS_SubTexture s_styleSubtex;
+    static bool s_styleLoaded = false;
+    static HeroineID s_curStyleHeroine = HEROINE_NONE;
+    static int s_curStyleIndex = -1;
 
-    // Track currently loaded image to avoid redundant decodes
-    static HeroineID s_curHeroine = HEROINE_NONE;
-    static PortraitCategory s_curCat = PORTRAIT_HAIRSTYLE;
-    static int s_curIndex = -1;
+    static C3D_Tex s_colorTex;
+    static Tex3DS_SubTexture s_colorSubtex;
+    static bool s_colorLoaded = false;
+    static HeroineID s_curColorHeroine = HEROINE_NONE;
+    static int s_curColorIndex = -1;
+
+    static bool s_texInitialized = false;
 
     static const char *getHeroineDir(HeroineID heroine)
     {
@@ -35,40 +39,58 @@ namespace nlpp
     {
         if (s_texInitialized) return;
 
-        // Allocate a 256x256 GPU texture for 146x170 portraits
-        C3D_TexInit(&s_portraitTex, 256, 256, GPU_RGBA8);
-        C3D_TexSetFilter(&s_portraitTex, GPU_LINEAR, GPU_LINEAR);
-        C3D_TexSetWrap(&s_portraitTex, GPU_CLAMP_TO_EDGE, GPU_CLAMP_TO_EDGE);
-
-        // Clear texture to transparent
-        if (s_portraitTex.data)
+        // Texture 1: Hairstyle (256x256 GPU_RGBA8)
+        C3D_TexInit(&s_styleTex, 256, 256, GPU_RGBA8);
+        C3D_TexSetFilter(&s_styleTex, GPU_LINEAR, GPU_LINEAR);
+        C3D_TexSetWrap(&s_styleTex, GPU_CLAMP_TO_EDGE, GPU_CLAMP_TO_EDGE);
+        if (s_styleTex.data)
         {
-            memset(s_portraitTex.data, 0, 256 * 256 * 4);
-            GSPGPU_FlushDataCache(s_portraitTex.data, 256 * 256 * 4);
+            memset(s_styleTex.data, 0, 256 * 256 * 4);
+            GSPGPU_FlushDataCache(s_styleTex.data, 256 * 256 * 4);
         }
 
-        // Subtexture: In Citro2D, top > bottom indicates non-rotated orientation.
-        // top corresponds to v=170/256, bottom corresponds to v=0.
-        s_portraitSubtex.width = 146;
-        s_portraitSubtex.height = 170;
-        s_portraitSubtex.left = 0.0f;
-        s_portraitSubtex.top = 170.0f / 256.0f;
-        s_portraitSubtex.right = 146.0f / 256.0f;
-        s_portraitSubtex.bottom = 0.0f;
+        s_styleSubtex.width = 146;
+        s_styleSubtex.height = 170;
+        s_styleSubtex.left = 0.0f;
+        s_styleSubtex.top = 170.0f / 256.0f;
+        s_styleSubtex.right = 146.0f / 256.0f;
+        s_styleSubtex.bottom = 0.0f;
+
+        // Texture 2: Haircolor (256x256 GPU_RGBA8)
+        C3D_TexInit(&s_colorTex, 256, 256, GPU_RGBA8);
+        C3D_TexSetFilter(&s_colorTex, GPU_LINEAR, GPU_LINEAR);
+        C3D_TexSetWrap(&s_colorTex, GPU_CLAMP_TO_EDGE, GPU_CLAMP_TO_EDGE);
+        if (s_colorTex.data)
+        {
+            memset(s_colorTex.data, 0, 256 * 256 * 4);
+            GSPGPU_FlushDataCache(s_colorTex.data, 256 * 256 * 4);
+        }
+
+        s_colorSubtex.width = 146;
+        s_colorSubtex.height = 170;
+        s_colorSubtex.left = 0.0f;
+        s_colorSubtex.top = 170.0f / 256.0f;
+        s_colorSubtex.right = 146.0f / 256.0f;
+        s_colorSubtex.bottom = 0.0f;
 
         s_texInitialized = true;
-        s_portraitLoaded = false;
-        s_curHeroine = HEROINE_NONE;
-        s_curIndex = -1;
+        s_styleLoaded = false;
+        s_colorLoaded = false;
+        s_curStyleHeroine = HEROINE_NONE;
+        s_curStyleIndex = -1;
+        s_curColorHeroine = HEROINE_NONE;
+        s_curColorIndex = -1;
     }
 
     void portraitExit()
     {
         if (s_texInitialized)
         {
-            C3D_TexDelete(&s_portraitTex);
+            C3D_TexDelete(&s_styleTex);
+            C3D_TexDelete(&s_colorTex);
             s_texInitialized = false;
-            s_portraitLoaded = false;
+            s_styleLoaded = false;
+            s_colorLoaded = false;
         }
     }
 
@@ -79,52 +101,33 @@ namespace nlpp
                ((x & 4) << 2) | ((y & 4) << 3);
     }
 
-    bool portraitLoad(HeroineID heroine, PortraitCategory category, int index)
+    static bool decodeAndTilePng(const char *relPath, C3D_Tex &tex)
     {
-        if (!s_texInitialized) portraitInit();
-        if (heroine < 1 || heroine > 3 || index < 1 || index > 45) return false;
-
-        // If already loaded, do nothing
-        if (s_portraitLoaded && s_curHeroine == heroine && s_curCat == category && s_curIndex == index)
-        {
-            return true;
-        }
-
-        char path[128];
-        if (category == PORTRAIT_HAIRSTYLE)
-        {
-            snprintf(path, sizeof(path), "romfs:/portraits/%s/hairstyles/h_%02d.png", getHeroineDir(heroine), index);
-        }
-        else
-        {
-            snprintf(path, sizeof(path), "romfs:/portraits/%s/haircolors/c_%02d.png", getHeroineDir(heroine), index);
-        }
+        char fullPath[128];
+        snprintf(fullPath, sizeof(fullPath), "romfs:/%s", relPath);
 
         std::vector<unsigned char> pngImage;
         unsigned int width = 0, height = 0;
-        unsigned int error = lodepng::decode(pngImage, width, height, path);
+        unsigned int error = lodepng::decode(pngImage, width, height, fullPath);
         if (error != 0 || width == 0 || height == 0)
         {
-            // Fallback for local PC / relative tests
-            if (category == PORTRAIT_HAIRSTYLE)
-                snprintf(path, sizeof(path), "romfs/portraits/%s/hairstyles/h_%02d.png", getHeroineDir(heroine), index);
-            else
-                snprintf(path, sizeof(path), "romfs/portraits/%s/haircolors/c_%02d.png", getHeroineDir(heroine), index);
-            error = lodepng::decode(pngImage, width, height, path);
+            // Fallback for local PC / tests
+            snprintf(fullPath, sizeof(fullPath), "romfs/%s", relPath);
+            error = lodepng::decode(pngImage, width, height, fullPath);
             if (error != 0 || width == 0 || height == 0) return false;
         }
 
-        uint32_t *dstPixels = (uint32_t *)s_portraitTex.data;
+        uint32_t *dstPixels = (uint32_t *)tex.data;
         if (!dstPixels) return false;
 
-        // Tile RGBA pixels into 3DS PICA200 8x8 Morton order.
-        // Invert Y so gy = (170 - 1) - py matches top = 170/256, bottom = 0.
+        memset(dstPixels, 0, 256 * 256 * 4);
+
         int copyW = std::min((int)width, 146);
         int copyH = std::min((int)height, 170);
 
         for (int py = 0; py < copyH; ++py)
         {
-            int gy = (170 - 1) - py;
+            int gy = py; // Direct mapping: top row py=0 goes to gy=0
             int tileY = gy >> 3;
             int ly = gy & 7;
 
@@ -143,34 +146,101 @@ namespace nlpp
                 uint8_t b = pngImage[srcIdx + 2];
                 uint8_t a = pngImage[srcIdx + 3];
 
-                dstPixels[dstIdx] = (uint32_t)r | ((uint32_t)g << 8) | ((uint32_t)b << 16) | ((uint32_t)a << 24);
+                // 3DS PICA200 GPU_RGBA8 little-endian layout: Byte0=A, Byte1=B, Byte2=G, Byte3=R
+                dstPixels[dstIdx] = (uint32_t)a | ((uint32_t)b << 8) | ((uint32_t)g << 16) | ((uint32_t)r << 24);
             }
         }
 
-        // Flush cache to ensure PICA200 sees the new data
-        GSPGPU_FlushDataCache(s_portraitTex.data, 256 * 256 * 4);
-
-        s_curHeroine = heroine;
-        s_curCat = category;
-        s_curIndex = index;
-        s_portraitLoaded = true;
+        GSPGPU_FlushDataCache(tex.data, 256 * 256 * 4);
         return true;
+    }
+
+    bool portraitLoadStyleIndex(HeroineID heroine, int index)
+    {
+        if (!s_texInitialized) portraitInit();
+        if ((int)heroine < 0 || (int)heroine > 2 || index < 1 || index > 45) return false;
+
+        if (s_styleLoaded && s_curStyleHeroine == heroine && s_curStyleIndex == index)
+        {
+            return true;
+        }
+
+        char relPath[128];
+        snprintf(relPath, sizeof(relPath), "portraits/%s/hairstyles/h_%02d.png", getHeroineDir(heroine), index);
+
+        if (!decodeAndTilePng(relPath, s_styleTex)) return false;
+
+        s_curStyleHeroine = heroine;
+        s_curStyleIndex = index;
+        s_styleLoaded = true;
+        return true;
+    }
+
+    bool portraitLoadColorIndex(HeroineID heroine, int index)
+    {
+        if (!s_texInitialized) portraitInit();
+        if ((int)heroine < 0 || (int)heroine > 2 || index < 1 || index > 19) return false;
+
+        if (s_colorLoaded && s_curColorHeroine == heroine && s_curColorIndex == index)
+        {
+            return true;
+        }
+
+        char relPath[128];
+        snprintf(relPath, sizeof(relPath), "portraits/%s/haircolors/c_%02d.png", getHeroineDir(heroine), index);
+
+        if (!decodeAndTilePng(relPath, s_colorTex)) return false;
+
+        s_curColorHeroine = heroine;
+        s_curColorIndex = index;
+        s_colorLoaded = true;
+        return true;
+    }
+
+    void portraitDrawStyle(float x, float y, float scaleX, float scaleY)
+    {
+        if (!s_texInitialized || !s_styleLoaded) return;
+        C2D_Image img;
+        img.tex = &s_styleTex;
+        img.subtex = &s_styleSubtex;
+        C2D_DrawImageAt(img, x, y, GFX_DEPTH_DEFAULT, nullptr, scaleX, scaleY);
+    }
+
+    void portraitDrawColor(float x, float y, float scaleX, float scaleY)
+    {
+        if (!s_texInitialized || !s_colorLoaded) return;
+        C2D_Image img;
+        img.tex = &s_colorTex;
+        img.subtex = &s_colorSubtex;
+        C2D_DrawImageAt(img, x, y, GFX_DEPTH_DEFAULT, nullptr, scaleX, scaleY);
+    }
+
+    bool portraitIsStyleLoaded()
+    {
+        return s_styleLoaded;
+    }
+
+    bool portraitIsColorLoaded()
+    {
+        return s_colorLoaded;
+    }
+
+    bool portraitLoad(HeroineID heroine, PortraitCategory category, int index)
+    {
+        if (category == PORTRAIT_HAIRSTYLE)
+            return portraitLoadStyleIndex(heroine, index);
+        else
+            return portraitLoadColorIndex(heroine, index);
     }
 
     void portraitDraw(float x, float y)
     {
-        if (!s_texInitialized || !s_portraitLoaded) return;
-
-        C2D_Image img;
-        img.tex = &s_portraitTex;
-        img.subtex = &s_portraitSubtex;
-
-        C2D_DrawImageAt(img, x, y, GFX_DEPTH_DEFAULT, nullptr, 1.0f, 1.0f);
+        portraitDrawStyle(x, y);
     }
 
     bool portraitIsLoaded()
     {
-        return s_portraitLoaded;
+        return s_styleLoaded || s_colorLoaded;
     }
 
     // -------------------------------------------------------------------------
@@ -224,20 +294,20 @@ namespace nlpp
     {
         if (heroine == HEROINE_MANAKA)
         {
-            if (hairLength == 3) return 2; // Long
-            if (hairLength == 2) return 1; // Medium
+            if (hairLength >= 3) return 2; // Long
+            if (hairLength >= 1) return 1; // Medium
             return 0; // Short
         }
         else if (heroine == HEROINE_RINKO)
         {
-            if (hairLength == 3) return 2; // Long
-            if (hairLength == 1) return 1; // Medium / Bob
+            if (hairLength >= 3) return 2; // Long
+            if (hairLength >= 1) return 1; // Medium (stage 2 / stage 1)
             return 0; // Short
         }
         else // Nene
         {
-            if (hairLength == 2) return 2; // Long
-            if (hairLength == 1) return 1; // Medium / Bob
+            if (hairLength >= 2) return 2; // Long
+            if (hairLength >= 1) return 1; // Medium
             return 0; // Short
         }
     }
@@ -327,12 +397,12 @@ namespace nlpp
         {
             if (s.styleId == styleId)
             {
-                return portraitLoad(heroine, PORTRAIT_HAIRSTYLE, s.portraitIndex);
+                return portraitLoadStyleIndex(heroine, s.portraitIndex);
             }
         }
         if (!styles.empty())
         {
-            return portraitLoad(heroine, PORTRAIT_HAIRSTYLE, styles[0].portraitIndex);
+            return portraitLoadStyleIndex(heroine, styles[0].portraitIndex);
         }
         return false;
     }
@@ -340,7 +410,7 @@ namespace nlpp
     bool portraitLoadByColor(HeroineID heroine, uint8_t colorId)
     {
         if (colorId < 1 || colorId > 19) colorId = 1;
-        return portraitLoad(heroine, PORTRAIT_HAIRCOLOR, colorId);
+        return portraitLoadColorIndex(heroine, colorId);
     }
 
     std::string getCleanStyleName(HeroineID heroine, uint8_t hairLength, uint8_t styleId)

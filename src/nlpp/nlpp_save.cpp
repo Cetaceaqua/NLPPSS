@@ -2,6 +2,8 @@
 #include "nlpp_dict.h"
 #include "fs.h"
 #include "util.h"
+#include "cfg.h"
+#include "lodepng.h"
 #include <cstdio>
 #include <cstring>
 #include <ctime>
@@ -766,6 +768,56 @@ namespace nlpp
         m_modified = true;
     }
 
+#pragma pack(push, 1)
+    struct ZipLocalHeader
+    {
+        uint32_t signature;       // 0x04034b50
+        uint16_t versionNeeded;   // 20
+        uint16_t flags;           // 0
+        uint16_t compression;     // 8 = Deflate, 0 = Store
+        uint16_t modTime;
+        uint16_t modDate;
+        uint32_t crc32;
+        uint32_t compSize;
+        uint32_t uncompSize;
+        uint16_t nameLen;
+        uint16_t extraLen;
+    };
+
+    struct ZipCentralHeader
+    {
+        uint32_t signature;       // 0x02014b50
+        uint16_t versionMadeBy;   // 20
+        uint16_t versionNeeded;   // 20
+        uint16_t flags;           // 0
+        uint16_t compression;     // 8 = Deflate, 0 = Store
+        uint16_t modTime;
+        uint16_t modDate;
+        uint32_t crc32;
+        uint32_t compSize;
+        uint32_t uncompSize;
+        uint16_t nameLen;
+        uint16_t extraLen;
+        uint16_t commentLen;
+        uint16_t diskStart;
+        uint16_t internalAttr;
+        uint32_t externalAttr;
+        uint32_t localHeaderOffset;
+    };
+
+    struct ZipEOCD
+    {
+        uint32_t signature;       // 0x06054b50
+        uint16_t diskNum;
+        uint16_t cdStartDisk;
+        uint16_t numEntriesThisDisk;
+        uint16_t totalEntries;
+        uint32_t cdSize;
+        uint32_t cdOffset;
+        uint16_t commentLen;
+    };
+#pragma pack(pop)
+
     bool SaveManager::createAutoBackup(std::string *outPath)
     {
         time_t rawtime;
@@ -773,19 +825,153 @@ namespace nlpp
         struct tm *ti = localtime(&rawtime);
 
         char prefix = (m_source == SOURCE_GAMECARD) ? 'C' : 'D';
-        char dirName[128];
-        snprintf(dirName, sizeof(dirName), "/NLPPSS/Saves/%c_%04d_%02d_%02d_%02d_%02d_%02d",
+        char baseName[128];
+        snprintf(baseName, sizeof(baseName), "%c_%04d_%02d_%02d_%02d_%02d_%02d",
                  prefix,
                  ti->tm_year + 1900, ti->tm_mon + 1, ti->tm_mday,
                  ti->tm_hour, ti->tm_min, ti->tm_sec);
 
+        bool exportToZip = (cfg::config["zip"] == 1);
+
+        if (exportToZip)
+        {
+            char zipPath[160];
+            snprintf(zipPath, sizeof(zipPath), "/NLPPSS/Saves/%s.zip", baseName);
+
+            std::vector<uint8_t> zipBuffer;
+            std::vector<ZipCentralHeader> cdHeaders;
+            std::vector<std::string> fileNames;
+
+            uint16_t dosTime = (ti->tm_hour << 11) | (ti->tm_min << 5) | (ti->tm_sec >> 1);
+            uint16_t dosDate = ((ti->tm_year + 1900 - 1980) << 9) | ((ti->tm_mon + 1) << 5) | ti->tm_mday;
+
+            for (int i = 0; i < 81; ++i)
+            {
+                if (m_fileLoaded[i] && !m_files[i].empty())
+                {
+                    char fname[32];
+                    snprintf(fname, sizeof(fname), "savedata%d", i);
+                    std::string nameStr = fname;
+
+                    const uint8_t *inData = m_files[i].data();
+                    size_t inSize = m_files[i].size();
+                    uint32_t crc = lodepng_crc32(inData, inSize);
+
+                    unsigned char *compData = nullptr;
+                    size_t compSize = 0;
+                    LodePNGCompressSettings compSettings;
+                    lodepng_compress_settings_init(&compSettings);
+                    unsigned err = lodepng_deflate(&compData, &compSize, inData, inSize, &compSettings);
+
+                    uint16_t compMethod = 8;
+                    if (err != 0 || !compData || compSize >= inSize)
+                    {
+                        compMethod = 0;
+                        if (compData) { free(compData); compData = nullptr; }
+                    }
+
+                    uint32_t localOffset = (uint32_t)zipBuffer.size();
+
+                    ZipLocalHeader lh;
+                    lh.signature = 0x04034b50;
+                    lh.versionNeeded = 20;
+                    lh.flags = 0;
+                    lh.compression = compMethod;
+                    lh.modTime = dosTime;
+                    lh.modDate = dosDate;
+                    lh.crc32 = crc;
+                    lh.compSize = (compMethod == 8) ? (uint32_t)compSize : (uint32_t)inSize;
+                    lh.uncompSize = (uint32_t)inSize;
+                    lh.nameLen = (uint16_t)nameStr.length();
+                    lh.extraLen = 0;
+
+                    size_t curPos = zipBuffer.size();
+                    zipBuffer.resize(curPos + sizeof(lh) + lh.nameLen + lh.compSize);
+                    memcpy(&zipBuffer[curPos], &lh, sizeof(lh));
+                    memcpy(&zipBuffer[curPos + sizeof(lh)], nameStr.data(), lh.nameLen);
+                    if (compMethod == 8)
+                    {
+                        memcpy(&zipBuffer[curPos + sizeof(lh) + lh.nameLen], compData, compSize);
+                        free(compData);
+                    }
+                    else
+                    {
+                        memcpy(&zipBuffer[curPos + sizeof(lh) + lh.nameLen], inData, inSize);
+                    }
+
+                    ZipCentralHeader cd;
+                    cd.signature = 0x02014b50;
+                    cd.versionMadeBy = 20;
+                    cd.versionNeeded = 20;
+                    cd.flags = 0;
+                    cd.compression = compMethod;
+                    cd.modTime = dosTime;
+                    cd.modDate = dosDate;
+                    cd.crc32 = crc;
+                    cd.compSize = lh.compSize;
+                    cd.uncompSize = lh.uncompSize;
+                    cd.nameLen = lh.nameLen;
+                    cd.extraLen = 0;
+                    cd.commentLen = 0;
+                    cd.diskStart = 0;
+                    cd.internalAttr = 0;
+                    cd.externalAttr = 0;
+                    cd.localHeaderOffset = localOffset;
+
+                    cdHeaders.push_back(cd);
+                    fileNames.push_back(nameStr);
+                }
+            }
+
+            uint32_t cdOffset = (uint32_t)zipBuffer.size();
+            for (size_t k = 0; k < cdHeaders.size(); ++k)
+            {
+                size_t curPos = zipBuffer.size();
+                zipBuffer.resize(curPos + sizeof(ZipCentralHeader) + fileNames[k].length());
+                memcpy(&zipBuffer[curPos], &cdHeaders[k], sizeof(ZipCentralHeader));
+                memcpy(&zipBuffer[curPos + sizeof(ZipCentralHeader)], fileNames[k].data(), fileNames[k].length());
+            }
+            uint32_t cdSize = (uint32_t)zipBuffer.size() - cdOffset;
+
+            ZipEOCD eocd;
+            eocd.signature = 0x06054b50;
+            eocd.diskNum = 0;
+            eocd.cdStartDisk = 0;
+            eocd.numEntriesThisDisk = (uint16_t)cdHeaders.size();
+            eocd.totalEntries = (uint16_t)cdHeaders.size();
+            eocd.cdSize = cdSize;
+            eocd.cdOffset = cdOffset;
+            eocd.commentLen = 0;
+
+            size_t curPos = zipBuffer.size();
+            zipBuffer.resize(curPos + sizeof(eocd));
+            memcpy(&zipBuffer[curPos], &eocd, sizeof(eocd));
+
+            FS_Path zipFsPath = fsMakePath(PATH_ASCII, zipPath);
+            FSUSER_CreateFile(fs::getSDMCArch(), zipFsPath, 0, zipBuffer.size());
+
+            Handle fh;
+            Result res = FSUSER_OpenFile(&fh, fs::getSDMCArch(), zipFsPath, FS_OPEN_WRITE, 0);
+            if (R_SUCCEEDED(res))
+            {
+                u32 written = 0;
+                FSFILE_Write(fh, &written, 0, zipBuffer.data(), zipBuffer.size(), FS_WRITE_FLUSH);
+                FSFILE_Close(fh);
+            }
+
+            if (outPath) *outPath = zipPath;
+            return true;
+        }
+
+        char dirName[160];
+        snprintf(dirName, sizeof(dirName), "/NLPPSS/Saves/%s", baseName);
         fs::createDirRec(fs::getSDMCArch(), util::toUtf16(dirName));
 
         for (int i = 0; i < 81; ++i)
         {
             if (m_fileLoaded[i] && !m_files[i].empty())
             {
-                char filePath[128];
+                char filePath[160];
                 snprintf(filePath, sizeof(filePath), "%s/savedata%d", dirName, i);
 
                 FS_Path binPath = fsMakePath(PATH_ASCII, filePath);
@@ -819,17 +1005,24 @@ namespace nlpp
         u32 entriesRead = 0;
         while (R_SUCCEEDED(FSDIR_Read(dirHandle, &entriesRead, 1, &entry)) && entriesRead > 0)
         {
+            std::string name = util::toUtf8((char16_t *)entry.name);
+            if (name == "." || name == "..") continue;
+
             if (entry.attributes & FS_ATTRIBUTE_DIRECTORY)
             {
-                std::string name = util::toUtf8((char16_t *)entry.name);
-                if (name != "." && name != "..")
-                {
-                    BackupInfo info;
-                    info.dirName = name;
-                    info.fullPath = root + "/" + name;
-                    info.dateStr = name;
-                    list.push_back(info);
-                }
+                BackupInfo info;
+                info.dirName = name;
+                info.fullPath = root + "/" + name;
+                info.dateStr = name;
+                list.push_back(info);
+            }
+            else if (util::endsWith(name, std::string(".zip")))
+            {
+                BackupInfo info;
+                info.dirName = name;
+                info.fullPath = root + "/" + name;
+                info.dateStr = name;
+                list.push_back(info);
             }
         }
         FSDIR_Close(dirHandle);
@@ -842,26 +1035,118 @@ namespace nlpp
 
     bool SaveManager::restoreBackup(const std::string &backupDir)
     {
-        for (int i = 0; i < 81; ++i)
+        if (util::endsWith(backupDir, std::string(".zip")))
         {
-            char filePath[128];
-            snprintf(filePath, sizeof(filePath), "%s/savedata%d", backupDir.c_str(), i);
-
             Handle fh;
-            Result res = FSUSER_OpenFile(&fh, fs::getSDMCArch(), fsMakePath(PATH_ASCII, filePath), FS_OPEN_READ, 0);
-            if (R_SUCCEEDED(res))
+            Result res = FSUSER_OpenFile(&fh, fs::getSDMCArch(), fsMakePath(PATH_ASCII, backupDir.c_str()), FS_OPEN_READ, 0);
+            if (R_FAILED(res)) return false;
+
+            u64 zipFileSize = 0;
+            FSFILE_GetSize(fh, &zipFileSize);
+            if (zipFileSize < sizeof(ZipEOCD))
             {
-                u64 fsize = 0;
-                FSFILE_GetSize(fh, &fsize);
-                if (fsize > 0 && fsize < 1024 * 1024)
-                {
-                    m_files[i].resize(fsize);
-                    u32 bytesRead = 0;
-                    FSFILE_Read(fh, &bytesRead, 0, m_files[i].data(), fsize);
-                    m_fileLoaded[i] = true;
-                    m_fileDirty[i] = true;
-                }
                 FSFILE_Close(fh);
+                return false;
+            }
+
+            std::vector<uint8_t> zipBytes(zipFileSize);
+            u32 bytesRead = 0;
+            FSFILE_Read(fh, &bytesRead, 0, zipBytes.data(), zipFileSize);
+            FSFILE_Close(fh);
+
+            int eocdPos = -1;
+            for (int p = (int)zipBytes.size() - (int)sizeof(ZipEOCD); p >= 0 && p >= (int)zipBytes.size() - 65557; --p)
+            {
+                if (*(const uint32_t *)&zipBytes[p] == 0x06054b50)
+                {
+                    eocdPos = p;
+                    break;
+                }
+            }
+            if (eocdPos < 0) return false;
+
+            const ZipEOCD *eocd = (const ZipEOCD *)&zipBytes[eocdPos];
+            uint32_t cdOffset = eocd->cdOffset;
+            uint16_t totalEntries = eocd->totalEntries;
+
+            size_t p = cdOffset;
+            for (uint16_t e = 0; e < totalEntries && p + sizeof(ZipCentralHeader) <= zipBytes.size(); ++e)
+            {
+                const ZipCentralHeader *cd = (const ZipCentralHeader *)&zipBytes[p];
+                if (cd->signature != 0x02014b50) break;
+
+                std::string fname((const char *)&zipBytes[p + sizeof(ZipCentralHeader)], cd->nameLen);
+                p += sizeof(ZipCentralHeader) + cd->nameLen + cd->extraLen + cd->commentLen;
+
+                int fileIdx = -1;
+                size_t sPos = fname.find("savedata");
+                if (sPos != std::string::npos)
+                {
+                    fileIdx = atoi(fname.c_str() + sPos + 8);
+                }
+
+                if (fileIdx >= 0 && fileIdx < 81)
+                {
+                    uint32_t lhOffset = cd->localHeaderOffset;
+                    if (lhOffset + sizeof(ZipLocalHeader) <= zipBytes.size())
+                    {
+                        const ZipLocalHeader *lh = (const ZipLocalHeader *)&zipBytes[lhOffset];
+                        if (lh->signature == 0x04034b50)
+                        {
+                            size_t dataOffset = lhOffset + sizeof(ZipLocalHeader) + lh->nameLen + lh->extraLen;
+                            if (dataOffset + lh->compSize <= zipBytes.size())
+                            {
+                                const uint8_t *compPtr = &zipBytes[dataOffset];
+                                if (lh->compression == 0) // Store
+                                {
+                                    m_files[fileIdx].assign(compPtr, compPtr + lh->uncompSize);
+                                    m_fileLoaded[fileIdx] = true;
+                                    m_fileDirty[fileIdx] = true;
+                                }
+                                else if (lh->compression == 8) // Deflate
+                                {
+                                    unsigned char *uncomp = nullptr;
+                                    size_t uncompSize = 0;
+                                    LodePNGDecompressSettings decSettings;
+                                    lodepng_decompress_settings_init(&decSettings);
+                                    unsigned err = lodepng_inflate(&uncomp, &uncompSize, compPtr, lh->compSize, &decSettings);
+                                    if (err == 0 && uncomp)
+                                    {
+                                        m_files[fileIdx].assign(uncomp, uncomp + uncompSize);
+                                        m_fileLoaded[fileIdx] = true;
+                                        m_fileDirty[fileIdx] = true;
+                                        free(uncomp);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            for (int i = 0; i < 81; ++i)
+            {
+                char filePath[128];
+                snprintf(filePath, sizeof(filePath), "%s/savedata%d", backupDir.c_str(), i);
+
+                Handle fh;
+                Result res = FSUSER_OpenFile(&fh, fs::getSDMCArch(), fsMakePath(PATH_ASCII, filePath), FS_OPEN_READ, 0);
+                if (R_SUCCEEDED(res))
+                {
+                    u64 fsize = 0;
+                    FSFILE_GetSize(fh, &fsize);
+                    if (fsize > 0 && fsize < 1024 * 1024)
+                    {
+                        m_files[i].resize(fsize);
+                        u32 bytesRead = 0;
+                        FSFILE_Read(fh, &bytesRead, 0, m_files[i].data(), fsize);
+                        m_fileLoaded[i] = true;
+                        m_fileDirty[i] = true;
+                    }
+                    FSFILE_Close(fh);
+                }
             }
         }
 

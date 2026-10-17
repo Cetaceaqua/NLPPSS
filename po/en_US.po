@@ -1275,3 +1275,12 @@ msgstr "Default Slot"
 
 msgid "默认存档类型"
 msgstr "Default Type"
+
+msgid "长发"
+msgstr "Long"
+
+msgid "中长发"
+msgstr "Medium"
+
+msgid "短发"
+msgstr "Short"

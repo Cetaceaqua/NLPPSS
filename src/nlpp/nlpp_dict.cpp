@@ -1,4 +1,5 @@
 #include "nlpp_dict.h"
+#include "ui.h"
 #include <cstdio>
 #include <cstring>
 #include <algorithm>
@@ -303,29 +304,35 @@ namespace nlpp
         return "基本";
     }
 
-    const char *Dict::getHairLengthName(HeroineID heroine, uint8_t stage)
+    std::string Dict::getHairLengthName(HeroineID heroine, uint8_t stage)
     {
+        // 0: Long, 1: Medium, 2: Short
+        int cat = 1;
         switch (heroine)
         {
             case HEROINE_MANAKA:
-                if (stage == 3) return "ロング (长发)";
-                if (stage == 2) return "ミディアム (中长发/默认)";
-                if (stage == 0) return "ショート (短发)";
+                if (stage >= 3) cat = 0;
+                else if (stage == 2 || stage == 1) cat = 1;
+                else cat = 2;
                 break;
             case HEROINE_RINKO:
-                if (stage == 3) return "ロング (双马尾长发)";
-                if (stage == 1) return "ボブ (波波头/默认)";
-                if (stage == 0) return "ショート (短发)";
+                if (stage >= 3) cat = 0;
+                else if (stage == 2 || stage == 1) cat = 1;
+                else cat = 2;
                 break;
             case HEROINE_NENE:
-                if (stage == 2) return "ロング (波浪及肩/默认)";
-                if (stage == 1) return "ボブ (俏丽波波头)";
-                if (stage == 0) return "ショート (短发)";
+                if (stage >= 2) cat = 0;
+                else if (stage == 1) cat = 1;
+                else cat = 2;
                 break;
             default:
+                cat = 1;
                 break;
         }
-        return "標準";
+
+        if (cat == 0) return std::string("ロング ") + getTxt("长发");
+        if (cat == 1) return std::string("ミドル ") + getTxt("中长发");
+        return std::string("ショート ") + getTxt("短发");
     }
 
     std::vector<uint8_t> Dict::getValidLengthStages(HeroineID heroine)
@@ -333,7 +340,7 @@ namespace nlpp
         switch (heroine)
         {
             case HEROINE_MANAKA: return {3, 2, 0};
-            case HEROINE_RINKO:  return {3, 1, 0};
+            case HEROINE_RINKO:  return {3, 2, 0};
             case HEROINE_NENE:   return {2, 1, 0};
             default:             return {0};
         }

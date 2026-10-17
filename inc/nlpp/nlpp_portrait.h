@@ -31,19 +31,25 @@ namespace nlpp
     void portraitInit();
     void portraitExit();
 
-    // Load portrait for specific heroine, category, and 1-based index
-    bool portraitLoad(HeroineID heroine, PortraitCategory category, int index);
-
-    // Load portrait directly for heroine, hair length stage, and styleId
+    // Dual texture loaders
     bool portraitLoadByStyle(HeroineID heroine, uint8_t hairLength, uint8_t styleId);
-
-    // Load portrait directly for heroine and hair colorId (1..19)
     bool portraitLoadByColor(HeroineID heroine, uint8_t colorId);
 
-    // Draw currently loaded portrait at screen coordinates (x, y)
-    void portraitDraw(float x, float y);
+    // Submenu preview loaders by 1-based index (1..45 for style, 1..19 for color)
+    bool portraitLoadStyleIndex(HeroineID heroine, int index);
+    bool portraitLoadColorIndex(HeroineID heroine, int index);
 
-    // Whether a valid portrait is loaded and ready to draw
+    // Draw functions for upper screen
+    void portraitDrawStyle(float x, float y, float scaleX = 1.0f, float scaleY = 1.0f);
+    void portraitDrawColor(float x, float y, float scaleX = 1.0f, float scaleY = 1.0f);
+
+    // Status queries
+    bool portraitIsStyleLoaded();
+    bool portraitIsColorLoaded();
+
+    // Backward compatibility functions
+    bool portraitLoad(HeroineID heroine, PortraitCategory category, int index);
+    void portraitDraw(float x, float y);
     bool portraitIsLoaded();
 
     // Get list of hairstyle options for heroine and length stage (0: Short, 1/2: Medium, 2/3: Long)

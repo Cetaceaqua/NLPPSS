@@ -1577,3 +1577,12 @@ msgstr "預設存檔槽位"
 
 msgid "默认存档类型"
 msgstr "預設存檔類型"
+
+msgid "长发"
+msgstr "長髮"
+
+msgid "中长发"
+msgstr "中長髮"
+
+msgid "短发"
+msgstr "短髮"

@@ -35,7 +35,7 @@ namespace nlpp
         static const char *getStyleName(uint8_t styleId);
 
         // Hair length stage names
-        static const char *getHairLengthName(HeroineID heroine, uint8_t stage);
+        static std::string getHairLengthName(HeroineID heroine, uint8_t stage);
         static std::vector<uint8_t> getValidLengthStages(HeroineID heroine);
 
         // Couple Titles (1..23)

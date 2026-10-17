@@ -273,7 +273,7 @@ namespace ui
         {
             char prompt[64];
             snprintf(prompt, sizeof(prompt), "%s %d -> %s", getTxt("复制槽位"), s_copySrcSlot + 1, getTxt("选择目标槽位"));
-            gfx::drawText(prompt, 20, 16, GFX_DEPTH_DEFAULT, 0.55f, gfx::txtCont);
+            gfx::drawText(prompt, 20, 16, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
             s_copyDstMenu.draw(20, 50, gfx::txtCont, 280, true);
             ui::drawUIBar(getTxt("\ue000 确定  \ue001 取消"), ui::SCREEN_BOT, true);
             return;
@@ -365,7 +365,14 @@ namespace ui
         int sel = s_bakMenu.getSelected();
         if (sel >= 0 && sel < (int)s_backups.size())
         {
-            fs::delDirRec(fs::getSDMCArch(), util::toUtf16(s_backups[sel].fullPath));
+            if (util::endsWith(s_backups[sel].fullPath, std::string(".zip")))
+            {
+                FSUSER_DeleteFile(fs::getSDMCArch(), fsMakePath(PATH_ASCII, s_backups[sel].fullPath.c_str()));
+            }
+            else
+            {
+                fs::delDirRec(fs::getSDMCArch(), util::toUtf16(s_backups[sel].fullPath));
+            }
             backupMgrRefresh();
             ui::showMessage(getTxt("备份已删除！"));
         }
@@ -434,7 +441,7 @@ namespace ui
 
         if (s_backups.empty())
         {
-            gfx::drawText(getTxt("暂无存档备份数据"), 20, 40, GFX_DEPTH_DEFAULT, 0.55f, gfx::divClr);
+            gfx::drawText(getTxt("暂无存档备份数据"), 20, 40, GFX_DEPTH_DEFAULT, 0.5f, gfx::divClr);
             return;
         }
 
@@ -445,7 +452,7 @@ namespace ui
     {
         if (s_restoreMenuOpen)
         {
-            gfx::drawText(getTxt("请选择恢复目标介质："), 20, 20, GFX_DEPTH_DEFAULT, 0.55f, gfx::txtCont);
+            gfx::drawText(getTxt("请选择恢复目标介质："), 20, 20, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
             s_restoreMenu.draw(20, 60, gfx::txtCont, 280, true);
             ui::drawUIBar(getTxt("\ue000 确定  \ue001 取消"), ui::SCREEN_BOT, true);
             return;
@@ -545,8 +552,9 @@ namespace ui
             s_editorMenu.addOpt(getTxt("★ 重新读取"), 300);
             s_editorMenu.addOpt(getTxt("♥ 保存修改"), 300);
 
-            // Live update portrait
+            // Live update portraits (style and color)
             nlpp::portraitLoadByStyle(sd.girlfriend.heroine, sd.girlfriend.hairLength, sd.girlfriend.hairStyleId);
+            nlpp::portraitLoadByColor(sd.girlfriend.heroine, sd.girlfriend.hairColorId);
         }
         else if (s_editorPage == 3) // 4. 其他
         {
@@ -591,6 +599,9 @@ namespace ui
         s_subAction = ACTION_NONE;
 
         nlpp::portraitInit();
+        const auto &sd = nlpp::g_saveMgr.getSlotData(slot);
+        nlpp::portraitLoadByStyle(sd.girlfriend.heroine, sd.girlfriend.hairLength, sd.girlfriend.hairStyleId);
+        nlpp::portraitLoadByColor(sd.girlfriend.heroine, sd.girlfriend.hairColorId);
         refreshEditorPageMenu();
     }
 
@@ -698,7 +709,7 @@ namespace ui
                 int sel = s_editorSubMenu.getSelected();
                 if (sel >= 0 && sel < (int)s_curStyleOptions.size())
                 {
-                    nlpp::portraitLoad(sd.girlfriend.heroine, nlpp::PORTRAIT_HAIRSTYLE, s_curStyleOptions[sel].portraitIndex);
+                    nlpp::portraitLoadStyleIndex(sd.girlfriend.heroine, s_curStyleOptions[sel].portraitIndex);
                 }
             }
             else if (s_subAction == ACTION_HAIR_COLOR)
@@ -706,7 +717,7 @@ namespace ui
                 int sel = s_editorSubMenu.getSelected();
                 if (sel >= 0 && sel < (int)s_curColorOptions.size())
                 {
-                    nlpp::portraitLoad(sd.girlfriend.heroine, nlpp::PORTRAIT_HAIRCOLOR, s_curColorOptions[sel].portraitIndex);
+                    nlpp::portraitLoadColorIndex(sd.girlfriend.heroine, s_curColorOptions[sel].portraitIndex);
                 }
             }
 
@@ -1019,7 +1030,7 @@ namespace ui
                      getTxt("生日"), sd.profile.birthMonth, getTxt("月"), sd.profile.birthDay, getTxt("日"),
                      getTxt("血型"), nlpp::Dict::getBloodTypeName(sd.profile.blood), getTxt("型"),
                      getTxt("出身地"), nlpp::Dict::getPrefectureName(sd.profile.prefecture));
-            gfx::drawText(buf, 20, 36, GFX_DEPTH_DEFAULT, 0.52f, gfx::txtCont);
+            gfx::drawText(buf, 20, 36, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
         }
         else if (s_editorPage == 1) // 2. 玩家称呼
         {
@@ -1037,21 +1048,41 @@ namespace ui
                      getTxt("2 后缀称呼"), nlpp::Dict::getReadingText(sd.stats.readings[2]).c_str(),
                      getTxt("3 预设称呼"), nlpp::Dict::getReadingText(sd.stats.readings[3]).c_str(),
                      getTxt("4 特殊称呼"), nlpp::Dict::getReadingText(sd.stats.readings[4]).c_str());
-            gfx::drawText(buf, 20, 32, GFX_DEPTH_DEFAULT, 0.48f, gfx::txtCont);
+            gfx::drawText(buf, 20, 32, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
         }
         else if (s_editorPage == 2) // 3. 女友发型
         {
-            // Left text: NO blank line! Hairstyle name has NO length prefix! Hair color has NO initial color marker!
-            char buf[256];
-            snprintf(buf, sizeof(buf),
-                     "%s: %s\n%s: %s\n%s: %s",
-                     getTxt("发长"), nlpp::Dict::getHairLengthName(sd.girlfriend.heroine, sd.girlfriend.hairLength),
-                     getTxt("发型"), nlpp::getCleanStyleName(sd.girlfriend.heroine, sd.girlfriend.hairLength, sd.girlfriend.hairStyleId).c_str(),
-                     getTxt("发色"), nlpp::getCleanColorName(sd.girlfriend.heroine, sd.girlfriend.hairColorId).c_str());
-            gfx::drawText(buf, 20, 40, GFX_DEPTH_DEFAULT, 0.52f, gfx::txtCont);
+            std::string curStyleName = nlpp::getCleanStyleName(sd.girlfriend.heroine, sd.girlfriend.hairLength, sd.girlfriend.hairStyleId);
+            std::string curColorName = nlpp::getCleanColorName(sd.girlfriend.heroine, sd.girlfriend.hairColorId);
 
-            // Right side: 1:1 aligned portrait (146 x 170)
-            nlpp::portraitDraw(238, 35);
+            if (s_editorSubMenuOpen && s_subAction == ACTION_HAIR_STYLE)
+            {
+                int sel = s_editorSubMenu.getSelected();
+                if (sel >= 0 && sel < (int)s_curStyleOptions.size())
+                    curStyleName = s_curStyleOptions[sel].displayName;
+            }
+            else if (s_editorSubMenuOpen && s_subAction == ACTION_HAIR_COLOR)
+            {
+                int sel = s_editorSubMenu.getSelected();
+                if (sel >= 0 && sel < (int)s_curColorOptions.size())
+                    curColorName = s_curColorOptions[sel].displayName;
+            }
+
+            // Line 1: Hair Length (top)
+            char lenBuf[128];
+            snprintf(lenBuf, sizeof(lenBuf), "%s: %s", getTxt("发长"), nlpp::Dict::getHairLengthName(sd.girlfriend.heroine, sd.girlfriend.hairLength).c_str());
+            gfx::drawText(lenBuf, 36, 20, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
+
+            // Line 2: Hairstyle label above left portrait, Hair color label above right portrait
+            char styleBuf[128], colorBuf[128];
+            snprintf(styleBuf, sizeof(styleBuf), "%s: %s", getTxt("发型"), curStyleName.c_str());
+            snprintf(colorBuf, sizeof(colorBuf), "%s: %s", getTxt("发色"), curColorName.c_str());
+            gfx::drawText(styleBuf, 36, 36, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
+            gfx::drawText(colorBuf, 218, 36, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
+
+            // Draw both portraits 1:1 (146 x 170)
+            nlpp::portraitDrawStyle(36, 54);
+            nlpp::portraitDrawColor(218, 54);
         }
         else if (s_editorPage == 3) // 4. 其他
         {
@@ -1076,7 +1107,7 @@ namespace ui
                      getTxt("金钱"), (int)sd.stats.rich,
                      getTxt("TODO"), (int)sd.stats.todo, getTxt("点"),
                      getTxt("滤镜"), fStr.c_str());
-            gfx::drawText(buf, 20, 26, GFX_DEPTH_DEFAULT, 0.47f, gfx::txtCont);
+            gfx::drawText(buf, 20, 26, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
         }
     }
 
