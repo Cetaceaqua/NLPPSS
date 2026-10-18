@@ -30,14 +30,53 @@ msgstr "3 Preset Reading"
 msgid "4 特殊读音"
 msgstr "4 Special Reading"
 
+msgid "AB型"
+msgstr "AB"
+
+msgid "A型"
+msgstr "A"
+
+msgid "B型"
+msgstr "B"
+
 msgid "NEW (可爱)"
 msgstr "NEW (Cute)"
+
+msgid "O型"
+msgstr "O"
 
 msgid "TODO"
 msgstr "TODO"
 
 msgid "ZIP 压缩等级"
 msgstr "ZIP Compression Level"
+
+msgid "\uE000 修改/执行  \uE001 返回  \uE01A\uE077\uE019 切换页面"
+msgstr "\uE000 Edit/Execute  \uE001 Back  \uE01A\uE077\uE019 Switch Page"
+
+msgid "\uE000 切换/选择  \uE01A\uE077\uE019 切换页面"
+msgstr "\uE000 Toggle/Select  \uE01A\uE077\uE019 Switch Page"
+
+msgid "\uE000 恢复  \uE002 删除  \uE01A\uE077\uE019 切换页面"
+msgstr "\uE000 Restore  \uE002 Delete  \uE01A\uE077\uE019 Switch Page"
+
+msgid "\uE000 确定  \uE001 取消"
+msgstr "\uE000 Confirm  \uE001 Cancel"
+
+msgid "\uE000 确定  \uE001 取消  \uE002 退格  START 完成  \uE01A\uE077\uE019 模式"
+msgstr "\uE000 OK  \uE001 Cancel  \uE002 Backspace  START Done  \uE01A\uE077\uE019 Mode"
+
+msgid "\uE000 选择  \uE002 复制  \uE003 备份  SELECT 清除  \uE001 关闭"
+msgstr "\uE000 Select  \uE002 Copy  \uE003 Backup  SELECT Clear  \uE001 Close"
+
+msgid "\uE000 选择  \uE01A\uE077\uE019 切换页面"
+msgstr "\uE000 Select  \uE01A\uE077\uE019 Switch Page"
+
+msgid "\uE000 选择 \uE002 删除 \uE003 恢复 \uE001 关闭"
+msgstr "\uE000 Select \uE002 Delete \uE003 Restore \uE001 Close"
+
+msgid "\uE000 选择 \uE002 删除 \uE003 恢复 \uE005 上传 \uE001 关闭"
+msgstr "\uE000 Select \uE002 Delete \uE003 Restore \uE005 Upload \uE001 Close"
 
 msgid "★ 重新加载"
 msgstr "★ Reload"
@@ -49,7 +88,7 @@ msgid "上线天数"
 msgstr "Dating Days"
 
 msgid "中长发"
-msgstr "Medium Hair"
+msgstr "Medium"
 
 msgid "休闲 A"
 msgstr "Casual A"
@@ -63,14 +102,14 @@ msgstr "Casual C"
 msgid "使用中"
 msgstr "Equipped"
 
+msgid "保存修改时，自动在 sdmc:/NLPPSS/Saves 中创建备份。"
+msgstr "Automatically back up saves to sdmc:/NLPPSS/Saves when saving changes."
+
 msgid "修改保存失败！"
 msgstr "Failed to save changes!"
 
 msgid "修改保存成功！"
 msgstr "Changes saved successfully!"
-
-msgid "保存修改时，自动在 sdmc:/NLPPSS/Saves 中创建备份。"
-msgstr "Automatically back up saves to sdmc:/NLPPSS/Saves when saving changes."
 
 msgid "假名"
 msgstr "Kana"
@@ -78,14 +117,17 @@ msgstr "Kana"
 msgid "关"
 msgstr "OFF"
 
+msgid "其他"
+msgstr "Other"
+
 msgid "内置键盘"
 msgstr "Built-in Keyboard"
 
+msgid "写入存档数据失败！\n错误：0x%08X"
+msgstr "Failed to write save data!\nError: 0x%08X"
+
 msgid "出身地"
 msgstr "Hometown"
-
-msgid "移除滤镜"
-msgstr "Remove Filter"
 
 msgid "发型"
 msgstr "Hairstyle"
@@ -111,17 +153,20 @@ msgstr "Cute C"
 msgid "名字"
 msgstr "First Name"
 
+msgid "否 \ue001"
+msgstr "No \ue001"
+
 msgid "启动时自动加载存档"
 msgstr "Load Save on Startup"
 
 msgid "启动时跳过菜单，直接加载默认存档。"
 msgstr "Skip the menu and load the default save on startup."
 
-msgid "启动时默认加载的存档类型。"
-msgstr "Default save type loaded on startup."
-
 msgid "启动时默认加载的存档槽位。"
 msgstr "Default save slot loaded on startup."
+
+msgid "启动时默认加载的存档类型。"
+msgstr "Default save type loaded on startup."
 
 msgid "哥特萝莉 (可爱)"
 msgstr "Gothic Lolita (Cute)"
@@ -152,6 +197,9 @@ msgstr "Caps"
 
 msgid "天"
 msgstr "Days"
+
+msgid "女友发型"
+msgstr "Girlfriend Hairstyle"
 
 msgid "姐崎宁宁"
 msgstr "Nene Anegasaki"
@@ -201,14 +249,14 @@ msgstr "Rinko Kobayakawa"
 msgid "居家 (休闲)"
 msgstr "Home (Casual)"
 
+msgid "已将女友的发型和发色重置为默认值！"
+msgstr "Girlfriend's hairstyle and hair color reset to defaults!"
+
 msgid "已成功移除相机滤镜！"
 msgstr "Camera filter successfully removed!"
 
 msgid "已重新加载当前存档数据！"
 msgstr "Current save data reloaded!"
-
-msgid "已将女友的发型和发色重置为默认值！"
-msgstr "Girlfriend's hairstyle and hair color reset to defaults!"
 
 msgid "平假名"
 msgstr "Hiragana"
@@ -234,11 +282,11 @@ msgstr "Restore to Digital"
 msgid "感性属性值"
 msgstr "Sensibility"
 
+msgid "找不到匹配的读音！"
+msgstr "No matching reading found!"
+
 msgid "拼音"
 msgstr "Pinyin"
-
-msgid "写入存档数据失败！\n错误：0x%08X"
-msgstr "Failed to write save data!\nError: 0x%08X"
 
 msgid "搜索读音"
 msgstr "Search Reading"
@@ -252,32 +300,32 @@ msgstr "No Filter"
 msgid "日"
 msgstr "Days"
 
-msgid "明亮色／红 A"
+msgid "明亮色／偏红 A"
 msgstr "Bright / Reddish A"
 
-msgid "明亮色／红 B"
+msgid "明亮色／偏红 B"
 msgstr "Bright / Reddish B"
 
-msgid "明亮色／黄 A"
+msgid "明亮色／偏黄 A"
 msgstr "Bright / Yellowish A"
 
-msgid "明亮色／黄 B"
+msgid "明亮色／偏黄 B"
 msgstr "Bright / Yellowish B"
 
-msgid "明亮色／黑 A"
+msgid "明亮色／偏黑 A"
 msgstr "Bright / Dark A"
 
-msgid "明亮色／黑 B"
+msgid "明亮色／偏黑 B"
 msgstr "Bright / Dark B"
 
-msgid "未找到存档备份。"
-msgstr "No save backups found."
+msgid "是 \ue000"
+msgstr "Yes \ue000"
 
 msgid "月"
 msgstr "Month"
 
-msgid "找不到匹配的读音！"
-msgstr "No matching reading found!"
+msgid "未找到存档备份。"
+msgstr "No save backups found."
 
 msgid "未插入游戏卡带，或未检测到卡带存档！"
 msgstr "No cartridge inserted or no cartridge save data found!"
@@ -351,6 +399,12 @@ msgstr "Special / Green"
 msgid "特殊色／蓝色"
 msgstr "Special / Blue"
 
+msgid "玩家信息"
+msgstr "Player Info"
+
+msgid "玩家读音"
+msgstr "Player Reading"
+
 msgid "生日"
 msgstr "Birthday"
 
@@ -370,7 +424,10 @@ msgid "知识属性值"
 msgstr "Knowledge"
 
 msgid "短发"
-msgstr "Short Hair"
+msgstr "Short"
+
+msgid "确定 \ue000"
+msgstr "OK \ue000"
 
 msgid "确定要保存当前槽位的修改吗？"
 msgstr "Save changes to the current slot?"
@@ -380,6 +437,9 @@ msgstr "Delete backup %s?"
 
 msgid "确定要备份此存档吗？"
 msgstr "Backup this save file?"
+
+msgid "确定要将女友的发型和发色重置为默认值吗？"
+msgstr "Reset girlfriend's hairstyle and hair color to their defaults?"
 
 msgid "确定要将槽位 %d 复制到槽位 %d 吗？"
 msgstr "Copy Slot %d to Slot %d?"
@@ -393,8 +453,8 @@ msgstr "Clear Slot %d?"
 msgid "确定要退出存档编辑吗？"
 msgstr "Exit save editing?"
 
-msgid "确定要将女友的发型和发色重置为默认值吗？"
-msgstr "Reset girlfriend's hairstyle and hair color to their defaults?"
+msgid "移除滤镜"
+msgstr "Remove Filter"
 
 msgid "空格"
 msgstr "Space"
@@ -405,22 +465,22 @@ msgstr "Auto Backup"
 msgid "自然 (清纯)"
 msgstr "Natural (Pure)"
 
-msgid "自然茶色／红 A"
+msgid "自然茶色／偏红 A"
 msgstr "Natural Brown / Reddish A"
 
-msgid "自然茶色／红 B"
+msgid "自然茶色／偏红 B"
 msgstr "Natural Brown / Reddish B"
 
-msgid "自然茶色／黄 A"
+msgid "自然茶色／偏黄 A"
 msgstr "Natural Brown / Yellowish A"
 
-msgid "自然茶色／黄 B"
+msgid "自然茶色／偏黄 B"
 msgstr "Natural Brown / Yellowish B"
 
-msgid "自然茶色／黑 A"
+msgid "自然茶色／偏黑 A"
 msgstr "Natural Brown / Dark A"
 
-msgid "自然茶色／黑 B"
+msgid "自然茶色／偏黑 B"
 msgstr "Natural Brown / Dark B"
 
 msgid "血型"
@@ -428,6 +488,9 @@ msgstr "Blood Type"
 
 msgid "设置"
 msgstr "Settings"
+
+msgid "设置 ZIP 备份的压缩等级 (1~9)。"
+msgstr "Set the ZIP backup compression level (1~9)."
 
 msgid "该槽位为空，无法复制！"
 msgstr "Slot is empty, cannot clone!"
@@ -450,9 +513,6 @@ msgstr "Enter dating days (1-9999)"
 msgid "输入名字"
 msgstr "Enter first name"
 
-msgid "输入文本时使用内置键盘。关闭后将使用 3DS 系统键盘。"
-msgstr "Use the built-in keyboard for text input. When disabled, uses Nintendo 3DS system keyboard."
-
 msgid "输入姓氏"
 msgstr "Enter last name"
 
@@ -461,6 +521,9 @@ msgstr "Enter total days (1-9999)"
 
 msgid "输入感性属性值 (0-255)"
 msgstr "Enter sensibility (0-255)"
+
+msgid "输入文本时使用内置键盘。关闭后将使用 3DS 系统键盘。"
+msgstr "Use the built-in keyboard for text input. When disabled, uses Nintendo 3DS system keyboard."
 
 msgid "输入知识属性值 (0-255)"
 msgstr "Enter knowledge (0-255)"
@@ -489,9 +552,6 @@ msgstr "Select the UI theme."
 msgid "选择界面显示语言。"
 msgstr "Select the UI display language."
 
-msgid "设置 ZIP 备份的压缩等级 (1~9)。"
-msgstr "Set the ZIP backup compression level (1~9)."
-
 msgid "选择目标槽位"
 msgstr "Select Target Slot"
 
@@ -505,10 +565,10 @@ msgid "重置槽位失败！"
 msgstr "Failed to reset slot!"
 
 msgid "金钱"
-msgstr "Rich (Money)"
+msgstr "Rich"
 
 msgid "长发"
-msgstr "Long Hair"
+msgstr "Long"
 
 msgid "高岭爱花"
 msgstr "Manaka Takane"
@@ -527,31 +587,4 @@ msgstr "Default Slot"
 
 msgid "默认存档类型"
 msgstr "Default Type"
-
-msgid "\uE000 修改/执行  \uE001 返回  \uE01A\uE077\uE019 切换页面"
-msgstr "\uE000 Edit/Execute  \uE001 Back  \uE01A\uE077\uE019 Switch Page"
-
-msgid "\uE000 切换/选择  \uE01A\uE077\uE019 切换页面"
-msgstr "\uE000 Toggle/Select  \uE01A\uE077\uE019 Switch Page"
-
-msgid "\uE000 恢复  \uE002 删除  \uE01A\uE077\uE019 切换页面"
-msgstr "\uE000 Restore  \uE002 Delete  \uE01A\uE077\uE019 Switch Page"
-
-msgid "\uE000 确定  \uE001 取消"
-msgstr "\uE000 Confirm  \uE001 Cancel"
-
-msgid "\uE000 确定  \uE001 取消  \uE002 退格  START 完成  \uE01A\uE077\uE019 模式"
-msgstr "\uE000 OK  \uE001 Cancel  \uE002 Backspace  START Done  \uE01A\uE077\uE019 Mode"
-
-msgid "\uE000 选择  \uE002 复制  \uE003 备份  SELECT 清除  \uE001 关闭"
-msgstr "\uE000 Select  \uE002 Copy  \uE003 Backup  SELECT Clear  \uE001 Close"
-
-msgid "\uE000 选择  \uE01A\uE077\uE019 切换页面"
-msgstr "\uE000 Select  \uE01A\uE077\uE019 Switch Page"
-
-msgid "\uE000 选择 \uE002 删除 \uE003 恢复 \uE001 关闭"
-msgstr "\uE000 Select \uE002 Delete \uE003 Restore \uE001 Close"
-
-msgid "\uE000 选择 \uE002 删除 \uE003 恢复 \uE005 上传 \uE001 关闭"
-msgstr "\uE000 Select \uE002 Delete \uE003 Restore \uE005 Upload \uE001 Close"
 

@@ -540,7 +540,7 @@ namespace ui
     // =========================================================================
 
     static int s_editorSlot = 0;
-    static int s_editorPage = 0; // 0: 玩家信息, 1: 玩家称呼, 2: 女友发型, 3: 其他
+    static int s_editorPage = 0; // 0: 玩家信息, 1: 玩家读音, 2: 女友发型, 3: 其他
 
     static ui::menu s_editorMenu;
     static bool s_editorSubMenuOpen = false;
@@ -569,6 +569,20 @@ namespace ui
 
     static int s_editorLastSel = 0;
 
+    static std::string formatBirthday(uint8_t month, uint8_t day)
+    {
+        char buf[32];
+        if (cfg::config["uilang"] == 1) // English: MM / DD
+        {
+            snprintf(buf, sizeof(buf), "%02d / %02d", month, day);
+        }
+        else
+        {
+            snprintf(buf, sizeof(buf), "%d月%d日", month, day);
+        }
+        return std::string(buf);
+    }
+
     static void refreshEditorPageMenu(int keepSel = -1)
     {
         int prevSel = (keepSel >= 0) ? keepSel : s_editorLastSel;
@@ -582,7 +596,7 @@ namespace ui
             s_editorMenu.addOpt(std::string(getTxt("通讯昵称(HN)")) + ": " + sd.profile.hn, 300);
 
             char bdayBuf[64];
-            snprintf(bdayBuf, sizeof(bdayBuf), "%s: %d月%d日", getTxt("生日"), sd.profile.birthMonth, sd.profile.birthDay);
+            snprintf(bdayBuf, sizeof(bdayBuf), "%s: %s", getTxt("生日"), formatBirthday(sd.profile.birthMonth, sd.profile.birthDay).c_str());
             s_editorMenu.addOpt(bdayBuf, 300);
 
             s_editorMenu.addOpt(std::string(getTxt("血型")) + ": " + nlpp::Dict::getBloodTypeName(sd.profile.blood), 300);
@@ -592,7 +606,7 @@ namespace ui
             s_editorMenu.addOpt(getTxt("★ 重新加载"), 300);
             s_editorMenu.addOpt(getTxt("♥ 保存修改"), 300);
         }
-        else if (s_editorPage == 1) // 2. 玩家称呼
+        else if (s_editorPage == 1) // 2. 玩家读音
         {
             char curCallBuf[96];
             snprintf(curCallBuf, sizeof(curCallBuf), "%s: %d %s", getTxt("当前使用"), (int)sd.stats.currentSelector,
@@ -879,7 +893,10 @@ namespace ui
                     for (int d = 1; d <= maxD; ++d)
                     {
                         char dBuf[16];
-                        snprintf(dBuf, sizeof(dBuf), "%d日", d);
+                        if (cfg::config["uilang"] == 1)
+                            snprintf(dBuf, sizeof(dBuf), "%02d", d);
+                        else
+                            snprintf(dBuf, sizeof(dBuf), "%d日", d);
                         s_editorSubMenu.addOpt(dBuf, 300);
                     }
                     s_editorSubMenu.setSelected(std::min((int)sd.profile.birthDay - 1, maxD - 1));
@@ -1068,7 +1085,10 @@ namespace ui
                     for (int m = 1; m <= 12; ++m)
                     {
                         char mBuf[16];
-                        snprintf(mBuf, sizeof(mBuf), "%d月", m);
+                        if (cfg::config["uilang"] == 1)
+                            snprintf(mBuf, sizeof(mBuf), "%02d", m);
+                        else
+                            snprintf(mBuf, sizeof(mBuf), "%d月", m);
                         s_editorSubMenu.addOpt(mBuf, 300);
                     }
                     s_editorSubMenu.setSelected(std::max(0, (int)sd.profile.birthMonth - 1));
@@ -1080,10 +1100,10 @@ namespace ui
                     s_editorSubMenu.reset();
                     s_editorSubMenu.setPaging(false);
                     s_editorSubMenu.setMaxVisible(10);
-                    s_editorSubMenu.addOpt("A型", 300);
-                    s_editorSubMenu.addOpt("B型", 300);
-                    s_editorSubMenu.addOpt("O型", 300);
-                    s_editorSubMenu.addOpt("AB型", 300);
+                    s_editorSubMenu.addOpt(getTxt("A型"), 300);
+                    s_editorSubMenu.addOpt(getTxt("B型"), 300);
+                    s_editorSubMenu.addOpt(getTxt("O型"), 300);
+                    s_editorSubMenu.addOpt(getTxt("AB型"), 300);
                     s_editorSubMenu.setSelected(std::min((int)sd.profile.blood, 3));
                 }
                 else if (sel == 5) // 出身地
@@ -1102,7 +1122,7 @@ namespace ui
                 else if (sel == 6) { onConfirmReloadSlot(nullptr); }
                 else if (sel == 7) { onConfirmSaveSlot(nullptr); }
             }
-            else if (s_editorPage == 1) // 玩家称呼
+            else if (s_editorPage == 1) // 玩家读音
             {
                 if (sel == 0) // 当前使用槽位切换
                 {
@@ -1355,24 +1375,25 @@ namespace ui
 
     void editorDrawTop()
     {
-        static const char *pageTitles[] = { "玩家信息", "玩家称呼", "女友发型", "其他" };
+        static const char *pageTitles[] = { "玩家信息", "玩家读音", "女友发型", "其他" };
         ui::drawUIBar(TITLE_TEXT + " - " + getTxt(pageTitles[s_editorPage]), ui::SCREEN_TOP, true);
 
         const auto &sd = nlpp::g_saveMgr.getSlotData(s_editorSlot);
 
         if (s_editorPage == 0) // 1. 玩家信息
         {
+            std::string bdayStr = formatBirthday(sd.profile.birthMonth, sd.profile.birthDay);
             char buf[256];
             snprintf(buf, sizeof(buf),
-                     "%s: %s %s\n%s: %s\n%s: %d%s%d%s\n%s: %s\n%s: %s",
+                     "%s: %s %s\n%s: %s\n%s: %s\n%s: %s\n%s: %s",
                      getTxt("姓名"), sd.profile.lastName.c_str(), sd.profile.firstName.c_str(),
                      getTxt("通讯昵称(HN)"), sd.profile.hn.c_str(),
-                     getTxt("生日"), sd.profile.birthMonth, getTxt("月"), sd.profile.birthDay, getTxt("日"),
+                     getTxt("生日"), bdayStr.c_str(),
                      getTxt("血型"), nlpp::Dict::getBloodTypeName(sd.profile.blood),
                      getTxt("出身地"), nlpp::Dict::getPrefectureName(sd.profile.prefecture));
             gfx::drawText(buf, 20, 36, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
         }
-        else if (s_editorPage == 1) // 2. 玩家称呼
+        else if (s_editorPage == 1) // 2. 玩家读音
         {
             char buf[512];
             snprintf(buf, sizeof(buf),

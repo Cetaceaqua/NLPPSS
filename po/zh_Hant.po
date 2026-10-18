@@ -30,14 +30,53 @@ msgstr "3 預設讀音"
 msgid "4 特殊读音"
 msgstr "4 特殊讀音"
 
+msgid "AB型"
+msgstr "AB型"
+
+msgid "A型"
+msgstr "A型"
+
+msgid "B型"
+msgstr "B型"
+
 msgid "NEW (可爱)"
 msgstr "NEW (可愛)"
+
+msgid "O型"
+msgstr "O型"
 
 msgid "TODO"
 msgstr "TODO"
 
 msgid "ZIP 压缩等级"
 msgstr "ZIP 壓縮等級"
+
+msgid "\uE000 修改/执行  \uE001 返回  \uE01A\uE077\uE019 切换页面"
+msgstr "\uE000 修改/執行  \uE001 返回  \uE01A\uE077\uE019 切換頁面"
+
+msgid "\uE000 切换/选择  \uE01A\uE077\uE019 切换页面"
+msgstr "\uE000 切換/選擇  \uE01A\uE077\uE019 切換頁面"
+
+msgid "\uE000 恢复  \uE002 删除  \uE01A\uE077\uE019 切换页面"
+msgstr "\uE000 恢復  \uE002 刪除  \uE01A\uE077\uE019 切換頁面"
+
+msgid "\uE000 确定  \uE001 取消"
+msgstr "\uE000 確定  \uE001 取消"
+
+msgid "\uE000 确定  \uE001 取消  \uE002 退格  START 完成  \uE01A\uE077\uE019 模式"
+msgstr "\uE000 確定  \uE001 取消  \uE002 退格  START 完成  \uE01A\uE077\uE019 模式"
+
+msgid "\uE000 选择  \uE002 复制  \uE003 备份  SELECT 清除  \uE001 关闭"
+msgstr "\uE000 選擇  \uE002 複製  \uE003 備份  SELECT 清除  \uE001 關閉"
+
+msgid "\uE000 选择  \uE01A\uE077\uE019 切换页面"
+msgstr "\uE000 選擇  \uE01A\uE077\uE019 切換頁面"
+
+msgid "\uE000 选择 \uE002 删除 \uE003 恢复 \uE001 关闭"
+msgstr "\uE000 選擇 \uE002 刪除 \uE003 恢復 \uE001 關閉"
+
+msgid "\uE000 选择 \uE002 删除 \uE003 恢复 \uE005 上传 \uE001 关闭"
+msgstr "\uE000 選擇 \uE002 刪除 \uE003 恢復 \uE005 上傳 \uE001 關閉"
 
 msgid "★ 重新加载"
 msgstr "★ 重新載入"
@@ -63,14 +102,14 @@ msgstr "休閒 C"
 msgid "使用中"
 msgstr "使用中"
 
+msgid "保存修改时，自动在 sdmc:/NLPPSS/Saves 中创建备份。"
+msgstr "儲存修改時，自動在 sdmc:/NLPPSS/Saves 中建立備份。"
+
 msgid "修改保存失败！"
 msgstr "修改儲存失敗！"
 
 msgid "修改保存成功！"
 msgstr "修改儲存成功！"
-
-msgid "保存修改时，自动在 sdmc:/NLPPSS/Saves 中创建备份。"
-msgstr "儲存修改時，自動在 sdmc:/NLPPSS/Saves 中建立備份。"
 
 msgid "假名"
 msgstr "假名"
@@ -78,14 +117,17 @@ msgstr "假名"
 msgid "关"
 msgstr "關"
 
+msgid "其他"
+msgstr "其他"
+
 msgid "内置键盘"
 msgstr "內置鍵盤"
 
+msgid "写入存档数据失败！\n错误：0x%08X"
+msgstr "寫入存檔資料失敗！\n錯誤：0x%08X"
+
 msgid "出身地"
 msgstr "出身地"
-
-msgid "移除滤镜"
-msgstr "移除濾鏡"
 
 msgid "发型"
 msgstr "髮型"
@@ -111,17 +153,20 @@ msgstr "可愛 C"
 msgid "名字"
 msgstr "名字"
 
+msgid "否 \ue001"
+msgstr "否 \ue001"
+
 msgid "启动时自动加载存档"
 msgstr "啟動時自動載入存檔"
 
 msgid "启动时跳过菜单，直接加载默认存档。"
 msgstr "啟動時略過選單，直接載入預設存檔。"
 
-msgid "启动时默认加载的存档类型。"
-msgstr "啟動時預設載入的存檔類型。"
-
 msgid "启动时默认加载的存档槽位。"
 msgstr "啟動時預設載入的存檔槽位。"
+
+msgid "启动时默认加载的存档类型。"
+msgstr "啟動時預設載入的存檔類型。"
 
 msgid "哥特萝莉 (可爱)"
 msgstr "哥德蘿莉 (可愛)"
@@ -152,6 +197,9 @@ msgstr "大寫"
 
 msgid "天"
 msgstr "天"
+
+msgid "女友发型"
+msgstr "女友髮型"
 
 msgid "姐崎宁宁"
 msgstr "姊崎寧寧"
@@ -201,14 +249,14 @@ msgstr "小早川凜子"
 msgid "居家 (休闲)"
 msgstr "居家 (休閒)"
 
+msgid "已将女友的发型和发色重置为默认值！"
+msgstr "已將女友的髮型與髮色重設為預設值！"
+
 msgid "已成功移除相机滤镜！"
 msgstr "已成功移除相機濾鏡！"
 
 msgid "已重新加载当前存档数据！"
 msgstr "已重新載入目前的存檔資料！"
-
-msgid "已将女友的发型和发色重置为默认值！"
-msgstr "已將女友的髮型與髮色重設為預設值！"
 
 msgid "平假名"
 msgstr "平假名"
@@ -234,11 +282,11 @@ msgstr "恢復到數位版"
 msgid "感性属性值"
 msgstr "感性屬性值"
 
+msgid "找不到匹配的读音！"
+msgstr "找不到相符的讀音！"
+
 msgid "拼音"
 msgstr "拼音"
-
-msgid "写入存档数据失败！\n错误：0x%08X"
-msgstr "寫入存檔資料失敗！\n錯誤：0x%08X"
 
 msgid "搜索读音"
 msgstr "搜尋讀音"
@@ -252,32 +300,32 @@ msgstr "無濾鏡"
 msgid "日"
 msgstr "日"
 
-msgid "明亮色／红 A"
-msgstr "明亮色／紅 A"
+msgid "明亮色／偏红 A"
+msgstr "明亮色／偏紅 A"
 
-msgid "明亮色／红 B"
-msgstr "明亮色／紅 B"
+msgid "明亮色／偏红 B"
+msgstr "明亮色／偏紅 B"
 
-msgid "明亮色／黄 A"
-msgstr "明亮色／黃 A"
+msgid "明亮色／偏黄 A"
+msgstr "明亮色／偏黃 A"
 
-msgid "明亮色／黄 B"
-msgstr "明亮色／黃 B"
+msgid "明亮色／偏黄 B"
+msgstr "明亮色／偏黃 B"
 
-msgid "明亮色／黑 A"
-msgstr "明亮色／黑 A"
+msgid "明亮色／偏黑 A"
+msgstr "明亮色／偏黑 A"
 
-msgid "明亮色／黑 B"
-msgstr "明亮色／黑 B"
+msgid "明亮色／偏黑 B"
+msgstr "明亮色／偏黑 B"
 
-msgid "未找到存档备份。"
-msgstr "找不到存檔備份。"
+msgid "是 \ue000"
+msgstr "是 \ue000"
 
 msgid "月"
 msgstr "月"
 
-msgid "找不到匹配的读音！"
-msgstr "找不到相符的讀音！"
+msgid "未找到存档备份。"
+msgstr "找不到存檔備份。"
 
 msgid "未插入游戏卡带，或未检测到卡带存档！"
 msgstr "未插入遊戲卡匣，或未檢測到卡匣存檔！"
@@ -351,6 +399,12 @@ msgstr "特殊色／綠色"
 msgid "特殊色／蓝色"
 msgstr "特殊色／藍色"
 
+msgid "玩家信息"
+msgstr "玩家資訊"
+
+msgid "玩家读音"
+msgstr "玩家讀音"
+
 msgid "生日"
 msgstr "生日"
 
@@ -372,6 +426,9 @@ msgstr "知識屬性值"
 msgid "短发"
 msgstr "短髮"
 
+msgid "确定 \ue000"
+msgstr "確定 \ue000"
+
 msgid "确定要保存当前槽位的修改吗？"
 msgstr "確定要儲存目前槽位的修改嗎？"
 
@@ -380,6 +437,9 @@ msgstr "確定要刪除備份 %s 嗎？"
 
 msgid "确定要备份此存档吗？"
 msgstr "確定要備份此存檔嗎？"
+
+msgid "确定要将女友的发型和发色重置为默认值吗？"
+msgstr "確定要將女友的髮型與髮色重設為預設值嗎？"
 
 msgid "确定要将槽位 %d 复制到槽位 %d 吗？"
 msgstr "確定要將槽位 %d 複製到槽位 %d 嗎？"
@@ -393,8 +453,8 @@ msgstr "確定要清空槽位 %d 嗎？"
 msgid "确定要退出存档编辑吗？"
 msgstr "確定要退出存檔編輯嗎？"
 
-msgid "确定要将女友的发型和发色重置为默认值吗？"
-msgstr "確定要將女友的髮型與髮色重設為預設值嗎？"
+msgid "移除滤镜"
+msgstr "移除濾鏡"
 
 msgid "空格"
 msgstr "空格"
@@ -405,29 +465,32 @@ msgstr "自動備份存檔"
 msgid "自然 (清纯)"
 msgstr "自然 (清純)"
 
-msgid "自然茶色／红 A"
-msgstr "自然茶色／紅 A"
+msgid "自然茶色／偏红 A"
+msgstr "自然茶色／偏紅 A"
 
-msgid "自然茶色／红 B"
-msgstr "自然茶色／紅 B"
+msgid "自然茶色／偏红 B"
+msgstr "自然茶色／偏紅 B"
 
-msgid "自然茶色／黄 A"
-msgstr "自然茶色／黃 A"
+msgid "自然茶色／偏黄 A"
+msgstr "自然茶色／偏黃 A"
 
-msgid "自然茶色／黄 B"
-msgstr "自然茶色／黃 B"
+msgid "自然茶色／偏黄 B"
+msgstr "自然茶色／偏黃 B"
 
-msgid "自然茶色／黑 A"
-msgstr "自然茶色／黑 A"
+msgid "自然茶色／偏黑 A"
+msgstr "自然茶色／偏黑 A"
 
-msgid "自然茶色／黑 B"
-msgstr "自然茶色／黑 B"
+msgid "自然茶色／偏黑 B"
+msgstr "自然茶色／偏黑 B"
 
 msgid "血型"
 msgstr "血型"
 
 msgid "设置"
 msgstr "設定"
+
+msgid "设置 ZIP 备份的压缩等级 (1~9)。"
+msgstr "設定 ZIP 備份的壓縮等級 (1~9)。"
 
 msgid "该槽位为空，无法复制！"
 msgstr "此槽位為空，無法複製！"
@@ -450,9 +513,6 @@ msgstr "輸入上線天數 (1-9999)"
 msgid "输入名字"
 msgstr "輸入名字"
 
-msgid "输入文本时使用内置键盘。关闭后将使用 3DS 系统键盘。"
-msgstr "輸入文字時使用內置鍵盤。關閉後將使用 3DS 系統鍵盤。"
-
 msgid "输入姓氏"
 msgstr "輸入姓氏"
 
@@ -461,6 +521,9 @@ msgstr "輸入總天數 (1-9999)"
 
 msgid "输入感性属性值 (0-255)"
 msgstr "輸入感性屬性值 (0-255)"
+
+msgid "输入文本时使用内置键盘。关闭后将使用 3DS 系统键盘。"
+msgstr "輸入文字時使用內置鍵盤。關閉後將使用 3DS 系統鍵盤。"
 
 msgid "输入知识属性值 (0-255)"
 msgstr "輸入知識屬性值 (0-255)"
@@ -488,9 +551,6 @@ msgstr "選擇介面主題風格。"
 
 msgid "选择界面显示语言。"
 msgstr "選擇介面顯示語言。"
-
-msgid "设置 ZIP 备份的压缩等级 (1~9)。"
-msgstr "設定 ZIP 備份的壓縮等級 (1~9)。"
 
 msgid "选择目标槽位"
 msgstr "選擇目標槽位"
@@ -527,31 +587,4 @@ msgstr "預設存檔槽位"
 
 msgid "默认存档类型"
 msgstr "預設存檔類型"
-
-msgid "\uE000 修改/执行  \uE001 返回  \uE01A\uE077\uE019 切换页面"
-msgstr "\uE000 修改/執行  \uE001 返回  \uE01A\uE077\uE019 切換頁面"
-
-msgid "\uE000 切换/选择  \uE01A\uE077\uE019 切换页面"
-msgstr "\uE000 切換/選擇  \uE01A\uE077\uE019 切換頁面"
-
-msgid "\uE000 恢复  \uE002 删除  \uE01A\uE077\uE019 切换页面"
-msgstr "\uE000 恢復  \uE002 刪除  \uE01A\uE077\uE019 切換頁面"
-
-msgid "\uE000 确定  \uE001 取消"
-msgstr "\uE000 確定  \uE001 取消"
-
-msgid "\uE000 确定  \uE001 取消  \uE002 退格  START 完成  \uE01A\uE077\uE019 模式"
-msgstr "\uE000 確定  \uE001 取消  \uE002 退格  START 完成  \uE01A\uE077\uE019 模式"
-
-msgid "\uE000 选择  \uE002 复制  \uE003 备份  SELECT 清除  \uE001 关闭"
-msgstr "\uE000 選擇  \uE002 複製  \uE003 備份  SELECT 清除  \uE001 關閉"
-
-msgid "\uE000 选择  \uE01A\uE077\uE019 切换页面"
-msgstr "\uE000 選擇  \uE01A\uE077\uE019 切換頁面"
-
-msgid "\uE000 选择 \uE002 删除 \uE003 恢复 \uE001 关闭"
-msgstr "\uE000 選擇 \uE002 刪除 \uE003 恢復 \uE001 關閉"
-
-msgid "\uE000 选择 \uE002 删除 \uE003 恢复 \uE005 上传 \uE001 关闭"
-msgstr "\uE000 選擇 \uE002 刪除 \uE003 恢復 \uE005 上傳 \uE001 關閉"
 

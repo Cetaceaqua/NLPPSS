@@ -442,8 +442,8 @@ namespace nlpp
 
     const char *Dict::getBloodTypeName(BloodType blood)
     {
-        if ((size_t)blood < 4) return s_bloodTypes[(size_t)blood];
-        return "A型";
+        if ((size_t)blood < 4) return getTxt(s_bloodTypes[(size_t)blood]);
+        return getTxt("A型");
     }
 
     const HairColorDef &Dict::getHairColor(uint8_t id)
