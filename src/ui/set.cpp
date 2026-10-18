@@ -118,6 +118,7 @@ static void setMenuIncreaseUILang_t(void *a)
     t->status->setStatus(getUILangMessage(*in));
     cfg::setUILanguage(*in);
     cfg::saveCommon();
+    ui::reloadAllTexts();
     svcSleepThread(1e+9 / 4);
     t->lock();
     t->argPtr = NULL;
@@ -138,6 +139,7 @@ static void setMenuDecreaseUILang_t(void *a)
     t->status->setStatus(getUILangMessage(*in));
     cfg::setUILanguage(*in);
     cfg::saveCommon();
+    ui::reloadAllTexts();
     svcSleepThread(1e+9 / 4);
     t->lock();
     t->argPtr = NULL;

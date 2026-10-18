@@ -662,6 +662,48 @@ namespace ui
         s_editorLastSel = s_editorMenu.getSelected();
     }
 
+    void onLanguageChanged()
+    {
+        // 1. Refresh media menu (Digital / Cartridge)
+        int selMedia = s_mediaMenu.getSelected();
+        s_mediaMenu.reset();
+        s_mediaMenu.addOpt(getTxt("数字版"), 400);
+        s_mediaMenu.addOpt(getTxt("实体版"), 400);
+        if (selMedia >= 0 && selMedia < 2)
+            s_mediaMenu.setSelected(selMedia);
+
+        // 2. Refresh copy destination slot menu
+        int selDst = s_copyDstMenu.getSelected();
+        s_copyDstMenu.reset();
+        s_copyDstMenu.setPaging(false);
+        for (int i = 0; i < nlpp::NUM_SLOTS; ++i)
+        {
+            char buf[32];
+            snprintf(buf, sizeof(buf), "%s %d", getTxt("目标槽位"), i + 1);
+            s_copyDstMenu.addOpt(buf, 300);
+        }
+        if (selDst >= 0 && selDst < (int)s_copyDstMenu.getCount())
+            s_copyDstMenu.setSelected(selDst);
+
+        // 3. Refresh slot menu
+        refreshSlotMenu();
+
+        // 4. Refresh backup restore destination menu
+        int selRestore = s_restoreMenu.getSelected();
+        s_restoreMenu.reset();
+        s_restoreMenu.setPaging(false);
+        s_restoreMenu.addOpt(getTxt("恢复到数字版"), 300);
+        s_restoreMenu.addOpt(getTxt("恢复到实体版"), 300);
+        if (selRestore >= 0 && selRestore < 2)
+            s_restoreMenu.setSelected(selRestore);
+
+        // 5. Refresh editor menu if slot is loaded
+        if (s_editorSlot >= 0 && s_editorSlot < nlpp::NUM_SLOTS)
+        {
+            refreshEditorPageMenu(s_editorLastSel);
+        }
+    }
+
     void editorInit(int slot)
     {
         s_editorSlot = slot;

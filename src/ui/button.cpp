@@ -38,6 +38,15 @@ ui::button::button(const std::string &_txt, unsigned _x, unsigned _y, unsigned _
     ty = y + (h / 2) - (th / 2);
 }
 
+void ui::button::setText(const std::string &_txt)
+{
+    text = _txt;
+    unsigned tw = gfx::getTextWidth(text);
+    unsigned th = 14;
+    tx = x + (w / 2) - (tw / 2);
+    ty = y + (h / 2) - (th / 2);
+}
+
 void ui::button::update()
 {
     prev = cur;

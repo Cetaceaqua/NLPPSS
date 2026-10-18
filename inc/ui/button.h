@@ -36,6 +36,7 @@ namespace ui
     {
         public:
             button(const std::string& _txt, unsigned _x, unsigned _y, unsigned _w, unsigned _h);
+            void setText(const std::string& _txt);
             void update();
             bool isOver();
             bool wasOver();

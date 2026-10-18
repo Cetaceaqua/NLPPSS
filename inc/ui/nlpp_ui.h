@@ -26,4 +26,7 @@ namespace ui
     void editorUpdate();
     void editorDrawTop();
     void editorDrawBot();
+
+    // Language change callback
+    void onLanguageChanged();
 }

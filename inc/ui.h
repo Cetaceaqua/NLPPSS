@@ -91,6 +91,7 @@ namespace ui
 
     void init();
     void exit();
+    void reloadAllTexts();
     void showMessage(const char *fmt, ...);
     void newThread(ThreadFunc _thrdFunc, void *_args, funcPtr _drawFunc, size_t stackSize = THRD_STACK_SIZE);
     bool runApp();

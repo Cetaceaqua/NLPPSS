@@ -56,9 +56,9 @@ touchPosition ui::pos;
 void ui::init()
 {
     thrdMgr = new ui::threadProcMngr;
-    ok = new ui::button(getText("确定 \ue000"), 96, 184, 128, 32);
-    yes = new ui::button(getText("是 \ue000"), 32, 184, 120, 32);
-    no  = new ui::button(getText("否 \ue001"), 168, 184, 120, 32);
+    ok = new ui::button(getTxt("确定 \ue000"), 96, 184, 128, 32);
+    yes = new ui::button(getTxt("是 \ue000"), 32, 184, 120, 32);
+    no  = new ui::button(getTxt("否 \ue001"), 168, 184, 120, 32);
     prog = new ui::progressBar(100);
 
     ui::saveSelectInit();
@@ -68,6 +68,15 @@ void ui::init()
         ui::state = SAVE_SELECT;
 
     gfx::setColor(cfg::config["lightback"]);
+}
+
+void ui::reloadAllTexts()
+{
+    if (ok) ok->setText(getTxt("确定 \ue000"));
+    if (yes) yes->setText(getTxt("是 \ue000"));
+    if (no) no->setText(getTxt("否 \ue001"));
+
+    ui::onLanguageChanged();
 }
 
 void ui::exit()

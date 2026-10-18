@@ -126,7 +126,10 @@ namespace
 
 		std::uint32_t magic;
 		if (!read(file, magic, true))
+		{
+			fclose(file);
 			return;
+		}
 
 		bool le;
 		if (magic == 0x950412DE)
@@ -134,39 +137,66 @@ namespace
 		else if (magic == 0xDE120495)
 			le = false;
 		else
+		{
+			fclose(file);
 			return;
+		}
 
 		std::uint32_t version;
 		if (!read(file, version, le) || version != 0)
+		{
+			fclose(file);
 			return;
+		}
 
 		std::uint32_t numStrings;
 		if (!read(file, numStrings, le))
+		{
+			fclose(file);
 			return;
+		}
 
 		std::uint32_t originalOffset;
 		if (!read(file, originalOffset, le))
+		{
+			fclose(file);
 			return;
+		}
 
 		std::uint32_t translationOffset;
 		if (!read(file, translationOffset, le))
+		{
+			fclose(file);
 			return;
+		}
 
 		std::uint32_t hashSize;
 		if (!read(file, hashSize, le))
+		{
+			fclose(file);
 			return;
+		}
 
 		std::uint32_t hashOffset;
 		if (!read(file, hashOffset, le))
+		{
+			fclose(file);
 			return;
+		}
 
 		auto originalTable = loadTable(file, originalOffset, numStrings, le);
 		if (originalTable.size () != numStrings)
+		{
+			fclose(file);
 			return;
+		}
 
 		auto translationTable = loadTable(file, translationOffset, numStrings, le);
 		if (translationTable.size () != numStrings)
+		{
+			fclose(file);
 			return;
+		}
 
 		StringMap strings;
 		for (std::uint32_t i = 0; i < numStrings; ++i)
@@ -177,6 +207,8 @@ namespace
 
 			strings.emplace(std::make_pair(originalString, translationString));
 		}
+
+		fclose(file);
 
 		std::swap(strings, s_translations);
 	}
