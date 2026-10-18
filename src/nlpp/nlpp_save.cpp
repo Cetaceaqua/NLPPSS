@@ -292,6 +292,15 @@ namespace nlpp
                 cardEmpty = false;
                 cardDetermined = true;
             }
+
+            if (heroineTarget >= 0 && heroineTarget <= 2)
+            {
+                sd.girlfriend.heroine = (HeroineID)heroineTarget;
+            }
+            else
+            {
+                sd.girlfriend.heroine = HEROINE_NONE;
+            }
         }
 
         // 1. Profile (savedata8/33/58, 198B)
@@ -348,7 +357,11 @@ namespace nlpp
         {
             const uint8_t *gbuf = m_files[gfFile].data();
             sd.girlfriend.mode = gbuf[0x04];
-            sd.girlfriend.heroine = (HeroineID)gbuf[0x08];
+            // If cardFile was absent/unspecified, fallback to savedata18 lover state heroine at 0x221
+            if (sd.girlfriend.heroine == HEROINE_NONE && sd.girlfriend.mode == 2 && gbuf[0x221] <= 2)
+            {
+                sd.girlfriend.heroine = (HeroineID)gbuf[0x221];
+            }
             sd.girlfriend.affection = gbuf[0x243];
             sd.girlfriend.coupleExp = *(const uint32_t *)&gbuf[0x2AC];
 
@@ -447,7 +460,7 @@ namespace nlpp
         }
 
         cbuf[0x04] = 0x01; // Active slot flag
-        *(int32_t *)&cbuf[0x08] = (sd.girlfriend.heroine >= 0) ? (int32_t)sd.girlfriend.heroine : 0;
+        *(int32_t *)&cbuf[0x08] = (sd.girlfriend.heroine >= 0) ? (int32_t)sd.girlfriend.heroine : -1;
         // Section 9.5: Anti-cold-war timestamp sync in Card at 0x18 ~ 0x23
         if (ti)
         {
@@ -538,6 +551,10 @@ namespace nlpp
         // 3. Girlfriend (1508B)
         if (m_files[gfFile].size() < 1508) m_files[gfFile].resize(1508, 0);
         uint8_t *gbuf = m_files[gfFile].data();
+        if (sd.girlfriend.heroine >= 0 && sd.girlfriend.mode == 2)
+        {
+            gbuf[0x221] = (uint8_t)sd.girlfriend.heroine;
+        }
         gbuf[0x243] = sd.girlfriend.affection;
         // Section 9.4: Couple title/exp is stored at 0x2AC
         *(uint32_t *)&gbuf[0x2AC] = sd.girlfriend.coupleExp;
