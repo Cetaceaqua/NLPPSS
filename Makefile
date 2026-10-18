@@ -41,7 +41,7 @@ GFXBUILD	:=
 ICON		:=	res/icon.png
 APP_TITLE   :=	NLPP Save Studio
 APP_AUTHOR  :=	Cetaceaqua
-APP_DESCRIPTION :=	NEW LovePlus+ Save Studio for 3DS
+APP_DESCRIPTION :=	NEWラブプラス+ Save Studio
 
 VERSION_MAJOR	:=	1
 VERSION_MINOR	:=	0

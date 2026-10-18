@@ -9,12 +9,17 @@
 #define APP_VERSION "v1.0.0"
 #endif
 
+#ifndef APP_DESCRIPTION
+#define APP_DESCRIPTION "NEWラブプラス+ Save Studio"
+#endif
+
 namespace nlpp
 {
     namespace version
     {
-        constexpr const char *TITLE   = APP_TITLE;
-        constexpr const char *STRING  = APP_VERSION;
+        constexpr const char *TITLE       = APP_TITLE;
+        constexpr const char *STRING      = APP_VERSION;
+        constexpr const char *DESCRIPTION = APP_DESCRIPTION;
 
         inline const std::string& getTitleText()
         {
