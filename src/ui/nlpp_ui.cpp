@@ -501,7 +501,7 @@ namespace ui
 
         if (s_backups.empty())
         {
-            gfx::drawText(getTxt("未找到存档备份。"), 20, 40, GFX_DEPTH_DEFAULT, 0.5f, gfx::divClr);
+            gfx::drawText(getTxt("未找到存档备份。"), 20, 40, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
             return;
         }
 
