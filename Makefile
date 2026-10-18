@@ -163,8 +163,12 @@ endif
 .PHONY: all clean pot mo
 
 #---------------------------------------------------------------------------------
-all: mo $(ROMFS_T3XFILES) $(T3XHFILES)
+all: $(BUILD) mo $(ROMFS_T3XFILES) $(T3XHFILES)
+	@[ -d $(BUILD) ] || mkdir -p $(BUILD)
 	@$(MAKE) --no-print-directory -C $(BUILD) -f ../Makefile $(OUTPUT).3dsx
+
+$(BUILD):
+	@mkdir -p $@
 
 ifeq ($(wildcard /mnt/d/Files/NLPP_CHS/3DS\ Toolkit/tools/makerom.exe),)
 MAKEROM ?= makerom
