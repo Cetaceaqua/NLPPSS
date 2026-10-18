@@ -1385,7 +1385,8 @@ namespace ui
         else if (s_editorPage == 3) // 4. 其他
         {
             char buf[512];
-            std::string fStr = (sd.stats.cameraFilter != -1) ? getTxt("使用中") : getTxt("无滤镜");
+            bool hasFilter = (sd.stats.cameraFilter != -1) && ((sd.stats.equipMask & 0x04) != 0);
+            std::string fStr = hasFilter ? getTxt("使用中") : getTxt("无滤镜");
             snprintf(buf, sizeof(buf),
                      "%s: %d %s\n"
                      "%s: %d %s\n"

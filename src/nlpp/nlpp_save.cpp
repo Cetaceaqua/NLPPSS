@@ -337,6 +337,10 @@ namespace nlpp
             sd.stats.cameraAccessory = *(const int16_t *)&sbuf[0x306];
             sd.stats.cameraExternal  = *(const int16_t *)&sbuf[0x308];
             sd.stats.equipMask       = sbuf[0x318];
+            if ((sd.stats.equipMask & 0x04) == 0)
+            {
+                sd.stats.cameraFilter = -1;
+            }
         }
 
         // 3. Girlfriend (savedata18/43/68, 1508B)
@@ -518,6 +522,17 @@ namespace nlpp
         *(int16_t *)&sbuf[0x306] = sd.stats.cameraAccessory;
         *(int16_t *)&sbuf[0x308] = sd.stats.cameraExternal;
         sbuf[0x318] = sd.stats.equipMask;
+
+        // Camera Filter Removal - Six-in-One Atomic Standard (Section 6.4.8, 6.5)
+        if (sd.stats.cameraFilter == -1 || (sd.stats.equipMask & 0x04) == 0)
+        {
+            *(int16_t *)&sbuf[0x304] = -1;
+            sbuf[0x318] &= ~(0x04);
+            *(uint32_t *)&sbuf[0x33C] = 38; // Factory bare lens shutter speed (26 00 00 00)
+            *(uint32_t *)&sbuf[0x344] = 20; // Factory bare lens ISO sensitivity (14 00 00 00)
+            *(uint32_t *)&sbuf[0x34C] = 9;  // filter_mode_5 (bare lens white balance override A)
+            *(uint32_t *)&sbuf[0x350] = 3;  // filter_mode_6 (bare lens white balance override B)
+        }
         m_fileDirty[statsFile] = true;
 
         // 3. Girlfriend (1508B)
@@ -844,6 +859,20 @@ namespace nlpp
         m_slots[slot].stats.cameraFilter = -1;
         m_slots[slot].stats.equipMask &= ~(0x04); // Clear bit 2
         m_modified = true;
+
+        // Section 6.4.8, 6.5: Six-in-One Atomic Standard immediately applied to raw buffer
+        int statsFile = (slot == 0) ? 9 : (slot == 1 ? 34 : 59);
+        if (m_files[statsFile].size() >= 0x354)
+        {
+            uint8_t *sbuf = m_files[statsFile].data();
+            *(int16_t *)&sbuf[0x304] = -1;
+            sbuf[0x318] &= ~(0x04);
+            *(uint32_t *)&sbuf[0x33C] = 38; // Factory bare lens shutter speed (26 00 00 00)
+            *(uint32_t *)&sbuf[0x344] = 20; // Factory bare lens ISO sensitivity (14 00 00 00)
+            *(uint32_t *)&sbuf[0x34C] = 9;  // filter_mode_5 (bare lens white balance override A)
+            *(uint32_t *)&sbuf[0x350] = 3;  // filter_mode_6 (bare lens white balance override B)
+            m_fileDirty[statsFile] = true;
+        }
     }
 
 #pragma pack(push, 1)
