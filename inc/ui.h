@@ -54,7 +54,10 @@ enum
     KEY_PAGE_RIGHT = KEY_CSTICK_RIGHT | KEY_CPAD_RIGHT | KEY_ZR | KEY_R,
 };
 
+#include "version.h"
+
 extern const std::string TITLE_TEXT;
+extern const std::string APP_VERSION_STR;
 
 namespace ui
 {

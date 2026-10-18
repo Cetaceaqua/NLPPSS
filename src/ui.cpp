@@ -47,7 +47,8 @@ ui::progressBar *ui::prog;
 static ui::threadProcMngr *thrdMgr;
 static ui::button *ok, *yes, *no;
 
-const std::string TITLE_TEXT = "NLPP Save Studio - v1.0.0";
+const std::string APP_VERSION_STR = nlpp::version::STRING;
+const std::string TITLE_TEXT = nlpp::version::getTitleText();
 
 uint32_t ui::down = 0, ui::held = 0;
 touchPosition ui::pos;
