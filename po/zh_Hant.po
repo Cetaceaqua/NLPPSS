@@ -300,23 +300,23 @@ msgstr "無濾鏡"
 msgid "日"
 msgstr "日"
 
-msgid "明亮色／偏红 A"
-msgstr "明亮色／偏紅 A"
+msgid "明亮色／红 A"
+msgstr "明亮色／紅 A"
 
-msgid "明亮色／偏红 B"
-msgstr "明亮色／偏紅 B"
+msgid "明亮色／红 B"
+msgstr "明亮色／紅 B"
 
-msgid "明亮色／偏黄 A"
-msgstr "明亮色／偏黃 A"
+msgid "明亮色／黄 A"
+msgstr "明亮色／黃 A"
 
-msgid "明亮色／偏黄 B"
-msgstr "明亮色／偏黃 B"
+msgid "明亮色／黄 B"
+msgstr "明亮色／黃 B"
 
-msgid "明亮色／偏黑 A"
-msgstr "明亮色／偏黑 A"
+msgid "明亮色／黑 A"
+msgstr "明亮色／黑 A"
 
-msgid "明亮色／偏黑 B"
-msgstr "明亮色／偏黑 B"
+msgid "明亮色／黑 B"
+msgstr "明亮色／黑 B"
 
 msgid "是 \ue000"
 msgstr "是 \ue000"
@@ -465,23 +465,23 @@ msgstr "自動備份存檔"
 msgid "自然 (清纯)"
 msgstr "自然 (清純)"
 
-msgid "自然茶色／偏红 A"
-msgstr "自然茶色／偏紅 A"
+msgid "自然茶色／红 A"
+msgstr "自然茶色／紅 A"
 
-msgid "自然茶色／偏红 B"
-msgstr "自然茶色／偏紅 B"
+msgid "自然茶色／红 B"
+msgstr "自然茶色／紅 B"
 
-msgid "自然茶色／偏黄 A"
-msgstr "自然茶色／偏黃 A"
+msgid "自然茶色／黄 A"
+msgstr "自然茶色／黃 A"
 
-msgid "自然茶色／偏黄 B"
-msgstr "自然茶色／偏黃 B"
+msgid "自然茶色／黄 B"
+msgstr "自然茶色／黃 B"
 
-msgid "自然茶色／偏黑 A"
-msgstr "自然茶色／偏黑 A"
+msgid "自然茶色／黑 A"
+msgstr "自然茶色／黑 A"
 
-msgid "自然茶色／偏黑 B"
-msgstr "自然茶色／偏黑 B"
+msgid "自然茶色／黑 B"
+msgstr "自然茶色／黑 B"
 
 msgid "血型"
 msgstr "血型"

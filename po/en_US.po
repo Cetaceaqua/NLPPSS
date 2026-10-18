@@ -300,22 +300,22 @@ msgstr "No Filter"
 msgid "日"
 msgstr "Days"
 
-msgid "明亮色／偏红 A"
+msgid "明亮色／红 A"
 msgstr "Bright / Reddish A"
 
-msgid "明亮色／偏红 B"
+msgid "明亮色／红 B"
 msgstr "Bright / Reddish B"
 
-msgid "明亮色／偏黄 A"
+msgid "明亮色／黄 A"
 msgstr "Bright / Yellowish A"
 
-msgid "明亮色／偏黄 B"
+msgid "明亮色／黄 B"
 msgstr "Bright / Yellowish B"
 
-msgid "明亮色／偏黑 A"
+msgid "明亮色／黑 A"
 msgstr "Bright / Dark A"
 
-msgid "明亮色／偏黑 B"
+msgid "明亮色／黑 B"
 msgstr "Bright / Dark B"
 
 msgid "是 \ue000"
@@ -465,22 +465,22 @@ msgstr "Auto Backup"
 msgid "自然 (清纯)"
 msgstr "Natural (Pure)"
 
-msgid "自然茶色／偏红 A"
+msgid "自然茶色／红 A"
 msgstr "Natural Brown / Reddish A"
 
-msgid "自然茶色／偏红 B"
+msgid "自然茶色／红 B"
 msgstr "Natural Brown / Reddish B"
 
-msgid "自然茶色／偏黄 A"
+msgid "自然茶色／黄 A"
 msgstr "Natural Brown / Yellowish A"
 
-msgid "自然茶色／偏黄 B"
+msgid "自然茶色／黄 B"
 msgstr "Natural Brown / Yellowish B"
 
-msgid "自然茶色／偏黑 A"
+msgid "自然茶色／黑 A"
 msgstr "Natural Brown / Dark A"
 
-msgid "自然茶色／偏黑 B"
+msgid "自然茶色／黑 B"
 msgstr "Natural Brown / Dark B"
 
 msgid "血型"
