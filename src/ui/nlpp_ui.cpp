@@ -4,6 +4,7 @@
 #include "nlpp_portrait.h"
 #include "gfx.h"
 #include "ui.h"
+#include "ui/keyboard.h"
 #include "cfg.h"
 #include "fs.h"
 #include "util.h"
@@ -57,7 +58,7 @@ namespace ui
 
                 snprintf(itemBuf, sizeof(itemBuf), "%s %d: %s", getTxt("槽位"), i + 1, playerName.c_str());
             }
-            s_slotMenu.addOpt(itemBuf, 320);
+            s_slotMenu.addOpt(itemBuf, 300);
         }
     }
 
@@ -67,6 +68,8 @@ namespace ui
         int dstSlot = s_copyDstMenu.getSelected();
         if (s_copySrcSlot >= 0 && dstSlot >= 0 && s_copySrcSlot != dstSlot)
         {
+            // Auto-backup before copy
+            nlpp::g_saveMgr.createAutoBackup(nullptr);
             nlpp::g_saveMgr.cloneSlot(s_copySrcSlot, dstSlot);
             nlpp::g_saveMgr.commitChanges();
             refreshSlotMenu();
@@ -80,8 +83,30 @@ namespace ui
     {
         int dst = s_copyDstMenu.getSelected();
         char msg[128];
-        snprintf(msg, sizeof(msg), getTxt("确定要将槽位 %d 复制到槽位 %d 吗？\n目标槽位的数据将被覆盖！"), s_copySrcSlot + 1, dst + 1);
+        snprintf(msg, sizeof(msg), getTxt("确定要将槽位 %d 复制到槽位 %d 吗？"), s_copySrcSlot + 1, dst + 1);
         ui::confirm(msg, onConfirmSlotCopy_t, nullptr, a);
+    }
+
+    static int s_clearTargetSlot = 0;
+    static void onConfirmClearSlot_t(void *a)
+    {
+        threadInfo *t = (threadInfo *)a;
+        if (s_clearTargetSlot >= 0 && s_clearTargetSlot < nlpp::NUM_SLOTS)
+        {
+            // Auto-backup before clear
+            nlpp::g_saveMgr.createAutoBackup(nullptr);
+            if (nlpp::g_saveMgr.clearSlot(s_clearTargetSlot))
+            {
+                nlpp::g_saveMgr.commitChanges();
+                refreshSlotMenu();
+                ui::showMessage(getTxt("槽位已重置为空槽！"));
+            }
+            else
+            {
+                ui::showMessage(getTxt("重置槽位失败！"));
+            }
+        }
+        t->finished = true;
     }
 
     static void onConfirmBackupSlot_t(void *a)
@@ -114,14 +139,16 @@ namespace ui
 
         s_slotSelectOpen = false;
         s_slotCopyOpen = false;
+        s_slotMenu.setPaging(false);
         refreshSlotMenu();
 
         s_copyDstMenu.reset();
+        s_copyDstMenu.setPaging(false);
         for (int i = 0; i < nlpp::NUM_SLOTS; ++i)
         {
             char buf[32];
             snprintf(buf, sizeof(buf), "%s %d", getTxt("目标槽位"), i + 1);
-            s_copyDstMenu.addOpt(buf, 200);
+            s_copyDstMenu.addOpt(buf, 300);
         }
 
         // Auto-load on boot logic if enabled
@@ -151,6 +178,16 @@ namespace ui
     {
         s_slotSelectOpen = false;
         s_slotCopyOpen = false;
+    }
+
+    static void onConfirmEnterFriendSlot_t(void *a)
+    {
+        threadInfo *t = (threadInfo *)a;
+        int slot = s_slotMenu.getSelected();
+        nlpp::g_saveMgr.selectSlot(slot);
+        ui::editorInit(slot);
+        ui::state = SLOT_EDITOR;
+        t->finished = true;
     }
 
     void saveSelectUpdate()
@@ -199,7 +236,7 @@ namespace ui
                 {
                     const char *failMsg = (mediaSel == 0) ?
                         getTxt("未检测到数字版存档！") :
-                        getTxt("未插入游戏卡带或未检测到卡带存档！");
+                        getTxt("未插入游戏卡带，或未检测到卡带存档！");
                     ui::showMessage(failMsg);
                     return;
                 }
@@ -231,6 +268,13 @@ namespace ui
                     ui::showMessage(getTxt("该槽位为空，无法编辑！"));
                     return;
                 }
+                const auto &slotData = nlpp::g_saveMgr.getSlotData(slot);
+                if (slotData.isFriendMode())
+                {
+                    ui::confirm(getTxt("当前存档槽位处于朋友模式。\n修改功能主要为恋人模式设计，\n确定要继续编辑吗？"),
+                                onConfirmEnterFriendSlot_t, nullptr, nullptr);
+                    return;
+                }
                 nlpp::g_saveMgr.selectSlot(slot);
                 ui::editorInit(slot);
                 ui::state = SLOT_EDITOR;
@@ -257,6 +301,21 @@ namespace ui
                 return;
             }
 
+            if (down & KEY_SELECT) // 清除
+            {
+                int slot = s_slotMenu.getSelected();
+                if (nlpp::g_saveMgr.isSlotEmpty(slot))
+                {
+                    ui::showMessage(getTxt("该槽位已为空槽！"));
+                    return;
+                }
+                s_clearTargetSlot = slot;
+                char msg[128];
+                snprintf(msg, sizeof(msg), getTxt("确定要清空槽位 %d 吗？"), slot + 1);
+                ui::confirm(msg, onConfirmClearSlot_t, nullptr, nullptr);
+                return;
+            }
+
             s_slotMenu.update();
         }
     }
@@ -274,7 +333,7 @@ namespace ui
             char prompt[64];
             snprintf(prompt, sizeof(prompt), "%s %d -> %s", getTxt("复制槽位"), s_copySrcSlot + 1, getTxt("选择目标槽位"));
             gfx::drawText(prompt, 20, 16, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
-            s_copyDstMenu.draw(20, 50, gfx::txtCont, 280, true);
+            s_copyDstMenu.draw(10, 50, gfx::txtCont, 300, true);
             ui::drawUIBar(getTxt("\ue000 确定  \ue001 取消"), ui::SCREEN_BOT, true);
             return;
         }
@@ -286,8 +345,8 @@ namespace ui
         }
         else
         {
-            s_slotMenu.draw(0, 22, gfx::txtCont, 320, true);
-            ui::drawUIBar(getTxt("\ue000 选择  \ue002 复制  \ue003 备份  \ue001 关闭"), ui::SCREEN_BOT, true);
+            s_slotMenu.draw(10, 22, gfx::txtCont, 300, true);
+            ui::drawUIBar(getTxt("\ue000 选择  \ue002 复制  \ue003 备份  SELECT 清除  \ue001 关闭"), ui::SCREEN_BOT, true);
         }
     }
 
@@ -306,7 +365,7 @@ namespace ui
         s_bakMenu.reset();
         for (const auto &b : s_backups)
         {
-            s_bakMenu.addOpt(b.dirName, 400, b.fullPath);
+            s_bakMenu.addOpt(b.dirName, 400);
         }
     }
 
@@ -314,8 +373,9 @@ namespace ui
     {
         backupMgrRefresh();
         s_restoreMenu.reset();
-        s_restoreMenu.addOpt(getTxt("恢复到数字版"), 240);
-        s_restoreMenu.addOpt(getTxt("恢复到实体版"), 240);
+        s_restoreMenu.setPaging(false);
+        s_restoreMenu.addOpt(getTxt("恢复到数字版"), 300);
+        s_restoreMenu.addOpt(getTxt("恢复到实体版"), 300);
         s_restoreMenuOpen = false;
     }
 
@@ -335,7 +395,7 @@ namespace ui
             nlpp::g_saveMgr.detectSources();
             if (!nlpp::g_saveMgr.hasGameCard())
             {
-                ui::showMessage(getTxt("未插入游戏卡带或未检测到卡带存档！"));
+                ui::showMessage(getTxt("未插入游戏卡带，或未检测到卡带存档！"));
                 s_restoreMenuOpen = false;
                 t->finished = true;
                 return;
@@ -394,7 +454,7 @@ namespace ui
             {
                 std::string targetDesc = (s_restoreMenu.getSelected() == 0) ? getTxt("数字版") : getTxt("实体版");
                 char msg[128];
-                snprintf(msg, sizeof(msg), getTxt("确定要恢复此备份到%s吗？\n现有存档将被覆盖！"), targetDesc.c_str());
+                snprintf(msg, sizeof(msg), getTxt("确定要恢复此备份到 %s 吗？"), targetDesc.c_str());
                 ui::confirm(msg, onConfirmRestore_t, nullptr, nullptr);
                 return;
             }
@@ -427,7 +487,7 @@ namespace ui
         {
             int sel = s_bakMenu.getSelected();
             char msg[128];
-            snprintf(msg, sizeof(msg), getTxt("确定要删除备份 %s 吗？\n此操作无法撤销！"), s_backups[sel].dirName.c_str());
+            snprintf(msg, sizeof(msg), getTxt("确定要删除备份 %s 吗？"), s_backups[sel].dirName.c_str());
             ui::confirm(msg, onConfirmDelete_t, nullptr, nullptr);
             return;
         }
@@ -441,7 +501,7 @@ namespace ui
 
         if (s_backups.empty())
         {
-            gfx::drawText(getTxt("暂无存档备份数据"), 20, 40, GFX_DEPTH_DEFAULT, 0.5f, gfx::divClr);
+            gfx::drawText(getTxt("未找到存档备份。"), 20, 40, GFX_DEPTH_DEFAULT, 0.5f, gfx::divClr);
             return;
         }
 
@@ -452,8 +512,8 @@ namespace ui
     {
         if (s_restoreMenuOpen)
         {
-            gfx::drawText(getTxt("请选择恢复目标介质："), 20, 20, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
-            s_restoreMenu.draw(20, 60, gfx::txtCont, 280, true);
+            gfx::drawText(getTxt("请选择恢复目标类型："), 20, 20, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
+            s_restoreMenu.draw(10, 60, gfx::txtCont, 300, true);
             ui::drawUIBar(getTxt("\ue000 确定  \ue001 取消"), ui::SCREEN_BOT, true);
             return;
         }
@@ -493,6 +553,7 @@ namespace ui
         ACTION_NONE = 0,
         ACTION_BIRTH_MONTH,
         ACTION_BIRTH_DAY,
+        ACTION_BLOOD_TYPE,
         ACTION_PREFECTURE,
         ACTION_CALL_SELECTOR,
         ACTION_READING_PICKER,
@@ -506,8 +567,11 @@ namespace ui
     static std::vector<const nlpp::ReadingEntry *> s_curReadingMatches;
     static int s_targetCallIndex = 0;
 
-    static void refreshEditorPageMenu()
+    static int s_editorLastSel = 0;
+
+    static void refreshEditorPageMenu(int keepSel = -1)
     {
+        int prevSel = (keepSel >= 0) ? keepSel : s_editorLastSel;
         s_editorMenu.reset();
         auto &sd = nlpp::g_saveMgr.getSlotData(s_editorSlot);
 
@@ -521,25 +585,27 @@ namespace ui
             snprintf(bdayBuf, sizeof(bdayBuf), "%s: %d月%d日", getTxt("生日"), sd.profile.birthMonth, sd.profile.birthDay);
             s_editorMenu.addOpt(bdayBuf, 300);
 
+            s_editorMenu.addOpt(std::string(getTxt("血型")) + ": " + nlpp::Dict::getBloodTypeName(sd.profile.blood), 300);
+
             s_editorMenu.addOpt(std::string(getTxt("出身地")) + ": " + nlpp::Dict::getPrefectureName(sd.profile.prefecture), 300);
 
-            s_editorMenu.addOpt(getTxt("★ 重新读取"), 300);
+            s_editorMenu.addOpt(getTxt("★ 重新加载"), 300);
             s_editorMenu.addOpt(getTxt("♥ 保存修改"), 300);
         }
         else if (s_editorPage == 1) // 2. 玩家称呼
         {
-            char curCallBuf[64];
-            snprintf(curCallBuf, sizeof(curCallBuf), "%s: %d (%s)", getTxt("当前使用"), (int)sd.stats.currentSelector,
-                     nlpp::Dict::getReadingText(sd.stats.readings[sd.stats.currentSelector < 5 ? sd.stats.currentSelector : 0]).c_str());
+            char curCallBuf[96];
+            snprintf(curCallBuf, sizeof(curCallBuf), "%s: %d %s", getTxt("当前使用"), (int)sd.stats.currentSelector,
+                     nlpp::Dict::getReadingDisplay(sd.stats.readings[sd.stats.currentSelector < 5 ? sd.stats.currentSelector : 0]).c_str());
             s_editorMenu.addOpt(curCallBuf, 300);
 
-            s_editorMenu.addOpt(std::string(getTxt("0 姓氏称呼")) + ": " + nlpp::Dict::getReadingText(sd.stats.readings[0]), 300);
-            s_editorMenu.addOpt(std::string(getTxt("1 名字称呼")) + ": " + nlpp::Dict::getReadingText(sd.stats.readings[1]), 300);
-            s_editorMenu.addOpt(std::string(getTxt("2 后缀称呼")) + ": " + nlpp::Dict::getReadingText(sd.stats.readings[2]), 300);
-            s_editorMenu.addOpt(std::string(getTxt("3 预设称呼")) + ": " + nlpp::Dict::getReadingText(sd.stats.readings[3]), 300);
-            s_editorMenu.addOpt(std::string(getTxt("4 特殊称呼")) + ": " + nlpp::Dict::getReadingText(sd.stats.readings[4]), 300);
+            s_editorMenu.addOpt(std::string(getTxt("0 姓氏读音")) + ": " + nlpp::Dict::getReadingDisplay(sd.stats.readings[0]), 300);
+            s_editorMenu.addOpt(std::string(getTxt("1 名字读音")) + ": " + nlpp::Dict::getReadingDisplay(sd.stats.readings[1]), 300);
+            s_editorMenu.addOpt(std::string(getTxt("2 后缀读音")) + ": " + nlpp::Dict::getReadingDisplay(sd.stats.readings[2]), 300);
+            s_editorMenu.addOpt(std::string(getTxt("3 预设读音")) + ": " + nlpp::Dict::getReadingDisplay(sd.stats.readings[3]), 300);
+            s_editorMenu.addOpt(std::string(getTxt("4 特殊读音")) + ": " + nlpp::Dict::getReadingDisplay(sd.stats.readings[4]), 300);
 
-            s_editorMenu.addOpt(getTxt("★ 重新读取"), 300);
+            s_editorMenu.addOpt(getTxt("★ 重新加载"), 300);
             s_editorMenu.addOpt(getTxt("♥ 保存修改"), 300);
         }
         else if (s_editorPage == 2) // 3. 女友发型
@@ -549,7 +615,7 @@ namespace ui
             s_editorMenu.addOpt(std::string(getTxt("发色")) + ": " + nlpp::getCleanColorName(sd.girlfriend.heroine, sd.girlfriend.hairColorId), 300);
             s_editorMenu.addOpt(getTxt("重置为初始发型"), 300);
 
-            s_editorMenu.addOpt(getTxt("★ 重新读取"), 300);
+            s_editorMenu.addOpt(getTxt("★ 重新加载"), 300);
             s_editorMenu.addOpt(getTxt("♥ 保存修改"), 300);
 
             // Live update portraits (style and color)
@@ -558,7 +624,7 @@ namespace ui
         }
         else if (s_editorPage == 3) // 4. 其他
         {
-            char numBuf[64];
+            char numBuf[96];
             snprintf(numBuf, sizeof(numBuf), "%s: %d %s", getTxt("总天数"), (int)sd.timeline.timelineDays, getTxt("日"));
             s_editorMenu.addOpt(numBuf, 300);
 
@@ -583,12 +649,17 @@ namespace ui
             snprintf(numBuf, sizeof(numBuf), "%s: %d %s", getTxt("TODO"), (int)sd.stats.todo, getTxt("点"));
             s_editorMenu.addOpt(numBuf, 300);
 
-            std::string filterTxt = (sd.stats.cameraFilter != -1) ? getTxt("卸下滤镜 (佩戴中)") : getTxt("卸下滤镜 (无滤镜)");
-            s_editorMenu.addOpt(filterTxt, 300);
+            s_editorMenu.addOpt(getTxt("移除滤镜"), 300);
 
-            s_editorMenu.addOpt(getTxt("★ 重新读取"), 300);
+            s_editorMenu.addOpt(getTxt("★ 重新加载"), 300);
             s_editorMenu.addOpt(getTxt("♥ 保存修改"), 300);
         }
+
+        if (prevSel >= 0 && (unsigned)prevSel < s_editorMenu.getCount())
+        {
+            s_editorMenu.setSelected(prevSel);
+        }
+        s_editorLastSel = s_editorMenu.getSelected();
     }
 
     void editorInit(int slot)
@@ -597,12 +668,16 @@ namespace ui
         s_editorPage = 0;
         s_editorSubMenuOpen = false;
         s_subAction = ACTION_NONE;
+        s_editorMenu.setPaging(false);
+        s_editorMenu.setMaxVisible(11);
+        s_editorSubMenu.setPaging(true);
+        s_editorSubMenu.setMaxVisible(10);
 
         nlpp::portraitInit();
         const auto &sd = nlpp::g_saveMgr.getSlotData(slot);
         nlpp::portraitLoadByStyle(sd.girlfriend.heroine, sd.girlfriend.hairLength, sd.girlfriend.hairStyleId);
         nlpp::portraitLoadByColor(sd.girlfriend.heroine, sd.girlfriend.hairColorId);
-        refreshEditorPageMenu();
+        refreshEditorPageMenu(0);
     }
 
     void editorExit()
@@ -614,15 +689,19 @@ namespace ui
     static void onConfirmSaveSlot_t(void *a)
     {
         threadInfo *t = (threadInfo *)a;
+        nlpp::g_saveMgr.serializeSlot(s_editorSlot);
         if (cfg::config["autobackup"])
         {
             nlpp::g_saveMgr.createAutoBackup(nullptr);
         }
-        nlpp::g_saveMgr.serializeSlot(s_editorSlot);
         if (nlpp::g_saveMgr.commitChanges())
         {
+            nlpp::g_saveMgr.reloadAll();
+            const auto &sd = nlpp::g_saveMgr.getSlotData(s_editorSlot);
+            nlpp::portraitLoadByStyle(sd.girlfriend.heroine, sd.girlfriend.hairLength, sd.girlfriend.hairStyleId);
+            nlpp::portraitLoadByColor(sd.girlfriend.heroine, sd.girlfriend.hairColorId);
             refreshSlotMenu();
-            refreshEditorPageMenu();
+            refreshEditorPageMenu(s_editorLastSel);
             ui::showMessage(getTxt("修改保存成功！"));
         }
         else
@@ -634,14 +713,18 @@ namespace ui
 
     static void onConfirmSaveSlot(void *)
     {
-        ui::confirm(getTxt("确定要保存对当前槽位的修改吗？\n将写回存档介质并自动生成安全备份。"), onConfirmSaveSlot_t, nullptr, nullptr);
+        ui::confirm(getTxt("确定要保存当前槽位的修改吗？"), onConfirmSaveSlot_t, nullptr, nullptr);
     }
 
     static void onConfirmReloadSlot(void *)
     {
-        nlpp::g_saveMgr.parseSlot(s_editorSlot);
-        refreshEditorPageMenu();
-        ui::showMessage(getTxt("已重新读取当前存档数据！"));
+        nlpp::g_saveMgr.reloadAll();
+        const auto &sd = nlpp::g_saveMgr.getSlotData(s_editorSlot);
+        nlpp::portraitLoadByStyle(sd.girlfriend.heroine, sd.girlfriend.hairLength, sd.girlfriend.hairStyleId);
+        nlpp::portraitLoadByColor(sd.girlfriend.heroine, sd.girlfriend.hairColorId);
+        refreshSlotMenu();
+        refreshEditorPageMenu(s_editorLastSel);
+        ui::showMessage(getTxt("已重新加载当前存档数据！"));
     }
 
     static void onConfirmResetHair_t(void *a)
@@ -649,23 +732,31 @@ namespace ui
         threadInfo *t = (threadInfo *)a;
         auto &sd = nlpp::g_saveMgr.getSlotData(s_editorSlot);
 
+        // Master reverse engineering doc (7.2.3 & 7.5.5):
+        // ROM byte_7ABB51 default hair length:
+        // Manaka: LengthStage 2 (Long / 高马尾日常)
+        // Rinko:  LengthStage 0 (Short / 出厂短发造型)
+        // Nene:   LengthStage 1 (Middle / 出厂俏丽波波头)
         if (sd.girlfriend.heroine == nlpp::HEROINE_MANAKA)
-        {
-            sd.girlfriend.hairLength = 2; // Medium
-            sd.girlfriend.hairStyleId = 0;
-            sd.girlfriend.hairColorId = 1; // Black
-        }
-        else if (sd.girlfriend.heroine == nlpp::HEROINE_RINKO)
-        {
-            sd.girlfriend.hairLength = 1; // Bob
-            sd.girlfriend.hairStyleId = 0;
-            sd.girlfriend.hairColorId = 13;
-        }
-        else if (sd.girlfriend.heroine == nlpp::HEROINE_NENE)
         {
             sd.girlfriend.hairLength = 2; // Long
             sd.girlfriend.hairStyleId = 0;
-            sd.girlfriend.hairColorId = 1;
+            sd.girlfriend.hairColorId = 0; // Default color
+            sd.girlfriend.hairTasteTarget = 0; // 清楚 / キレイ
+        }
+        else if (sd.girlfriend.heroine == nlpp::HEROINE_RINKO)
+        {
+            sd.girlfriend.hairLength = 0; // Short
+            sd.girlfriend.hairStyleId = 0;
+            sd.girlfriend.hairColorId = 0; // Default color
+            sd.girlfriend.hairTasteTarget = 1; // かわいい / 休闲个性
+        }
+        else if (sd.girlfriend.heroine == nlpp::HEROINE_NENE)
+        {
+            sd.girlfriend.hairLength = 1; // Middle
+            sd.girlfriend.hairStyleId = 0;
+            sd.girlfriend.hairColorId = 0; // Default color
+            sd.girlfriend.hairTasteTarget = 0; // 清楚 / 成熟温婉
         }
 
         uint8_t r = 0, g = 0, b = 0;
@@ -673,9 +764,15 @@ namespace ui
         sd.girlfriend.hairR = r;
         sd.girlfriend.hairG = g;
         sd.girlfriend.hairB = b;
+        sd.girlfriend.nextHairR = r;
+        sd.girlfriend.nextHairG = g;
+        sd.girlfriend.nextHairB = b;
+        sd.girlfriend.nextHairColorId = 0;
+        sd.girlfriend.hairColorActive = 0xFF; // 0xFF = default initial state (unactivated dyeing)
+        sd.girlfriend.reservedStyleId = 0xFF; // 0xFF = unreserved
 
         refreshEditorPageMenu();
-        ui::showMessage(getTxt("已重置女友发型和发色！"));
+        ui::showMessage(getTxt("已将女友的发型和发色重置为默认值！"));
         t->finished = true;
     }
 
@@ -683,6 +780,10 @@ namespace ui
     {
         threadInfo *t = (threadInfo *)a;
         editorExit();
+        nlpp::g_saveMgr.selectSlot(s_editorSlot); // Discard uncommitted in-memory edits
+        s_slotSelectOpen = true;
+        refreshSlotMenu();
+        s_slotMenu.setSelected(s_editorSlot);
         ui::state = SAVE_SELECT;
         t->finished = true;
     }
@@ -729,13 +830,15 @@ namespace ui
                     sd.profile.birthMonth = sel + 1;
                     s_subAction = ACTION_BIRTH_DAY;
                     s_editorSubMenu.reset();
+                    s_editorSubMenu.setPaging(true);
+                    s_editorSubMenu.setMaxVisible(10);
                     static const int daysInMon[] = {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
                     int maxD = daysInMon[sd.profile.birthMonth - 1];
                     for (int d = 1; d <= maxD; ++d)
                     {
                         char dBuf[16];
                         snprintf(dBuf, sizeof(dBuf), "%d日", d);
-                        s_editorSubMenu.addOpt(dBuf, 160);
+                        s_editorSubMenu.addOpt(dBuf, 300);
                     }
                     s_editorSubMenu.setSelected(std::min((int)sd.profile.birthDay - 1, maxD - 1));
                     return;
@@ -743,6 +846,17 @@ namespace ui
                 else if (s_subAction == ACTION_BIRTH_DAY)
                 {
                     sd.profile.birthDay = sel + 1;
+                    s_editorSubMenuOpen = false;
+                    s_subAction = ACTION_NONE;
+                    refreshEditorPageMenu();
+                    return;
+                }
+                else if (s_subAction == ACTION_BLOOD_TYPE)
+                {
+                    if (sel >= 0 && sel < 4)
+                    {
+                        sd.profile.blood = (nlpp::BloodType)sel;
+                    }
                     s_editorSubMenuOpen = false;
                     s_subAction = ACTION_NONE;
                     refreshEditorPageMenu();
@@ -812,6 +926,11 @@ namespace ui
                         sd.girlfriend.hairR = def.r;
                         sd.girlfriend.hairG = def.g;
                         sd.girlfriend.hairB = def.b;
+                        sd.girlfriend.nextHairColorId = sd.girlfriend.hairColorId;
+                        sd.girlfriend.nextHairR = def.r;
+                        sd.girlfriend.nextHairG = def.g;
+                        sd.girlfriend.nextHairB = def.b;
+                        sd.girlfriend.hairColorActive = 0x00; // 0x00 = activate dyeing
                     }
                     s_editorSubMenuOpen = false;
                     s_subAction = ACTION_NONE;
@@ -823,18 +942,10 @@ namespace ui
             return;
         }
 
-        // B: Return to Main Menu
+        // B: Return to Slot Selection (with confirmation dialog)
         if (down & KEY_B)
         {
-            if (nlpp::g_saveMgr.isModified())
-            {
-                ui::confirm(getTxt("有未保存的修改，确定要返回吗？"), onConfirmExitEditor_t, nullptr, nullptr);
-            }
-            else
-            {
-                editorExit();
-                ui::state = SAVE_SELECT;
-            }
+            ui::confirm(getTxt("确定要退出存档编辑吗？"), onConfirmExitEditor_t, nullptr, nullptr);
             return;
         }
 
@@ -842,13 +953,13 @@ namespace ui
         if (down & KEY_PAGE_LEFT)
         {
             s_editorPage = (s_editorPage + 3) % 4;
-            refreshEditorPageMenu();
+            refreshEditorPageMenu(0);
             return;
         }
         else if (down & KEY_PAGE_RIGHT)
         {
             s_editorPage = (s_editorPage + 1) % 4;
-            refreshEditorPageMenu();
+            refreshEditorPageMenu(0);
             return;
         }
 
@@ -856,50 +967,98 @@ namespace ui
         if (down & KEY_A)
         {
             int sel = s_editorMenu.getSelected();
+            s_editorLastSel = sel;
 
             if (s_editorPage == 0) // 玩家信息
             {
                 if (sel == 0) // 姓氏
                 {
-                    std::string in = util::getString(getTxt("输入姓氏 (最多4汉字/12字节)"), false);
-                    if (!in.empty()) { sd.profile.lastName = in; refreshEditorPageMenu(); }
+                    std::string in;
+                    bool ok = false;
+                    if (cfg::config["use_builtinkbd"])
+                    {
+                        ok = ui::showKeyboard(getTxt("输入姓氏"), sd.profile.lastName, 12, in, ui::editorDrawTop);
+                    }
+                    else
+                    {
+                        in = util::getString(getTxt("输入姓氏"), false);
+                        ok = !in.empty();
+                    }
+                    if (ok) { sd.profile.lastName = in; refreshEditorPageMenu(); }
                 }
                 else if (sel == 1) // 名字
                 {
-                    std::string in = util::getString(getTxt("输入名字 (最多4汉字/12字节)"), false);
-                    if (!in.empty()) { sd.profile.firstName = in; refreshEditorPageMenu(); }
+                    std::string in;
+                    bool ok = false;
+                    if (cfg::config["use_builtinkbd"])
+                    {
+                        ok = ui::showKeyboard(getTxt("输入名字"), sd.profile.firstName, 12, in, ui::editorDrawTop);
+                    }
+                    else
+                    {
+                        in = util::getString(getTxt("输入名字"), false);
+                        ok = !in.empty();
+                    }
+                    if (ok) { sd.profile.firstName = in; refreshEditorPageMenu(); }
                 }
                 else if (sel == 2) // 通讯昵称
                 {
-                    std::string in = util::getString(getTxt("输入通讯昵称 (最多4汉字/12字节)"), false);
-                    if (!in.empty()) { sd.profile.hn = in; refreshEditorPageMenu(); }
+                    std::string in;
+                    bool ok = false;
+                    if (cfg::config["use_builtinkbd"])
+                    {
+                        ok = ui::showKeyboard(getTxt("输入通讯昵称(HN)"), sd.profile.hn, 12, in, ui::editorDrawTop);
+                    }
+                    else
+                    {
+                        in = util::getString(getTxt("输入通讯昵称(HN)"), false);
+                        ok = !in.empty();
+                    }
+                    if (ok) { sd.profile.hn = in; refreshEditorPageMenu(); }
                 }
                 else if (sel == 3) // 生日
                 {
                     s_subAction = ACTION_BIRTH_MONTH;
                     s_editorSubMenuOpen = true;
                     s_editorSubMenu.reset();
+                    s_editorSubMenu.setPaging(true);
+                    s_editorSubMenu.setMaxVisible(10);
                     for (int m = 1; m <= 12; ++m)
                     {
                         char mBuf[16];
                         snprintf(mBuf, sizeof(mBuf), "%d月", m);
-                        s_editorSubMenu.addOpt(mBuf, 160);
+                        s_editorSubMenu.addOpt(mBuf, 300);
                     }
                     s_editorSubMenu.setSelected(std::max(0, (int)sd.profile.birthMonth - 1));
                 }
-                else if (sel == 4) // 出身地
+                else if (sel == 4) // 血型
+                {
+                    s_subAction = ACTION_BLOOD_TYPE;
+                    s_editorSubMenuOpen = true;
+                    s_editorSubMenu.reset();
+                    s_editorSubMenu.setPaging(false);
+                    s_editorSubMenu.setMaxVisible(10);
+                    s_editorSubMenu.addOpt("A型", 300);
+                    s_editorSubMenu.addOpt("B型", 300);
+                    s_editorSubMenu.addOpt("O型", 300);
+                    s_editorSubMenu.addOpt("AB型", 300);
+                    s_editorSubMenu.setSelected(std::min((int)sd.profile.blood, 3));
+                }
+                else if (sel == 5) // 出身地
                 {
                     s_subAction = ACTION_PREFECTURE;
                     s_editorSubMenuOpen = true;
                     s_editorSubMenu.reset();
+                    s_editorSubMenu.setPaging(true);
+                    s_editorSubMenu.setMaxVisible(10);
                     for (int p = 0; p < nlpp::Dict::getPrefectureCount(); ++p)
                     {
-                        s_editorSubMenu.addOpt(nlpp::Dict::getPrefectureName(p), 180);
+                        s_editorSubMenu.addOpt(nlpp::Dict::getPrefectureName(p), 300);
                     }
                     s_editorSubMenu.setSelected(std::min((int)sd.profile.prefecture, nlpp::Dict::getPrefectureCount() - 1));
                 }
-                else if (sel == 5) { onConfirmReloadSlot(nullptr); }
-                else if (sel == 6) { onConfirmSaveSlot(nullptr); }
+                else if (sel == 6) { onConfirmReloadSlot(nullptr); }
+                else if (sel == 7) { onConfirmSaveSlot(nullptr); }
             }
             else if (s_editorPage == 1) // 玩家称呼
             {
@@ -908,36 +1067,161 @@ namespace ui
                     s_subAction = ACTION_CALL_SELECTOR;
                     s_editorSubMenuOpen = true;
                     s_editorSubMenu.reset();
-                    s_editorSubMenu.addOpt(getTxt("0 姓氏称呼"), 200);
-                    s_editorSubMenu.addOpt(getTxt("1 名字称呼"), 200);
-                    s_editorSubMenu.addOpt(getTxt("2 后缀称呼"), 200);
-                    s_editorSubMenu.addOpt(getTxt("3 预设称呼"), 200);
-                    s_editorSubMenu.addOpt(getTxt("4 特殊称呼"), 200);
+                    s_editorSubMenu.setPaging(false);
+                    s_editorSubMenu.setMaxVisible(10);
+                    s_editorSubMenu.addOpt(getTxt("0 姓氏读音"), 300);
+                    s_editorSubMenu.addOpt(getTxt("1 名字读音"), 300);
+                    s_editorSubMenu.addOpt(getTxt("2 后缀读音"), 300);
+                    s_editorSubMenu.addOpt(getTxt("3 预设读音"), 300);
+                    s_editorSubMenu.addOpt(getTxt("4 特殊读音"), 300);
                     s_editorSubMenu.setSelected(std::min((int)sd.stats.currentSelector, 4));
                 }
-                else if (sel >= 1 && sel <= 5) // 读音选择
+                else if (sel == 1 || sel == 2) // 0 姓氏称呼 / 1 名字称呼 (搜索 + 候选推荐)
                 {
                     s_targetCallIndex = sel - 1;
                     uint8_t slotMask = 1 << s_targetCallIndex;
-                    uint8_t heroineMask = (uint8_t)sd.girlfriend.heroine;
 
-                    std::string query = util::getString(getTxt("输入假名或罗马字搜索 (留空显示推荐)"), false);
-                    s_curReadingMatches = nlpp::Dict::filterReadings(slotMask, heroineMask, query);
+                    std::string query;
+                    bool ok = false;
+                    if (cfg::config["use_builtinkbd"])
+                    {
+                        ok = ui::showKeyboard(getTxt("搜索读音"), "", 24, query, ui::editorDrawTop, ui::KBD_MODE_KANA);
+                    }
+                    else
+                    {
+                        query = util::getString(getTxt("搜索读音"), false);
+                        ok = true;
+                    }
+                    if (!ok) return;
+
+                    s_curReadingMatches = nlpp::Dict::filterReadings(slotMask, 0, query);
 
                     if (s_curReadingMatches.empty())
                     {
-                        ui::showMessage(getTxt("未找到匹配的称呼读音！"));
+                        ui::showMessage(getTxt("找不到匹配的读音！"));
                     }
                     else
                     {
                         s_subAction = ACTION_READING_PICKER;
                         s_editorSubMenuOpen = true;
                         s_editorSubMenu.reset();
-                        for (const auto *r : s_curReadingMatches)
+                        s_editorSubMenu.setPaging(true);
+                        s_editorSubMenu.setMaxVisible(10);
+                        for (size_t i = 0; i < s_curReadingMatches.size(); ++i)
                         {
-                            s_editorSubMenu.addOpt(r->text, 260);
+                            const auto *r = s_curReadingMatches[i];
+                            std::string itemText = r->text;
+                            if (!r->romaji.empty())
+                            {
+                                itemText += " (" + r->romaji + ")";
+                            }
+                            if (r->slot_mask & 0x80)
+                            {
+                                itemText += " ★";
+                            }
+                            s_editorSubMenu.addOpt(itemText, 300);
                         }
                     }
+                }
+                else if (sel == 3) // 2 后缀称呼 (SuffixReading)
+                {
+                    s_targetCallIndex = 2;
+                    std::string query;
+                    bool ok = false;
+                    if (cfg::config["use_builtinkbd"])
+                    {
+                        ok = ui::showKeyboard(getTxt("搜索读音"), "", 24, query, ui::editorDrawTop, ui::KBD_MODE_KANA);
+                    }
+                    else
+                    {
+                        query = util::getString(getTxt("搜索读音"), false);
+                        ok = true;
+                    }
+                    if (!ok) return;
+
+                    s_curReadingMatches = nlpp::Dict::filterReadings(0x04, 0, query);
+
+                    if (s_curReadingMatches.empty())
+                    {
+                        ui::showMessage(getTxt("找不到匹配的读音！"));
+                    }
+                    else
+                    {
+                        s_subAction = ACTION_READING_PICKER;
+                        s_editorSubMenuOpen = true;
+                        s_editorSubMenu.reset();
+                        s_editorSubMenu.setPaging(true);
+                        s_editorSubMenu.setMaxVisible(10);
+                        for (const auto *r : s_curReadingMatches)
+                        {
+                            std::string itemText = r->text;
+                            if (!r->romaji.empty()) itemText += " (" + r->romaji + ")";
+                            s_editorSubMenu.addOpt(itemText, 300);
+                        }
+                    }
+                }
+                else if (sel == 4) // 3 预设称呼 (PresetReading, 严格 24 项, 直接点选)
+                {
+                    s_targetCallIndex = 3;
+                    s_curReadingMatches = nlpp::Dict::filterReadings(0x08, 0, "");
+                    s_subAction = ACTION_READING_PICKER;
+                    s_editorSubMenuOpen = true;
+                    s_editorSubMenu.reset();
+                    s_editorSubMenu.setPaging(true);
+                    s_editorSubMenu.setMaxVisible(10);
+                    int curSel = 0;
+                    for (size_t i = 0; i < s_curReadingMatches.size(); ++i)
+                    {
+                        if (s_curReadingMatches[i]->id == sd.stats.readings[3]) curSel = (int)i;
+                        std::string itemText = s_curReadingMatches[i]->text;
+                        if (!s_curReadingMatches[i]->romaji.empty())
+                            itemText += " (" + s_curReadingMatches[i]->romaji + ")";
+                        s_editorSubMenu.addOpt(itemText, 300);
+                    }
+                    s_editorSubMenu.setSelected(curSel);
+                }
+                else if (sel == 5) // 4 特殊称呼 (CustomReading, 假名查找, 留空显示全部)
+                {
+                    s_targetCallIndex = 4;
+                    uint8_t heroineMask = (sd.girlfriend.heroine >= 0 && sd.girlfriend.heroine <= 2) ?
+                                          (1 << (uint8_t)sd.girlfriend.heroine) : 0;
+
+                    std::string query;
+                    bool ok = false;
+                    if (cfg::config["use_builtinkbd"])
+                    {
+                        ok = ui::showKeyboard(getTxt("搜索读音"), "", 24, query, ui::editorDrawTop, ui::KBD_MODE_KANA);
+                    }
+                    else
+                    {
+                        query = util::getString(getTxt("搜索读音"), false);
+                        ok = true;
+                    }
+                    if (!ok) return;
+
+                    s_curReadingMatches = nlpp::Dict::filterReadings(0x10, heroineMask, query);
+
+                    if (s_curReadingMatches.empty())
+                    {
+                        ui::showMessage(getTxt("找不到匹配的读音！"));
+                        return;
+                    }
+
+                    s_subAction = ACTION_READING_PICKER;
+                    s_editorSubMenuOpen = true;
+                    s_editorSubMenu.reset();
+                    s_editorSubMenu.setPaging(true);
+                    s_editorSubMenu.setMaxVisible(10);
+                    int curSel = 0;
+                    for (size_t i = 0; i < s_curReadingMatches.size(); ++i)
+                    {
+                        if (s_curReadingMatches[i]->id == sd.stats.readings[4]) curSel = (int)i;
+                        std::string itemText = s_curReadingMatches[i]->text;
+                        if (!s_curReadingMatches[i]->romaji.empty())
+                            itemText += " (" + s_curReadingMatches[i]->romaji + ")";
+                        s_editorSubMenu.addOpt(itemText, 300);
+                    }
+                    s_editorSubMenu.setSelected(curSel);
                 }
                 else if (sel == 6) { onConfirmReloadSlot(nullptr); }
                 else if (sel == 7) { onConfirmSaveSlot(nullptr); }
@@ -949,10 +1233,12 @@ namespace ui
                     s_subAction = ACTION_HAIR_LENGTH;
                     s_editorSubMenuOpen = true;
                     s_editorSubMenu.reset();
+                    s_editorSubMenu.setPaging(false);
+                    s_editorSubMenu.setMaxVisible(10);
                     auto validStages = nlpp::Dict::getValidLengthStages(sd.girlfriend.heroine);
                     for (uint8_t stage : validStages)
                     {
-                        s_editorSubMenu.addOpt(nlpp::Dict::getHairLengthName(sd.girlfriend.heroine, stage), 200);
+                        s_editorSubMenu.addOpt(nlpp::Dict::getHairLengthName(sd.girlfriend.heroine, stage), 300);
                     }
                 }
                 else if (sel == 1) // 发型
@@ -961,10 +1247,12 @@ namespace ui
                     s_curStyleOptions = nlpp::getStyleOptions(sd.girlfriend.heroine, sd.girlfriend.hairLength);
                     s_editorSubMenuOpen = true;
                     s_editorSubMenu.reset();
+                    s_editorSubMenu.setPaging(true);
+                    s_editorSubMenu.setMaxVisible(10);
                     int curSel = 0;
                     for (size_t i = 0; i < s_curStyleOptions.size(); ++i)
                     {
-                        s_editorSubMenu.addOpt(s_curStyleOptions[i].displayName, 240);
+                        s_editorSubMenu.addOpt(s_curStyleOptions[i].displayName, 300);
                         if (s_curStyleOptions[i].styleId == sd.girlfriend.hairStyleId) curSel = i;
                     }
                     s_editorSubMenu.setSelected(curSel);
@@ -975,22 +1263,32 @@ namespace ui
                     s_curColorOptions = nlpp::getColorOptions(sd.girlfriend.heroine);
                     s_editorSubMenuOpen = true;
                     s_editorSubMenu.reset();
+                    s_editorSubMenu.setPaging(true);
+                    s_editorSubMenu.setMaxVisible(10);
                     for (const auto &c : s_curColorOptions)
                     {
-                        s_editorSubMenu.addOpt(c.displayName, 240);
+                        s_editorSubMenu.addOpt(c.displayName, 300);
                     }
                     s_editorSubMenu.setSelected(std::max(0, (int)sd.girlfriend.hairColorId - 1));
                 }
                 else if (sel == 3) // 重置为初始发型
                 {
-                    ui::confirm(getTxt("确定要重置女友的发型和发色为初始状态吗？"), onConfirmResetHair_t, nullptr, nullptr);
+                    ui::confirm(getTxt("确定要将女友的发型和发色重置为默认值吗？"), onConfirmResetHair_t, nullptr, nullptr);
                 }
                 else if (sel == 4) { onConfirmReloadSlot(nullptr); }
                 else if (sel == 5) { onConfirmSaveSlot(nullptr); }
             }
             else if (s_editorPage == 3) // 其他
             {
-                if (sel == 0) { int v = util::getInt(getTxt("输入总天数 (1-9999)"), sd.timeline.timelineDays, 9999); if (v >= 0) { sd.timeline.timelineDays = v; refreshEditorPageMenu(); } }
+                if (sel == 0)
+                {
+                    int v = util::getInt(getTxt("输入总天数 (1-9999)"), sd.timeline.timelineDays, 9999);
+                    if (v >= 0)
+                    {
+                        sd.timeline.timelineDays = v;
+                        refreshEditorPageMenu();
+                    }
+                }
                 else if (sel == 1) { int v = util::getInt(getTxt("输入上线天数 (1-9999)"), sd.timeline.datingDays, 9999); if (v >= 0) { sd.timeline.datingDays = v; refreshEditorPageMenu(); } }
                 else if (sel == 2) { int v = util::getInt(getTxt("输入运动属性值 (0-255)"), sd.stats.fitness, 255); if (v >= 0) { sd.stats.fitness = v; refreshEditorPageMenu(); } }
                 else if (sel == 3) { int v = util::getInt(getTxt("输入知识属性值 (0-255)"), sd.stats.knowledge, 255); if (v >= 0) { sd.stats.knowledge = v; refreshEditorPageMenu(); } }
@@ -1002,7 +1300,7 @@ namespace ui
                 {
                     nlpp::g_saveMgr.removeCameraFilter(s_editorSlot);
                     refreshEditorPageMenu();
-                    ui::showMessage(getTxt("已成功卸下相机滤镜！"));
+                    ui::showMessage(getTxt("已成功移除相机滤镜！"));
                 }
                 else if (sel == 9) { onConfirmReloadSlot(nullptr); }
                 else if (sel == 10) { onConfirmSaveSlot(nullptr); }
@@ -1024,11 +1322,11 @@ namespace ui
         {
             char buf[256];
             snprintf(buf, sizeof(buf),
-                     "%s: %s %s\n%s: %s\n%s: %d%s%d%s\n%s: %s%s\n%s: %s",
+                     "%s: %s %s\n%s: %s\n%s: %d%s%d%s\n%s: %s\n%s: %s",
                      getTxt("姓名"), sd.profile.lastName.c_str(), sd.profile.firstName.c_str(),
                      getTxt("通讯昵称(HN)"), sd.profile.hn.c_str(),
                      getTxt("生日"), sd.profile.birthMonth, getTxt("月"), sd.profile.birthDay, getTxt("日"),
-                     getTxt("血型"), nlpp::Dict::getBloodTypeName(sd.profile.blood), getTxt("型"),
+                     getTxt("血型"), nlpp::Dict::getBloodTypeName(sd.profile.blood),
                      getTxt("出身地"), nlpp::Dict::getPrefectureName(sd.profile.prefecture));
             gfx::drawText(buf, 20, 36, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
         }
@@ -1036,19 +1334,19 @@ namespace ui
         {
             char buf[512];
             snprintf(buf, sizeof(buf),
-                     "%s: %d (%s)\n\n"
+                     "%s: %d %s\n"
                      "%s: %s\n"
                      "%s: %s\n"
-                     "%s: %s\n\n"
-                     "%s: %s\n\n"
+                     "%s: %s\n"
+                     "%s: %s\n"
                      "%s: %s",
-                     getTxt("当前使用"), (int)sd.stats.currentSelector, nlpp::Dict::getReadingText(sd.stats.readings[sd.stats.currentSelector < 5 ? sd.stats.currentSelector : 0]).c_str(),
-                     getTxt("0 姓氏称呼"), nlpp::Dict::getReadingText(sd.stats.readings[0]).c_str(),
-                     getTxt("1 名字称呼"), nlpp::Dict::getReadingText(sd.stats.readings[1]).c_str(),
-                     getTxt("2 后缀称呼"), nlpp::Dict::getReadingText(sd.stats.readings[2]).c_str(),
-                     getTxt("3 预设称呼"), nlpp::Dict::getReadingText(sd.stats.readings[3]).c_str(),
-                     getTxt("4 特殊称呼"), nlpp::Dict::getReadingText(sd.stats.readings[4]).c_str());
-            gfx::drawText(buf, 20, 32, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
+                     getTxt("当前使用"), (int)sd.stats.currentSelector, nlpp::Dict::getReadingDisplay(sd.stats.readings[sd.stats.currentSelector < 5 ? sd.stats.currentSelector : 0]).c_str(),
+                     getTxt("0 姓氏读音"), nlpp::Dict::getReadingDisplay(sd.stats.readings[0]).c_str(),
+                     getTxt("1 名字读音"), nlpp::Dict::getReadingDisplay(sd.stats.readings[1]).c_str(),
+                     getTxt("2 后缀读音"), nlpp::Dict::getReadingDisplay(sd.stats.readings[2]).c_str(),
+                     getTxt("3 预设读音"), nlpp::Dict::getReadingDisplay(sd.stats.readings[3]).c_str(),
+                     getTxt("4 特殊读音"), nlpp::Dict::getReadingDisplay(sd.stats.readings[4]).c_str());
+            gfx::drawText(buf, 20, 36, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
         }
         else if (s_editorPage == 2) // 3. 女友发型
         {
@@ -1087,14 +1385,14 @@ namespace ui
         else if (s_editorPage == 3) // 4. 其他
         {
             char buf[512];
-            std::string fStr = (sd.stats.cameraFilter != -1) ? getTxt("佩戴中") : getTxt("无滤镜");
+            std::string fStr = (sd.stats.cameraFilter != -1) ? getTxt("使用中") : getTxt("无滤镜");
             snprintf(buf, sizeof(buf),
                      "%s: %d %s\n"
-                     "%s: %d %s\n\n"
+                     "%s: %d %s\n"
                      "%s: %d\n"
-                     "%s: %d\n\n"
                      "%s: %d\n"
-                     "%s: %d\n\n"
+                     "%s: %d\n"
+                     "%s: %d\n"
                      "%s: %d G\n"
                      "%s: %d %s\n"
                      "%s: %s",
@@ -1107,7 +1405,7 @@ namespace ui
                      getTxt("金钱"), (int)sd.stats.rich,
                      getTxt("TODO"), (int)sd.stats.todo, getTxt("点"),
                      getTxt("滤镜"), fStr.c_str());
-            gfx::drawText(buf, 20, 26, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
+            gfx::drawText(buf, 20, 32, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
         }
     }
 
@@ -1115,7 +1413,7 @@ namespace ui
     {
         if (s_editorSubMenuOpen)
         {
-            s_editorSubMenu.draw(20, 16, gfx::txtCont, 280, true);
+            s_editorSubMenu.draw(10, 16, gfx::txtCont, 300, true);
             ui::drawUIBar(getTxt("\ue000 确定  \ue001 取消"), ui::SCREEN_BOT, true);
             return;
         }

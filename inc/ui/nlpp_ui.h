@@ -26,6 +26,4 @@ namespace ui
     void editorUpdate();
     void editorDrawTop();
     void editorDrawBot();
-    bool editorIsActive();
-    int editorCurrentPage();
 }

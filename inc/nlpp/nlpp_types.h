@@ -17,6 +17,8 @@ namespace nlpp
 
     constexpr int FILE_GLOBAL_CONFIG   = 0;
     constexpr int FILE_GLOBAL_GALLERY  = 3; // savedata3 (24,064 bytes)
+    constexpr int FILE_BASE_CARD       = 6; // savedata6/31/56 (115 bytes)
+    constexpr int FILE_BASE_PROFILE_CARD = 7; // savedata7/32/57 (170 bytes)
     constexpr int FILE_BASE_PROFILE    = 8; // savedata8/33/58 (198 bytes)
     constexpr int FILE_BASE_STATS      = 9; // savedata9/34/59 (960 bytes)
     constexpr int FILE_BASE_TIMELINE   = 12; // savedata12/37/62 (333 bytes)
@@ -65,6 +67,7 @@ namespace nlpp
         uint8_t slot_mask;    // bit0: Slot0, bit1: Slot1, bit2: Slot2, bit3: Slot3, bit4: Slot4
         uint8_t heroine_mask; // bit0: Manaka, bit1: Rinko, bit2: Nene
         std::string text;
+        std::string romaji;
     };
 
     // Hair color structure
@@ -154,10 +157,10 @@ namespace nlpp
         uint8_t nextHairR = 38, nextHairG = 38, nextHairB = 41; // 0x4B6..0x4B8
         uint8_t hairColorActive = 0xFF; // 0x54C (0x00=active dye, 0xFF=default)
 
-        // Personality Sliders (0x3C4..0x3FF)
-        uint16_t sliderX = 500;      // 0x3C8 (0..1000)
-        uint16_t sliderY = 500;      // 0x3DC (0..1000)
-        uint16_t sliderZ = 0;        // 0x3F0 (0..4)
+        // Personality Sliders (0x2D0..0x2D3)
+        uint16_t sliderX = 500;      // 0x2D0 (0..1000)
+        uint16_t sliderY = 500;      // 0x2D2 (0..1000)
+        uint16_t sliderZ = 0;        // Reserved
     };
 
     // Timeline & Anniversary Data (savedata12/37/62)
@@ -180,5 +183,10 @@ namespace nlpp
         BoyfriendStats stats;
         GirlfriendStatus girlfriend;
         TimelineData timeline;
+
+        bool isFriendMode() const
+        {
+            return !empty && (girlfriend.mode == 1 || girlfriend.heroine == HEROINE_NONE);
+        }
     };
 }

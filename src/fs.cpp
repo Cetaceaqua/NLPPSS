@@ -26,7 +26,6 @@
 #include "util.h"
 #include "ui.h"
 #include "gfx.h"
-#include "data.h"
 #include "type.h"
 #include "cfg.h"
 #include "crypto.h"
@@ -48,12 +47,6 @@ typedef struct
     bool isPxi = false;
 } cpyArgs;
 
-typedef struct
-{
-    std::vector<data::titleData>* vect = NULL;
-    uint32_t mode = 0;
-    fs::BunchType type = fs::BunchType::Bunch_CTR;
-} bakArgs;
 
 void fs::createDir(const std::string& path)
 {
@@ -66,7 +59,6 @@ void fs::init()
 
     createDir("/NLPPSS");
     createDir("/NLPPSS/Saves");
-    createDir("/NLPP_BACKUP");
 }
 
 void fs::exit()
@@ -104,108 +96,6 @@ FS_ArchiveID fs::getSaveMode()
     return saveMode;
 }
 
-bool fs::openArchive(data::titleData& dat, const uint32_t& mode, bool error, FS_Archive& arch)
-{
-    Result res = -1;
-    saveMode = (FS_ArchiveID) mode;
-
-    switch(mode)
-    {
-        case ARCHIVE_USER_SAVEDATA:
-            {
-                uint32_t path[3] = {dat.getMedia(), dat.getLow(), dat.getHigh()};
-                FS_Path binData = (FS_Path) {PATH_BINARY, 12, path};
-                res = FSUSER_OpenArchive(&arch, ARCHIVE_USER_SAVEDATA, binData);
-            }
-            break;
-
-        case ARCHIVE_SAVEDATA:
-            res = FSUSER_OpenArchive(&arch, ARCHIVE_SAVEDATA, fsMakePath(PATH_EMPTY, ""));
-            break;
-
-        case ARCHIVE_EXTDATA:
-            {
-                uint32_t path[] = {MEDIATYPE_SD, dat.getExtData(), 0};
-                FS_Path binData = (FS_Path) {PATH_BINARY, 12, path};
-                res = FSUSER_OpenArchive(&arch, ARCHIVE_EXTDATA, binData);
-            }
-            break;
-
-        case ARCHIVE_SYSTEM_SAVEDATA:
-            {
-                uint32_t path[2] = {MEDIATYPE_NAND, (0x00020000 | dat.getUnique())};
-                FS_Path binData = {PATH_BINARY, 8, path};
-                res = FSUSER_OpenArchive(&arch, ARCHIVE_SYSTEM_SAVEDATA, binData);
-            }
-            break;
-
-        case ARCHIVE_BOSS_EXTDATA:
-            {
-                uint32_t path[3] = {MEDIATYPE_SD, dat.getExtData(), 0};
-                FS_Path binData = {PATH_BINARY, 12, path};
-                res = FSUSER_OpenArchive(&arch, ARCHIVE_BOSS_EXTDATA, binData);
-            }
-            break;
-
-        case ARCHIVE_SHARED_EXTDATA:
-            {
-                uint32_t path[3] = {MEDIATYPE_NAND, dat.getExtData(), 0x00048000};
-                FS_Path binPath  = {PATH_BINARY, 0xC, path};
-                res = FSUSER_OpenArchive(&arch, ARCHIVE_SHARED_EXTDATA, binPath);
-            }
-            break;
-
-        case ARCHIVE_NAND_TWL_FS:
-            {
-                res = FSUSER_OpenArchive(&arch, ARCHIVE_NAND_TWL_FS, fsMakePath(PATH_EMPTY, ""));
-                if (R_SUCCEEDED(res))
-                {
-                    char* saveDir = new char[32];
-                    sprintf(saveDir, "/title/%08lx/%08lx/data", (dat.getHigh() & 0x00000FFF) | 0x00030000, dat.getLow());
-                    dataPath = util::toUtf16(saveDir);
-                    Handle tmp;
-                    res = FSUSER_OpenDirectory(&tmp, arch, fsMakePath(PATH_UTF16, dataPath.data()));
-                    if (R_FAILED(res))
-                        FSUSER_CloseArchive(arch);
-                    else
-                        FSDIR_Close(tmp);
-                    delete[] saveDir;
-                }
-            }
-            break;
-
-        case ARCHIVE_SAVEDATA_AND_CONTENT:
-            {
-                uint32_t path[4] = {dat.getLow(), dat.getHigh(), dat.getMedia(), 0};
-                FS_Path binPath  = {PATH_BINARY, 16, path};
-                res = FSPXI_OpenArchive(fsPxiHandle, &arch, ARCHIVE_SAVEDATA_AND_CONTENT, binPath);
-                if (R_SUCCEEDED(res))
-                {
-                    FSPXI_File tmp;
-                    res = FSPXI_OpenFile(fsPxiHandle, &tmp, arch, {PATH_BINARY, 20, pxiPath}, FS_OPEN_READ, 0);
-                    if (R_FAILED(res))
-                        FSPXI_CloseArchive(fsPxiHandle, arch);
-                    else
-                        FSPXI_CloseFile(fsPxiHandle, tmp);
-                }
-            }
-            break;
-    }
-
-    if(R_FAILED(res))
-    {
-        if(error)
-            ui::showMessage(getTxt("无法打开该存档位. 该存档类型可能不存在适用此 title 的数据.\n错误: 0x%08X\nTitle: %s"), (unsigned)res, dat.getTitleUTF8().c_str());
-        return false;
-    }
-
-    return true;
-}
-
-bool fs::openArchive(data::titleData& dat, const uint32_t& mode, bool error)
-{
-    return openArchive(dat, mode, error, saveArch);
-}
 
 void fs::commitData(const uint32_t& mode)
 {
@@ -213,71 +103,7 @@ void fs::commitData(const uint32_t& mode)
     {
         Result res = FSUSER_ControlArchive(saveArch, ARCHIVE_ACTION_COMMIT_SAVE_DATA, NULL, 0, NULL, 0);
         if(R_FAILED(res))
-            ui::showMessage(getTxt("提交存档数据失败!\n错误: 0x%08X"), (unsigned)res);
-    }
-}
-
-void fs::deleteSv(const uint32_t& mode, const data::titleData& dat)
-{
-    if(dat.getMedia() != MEDIATYPE_GAME_CARD
-        && mode != ARCHIVE_EXTDATA
-        && mode != ARCHIVE_BOSS_EXTDATA
-        && mode != ARCHIVE_SHARED_EXTDATA
-        && mode != ARCHIVE_NAND_TWL_FS)
-    {
-        Result res = 0;
-        u64 in = ((u64)SECUREVALUE_SLOT_SD << 32) | (dat.getUnique() << 8);
-        u8 out;
-
-        res = FSUSER_ControlSecureSave(SECURESAVE_ACTION_DELETE, &in, 8, &out, 1);
-        if(R_FAILED(res))
-            ui::showMessage(getTxt("删除安全值失败.\n错误: 0x%08X"), (unsigned)res);
-    }
-}
-
-void fs::exportSv(const uint32_t& mode, const std::u16string& _dst, const data::titleData& dat)
-{
-    if(dat.getMedia() != MEDIATYPE_GAME_CARD
-        && mode != ARCHIVE_EXTDATA
-        && mode != ARCHIVE_BOSS_EXTDATA
-        && mode != ARCHIVE_SHARED_EXTDATA
-        && mode != ARCHIVE_NAND_TWL_FS)
-    {
-        Result res = 0;
-        bool exists = false;
-        u64 value = 0;
-        res = FSUSER_GetSaveDataSecureValue(&exists, &value, SECUREVALUE_SLOT_SD, dat.getUnique(), (u8) (dat.getLow() & 0xFF));
-        if(R_SUCCEEDED(res)) {
-            if(!exists) return;
-            fs::fsfile dst(getSDMCArch(), _dst, FS_OPEN_WRITE | FS_OPEN_CREATE, sizeof(u64));
-            dst.write(&value, sizeof(u64));
-            dst.close();
-        }
-
-        if(R_FAILED(res))
-            ui::showMessage(getTxt("获取安全值失败.\n错误: 0x%08X"), (unsigned)res);
-    }
-}
-
-void fs::importSv(const uint32_t& mode, const std::u16string& _src, const data::titleData& dat)
-{
-    if(dat.getMedia() != MEDIATYPE_GAME_CARD
-        && mode != ARCHIVE_EXTDATA
-        && mode != ARCHIVE_BOSS_EXTDATA
-        && mode != ARCHIVE_SHARED_EXTDATA
-        && mode != ARCHIVE_NAND_TWL_FS)
-    {
-        if (!fexists(getSDMCArch(), _src)) return; // do nothing if not found
-        fs::fsfile src(getSDMCArch(), _src, FS_OPEN_READ);
-        u64 value = 0;
-        src.read(&value, sizeof(u64));
-        src.close();
-
-        Result res = 0;
-        res = FSUSER_SetSaveDataSecureValue(value, SECUREVALUE_SLOT_SD, dat.getUnique(), (u8) (dat.getLow() & 0xFF));
-
-        if(R_FAILED(res))
-            ui::showMessage(getTxt("导入安全值失败.\n错误: 0x%08X"), (unsigned)res);
+            ui::showMessage(getTxt("写入存档数据失败！\n错误：0x%08X"), (unsigned)res);
     }
 }
 
@@ -640,16 +466,7 @@ void fs::copyFile(const FS_Archive& _srcArch, const std::u16string& _src, const 
 
     fs::fsfile src(_srcArch, _src, FS_OPEN_READ);
 
-    if (isPxi && saveArch == _dstArch && src.isOpen())
-    {
-        fs::fsfile tmp(_dstArch, _dst, FS_OPEN_READ);
-        if (src.getSize() != tmp.getSize())
-        {
-            ui::showMessage(getTxt("原始GBAVC存档数据大小不符,无法恢复!"));
-            return;
-        }
-        tmp.close();
-    }
+
 
     fs::fsfile dst(_dstArch, _dst, FS_OPEN_WRITE, src.getSize());
     if(!src.isOpen() || !dst.isOpen())
@@ -669,7 +486,6 @@ void fs::copyFile(const FS_Archive& _srcArch, const std::u16string& _src, const 
         dst.close();
         fs::commitData(fs::getSaveMode());
     }
-    if(isPxi) ui::fldRefresh();
 }
 
 static void copyFile_t(void *a)
@@ -731,8 +547,6 @@ static void copyDirToDir_t(void *a)
     fs::copyDirToDir(cpy->srcArch, cpy->src, cpy->dstArch, cpy->dst, cpy->commit, t);
     delete cpy;
 
-    ui::fldRefresh();
-
     t->argPtr = NULL;
     t->drawFunc = NULL;
     t->finished = true;
@@ -749,53 +563,3 @@ void fs::copyDirToDirThreaded(const FS_Archive& _srcArch, const std::u16string& 
     ui::newThread(copyDirToDir_t, send, NULL);
 }
 
-void fs::backupTitles_t(void *a)
-{
-    threadInfo *t = (threadInfo *)a;
-    bakArgs *args = (bakArgs *)t->argPtr;
-    std::vector<data::titleData>& vect = *args->vect;
-    uint32_t mode = args->mode;
-    BunchType type = args->type;
-
-    for(unsigned i = 0; i < vect.size(); i++)
-    {
-        if (vect[i].getExtInfos().isDSCard) continue;
-        if (vect[i].isAGB()) continue;
-        if (type != BunchType::Bunch_TWL && (vect[i].getHigh() & 0x8000) == 0x8000) continue;
-        if (type == BunchType::Bunch_TWL && (vect[i].getHigh() & 0x8000) != 0x8000) continue;
-        std::string copyStr = getTxt("正在处理 '") + vect[i].getTitleUTF8() + "'...";
-        ui::prog->setText(copyStr);
-        ui::prog->update(i);
-
-        FS_Archive _arch;
-        if(fs::openArchive(vect[i], type == BunchType::Bunch_TWL ? ARCHIVE_NAND_TWL_FS : mode, true, _arch))
-        {
-            util::createTitleDir(vect[i], mode);
-            std::u16string outpath = util::createPath(vect[i], mode) + util::toUtf16(util::getDateString(util::DATE_FMT_YMD));
-
-            std::u16string svOut = outpath + util::toUtf16(".sv");
-            if (type != BunchType::Bunch_TWL)
-                fs::exportSv(mode, svOut, vect[i]); // export secure value if found
-
-            FSUSER_CreateDirectory(fs::getSDMCArch(), fsMakePath(PATH_UTF16, outpath.c_str()), 0);
-            outpath += util::toUtf16("/");
-            fs::copyDirToDir(_arch, util::toUtf16("/"), fs::getSDMCArch(), outpath, false, NULL);
-
-            FSUSER_CloseArchive(_arch);
-        }
-    }
-
-    t->argPtr = NULL;
-    t->drawFunc = NULL;
-    t->finished = true;
-}
-
-void fs::backupTitles(std::vector<data::titleData>& vect, const uint32_t &mode, BunchType type)
-{
-    ui::prog->setMax(vect.size());
-    bakArgs *send = new bakArgs;
-    send->vect = &vect;
-    send->mode = mode;
-    send->type = type;
-    ui::newThread(backupTitles_t, send, ui::progressBarDrawFunc, ZIP_THRD_STACK_SIZE);
-}

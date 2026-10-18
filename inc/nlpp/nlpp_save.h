@@ -40,6 +40,7 @@ namespace nlpp
         bool openSaveArchive();
         void closeSaveArchive();
         bool isArchiveOpen() const { return m_archOpen; }
+        bool reloadAll();
 
         // Slot Management
         int getCurrentSlot() const { return m_currentSlot; }
@@ -52,22 +53,11 @@ namespace nlpp
 
         // Slot Clone (clone srcSlot 0..2 into dstSlot 0..2)
         bool cloneSlot(int srcSlot, int dstSlot);
-
-        // Update parsed data structures and mark dirty
-        void setProfile(int slot, const PlayerProfile &prof);
-        void setBoyfriendStats(int slot, const BoyfriendStats &stats);
-        void setGirlfriendStatus(int slot, const GirlfriendStatus &gf);
-        void setTimelineData(int slot, const TimelineData &timeline);
+        // Clear slot to factory empty state
+        bool clearSlot(int slot);
 
         // Quick modifier helpers
-        void maxBoyfriendStats(int slot);
-        void maxRichMoney(int slot);
-        void maxTodoPoints(int slot);
         void removeCameraFilter(int slot);
-        void maxGirlfriendAffection(int slot);
-        void setCoupleTitleRank(int slot, uint8_t rank);
-        void unlockAllWardrobe513(int slot);
-        void unlockMasterGallery(); // savedata3 (all 1317 elements)
 
         // Backup & Restore
         bool createAutoBackup(std::string *outPath = nullptr);

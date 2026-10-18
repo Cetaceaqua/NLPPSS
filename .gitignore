@@ -1,10 +1,5 @@
 .vscode/
 build/
-romfs/gfx
-romfs/cheats
-adrivehelper/target
-adrivehelper/VC-LTL
-adrivehelper/YY-Thunks
 *.cbp
 *.layout
 *.elf
@@ -15,7 +10,11 @@ adrivehelper/YY-Thunks
 *.3ds
 *.smdh
 3dslink.exe
-Cargo.lock
 *.pot
 *.mo
 *.lst
+*.map
+*.pyc
+__pycache__/
+localization_export.md
+

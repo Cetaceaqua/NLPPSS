@@ -169,6 +169,12 @@ namespace nlpp
         }
 
         m_archOpen = true;
+        return reloadAll();
+    }
+
+    bool SaveManager::reloadAll()
+    {
+        if (!m_archOpen) return false;
         loadAllFiles();
 
         for (int i = 0; i < NUM_SLOTS; ++i)
@@ -263,10 +269,30 @@ namespace nlpp
         sd = SlotData();
         sd.slotIndex = slot;
 
-        int profFile = getSlotFile(FILE_BASE_PROFILE, slot);
+        int cardFile  = getSlotFile(FILE_BASE_CARD, slot);
+        int profFile  = getSlotFile(FILE_BASE_PROFILE, slot);
         int statsFile = getSlotFile(FILE_BASE_STATS, slot);
-        int gfFile = getSlotFile(FILE_BASE_GIRLFRIEND, slot);
-        int timeFile = getSlotFile(FILE_BASE_TIMELINE, slot);
+        int gfFile    = getSlotFile(FILE_BASE_GIRLFRIEND, slot);
+        int timeFile  = getSlotFile(FILE_BASE_TIMELINE, slot);
+
+        // 0. Primary Empty Slot Detection: Check Slot Info Card (savedata6/31/56, 115B)
+        bool cardEmpty = false;
+        bool cardDetermined = false;
+        if (m_fileLoaded[cardFile] && m_files[cardFile].size() >= 12)
+        {
+            uint8_t activeFlag = m_files[cardFile][0x04];
+            int32_t heroineTarget = *(const int32_t *)&m_files[cardFile][0x08];
+            if (activeFlag == 0x00 && heroineTarget == -1)
+            {
+                cardEmpty = true;
+                cardDetermined = true;
+            }
+            else if (activeFlag == 0x01)
+            {
+                cardEmpty = false;
+                cardDetermined = true;
+            }
+        }
 
         // 1. Profile (savedata8/33/58, 198B)
         if (!m_fileLoaded[profFile] || m_files[profFile].size() < 198)
@@ -285,17 +311,17 @@ namespace nlpp
         sd.profile.hn        = sanitizeUtf8(&pbuf[0x64], 12);
 
         sd.profile.birthMonth = pbuf[0x84];
-        sd.profile.birthDay = pbuf[0x85];
-        sd.profile.blood = (BloodType)pbuf[0x8C];
+        sd.profile.birthDay   = pbuf[0x85];
+        sd.profile.blood      = (BloodType)pbuf[0x8C];
 
         // 2. Stats (savedata9/34/59, 960B)
         if (m_fileLoaded[statsFile] && m_files[statsFile].size() >= 960)
         {
             const uint8_t *sbuf = m_files[statsFile].data();
-            sd.stats.fitness     = *(const uint16_t *)&sbuf[0x008];
-            sd.stats.knowledge   = *(const uint16_t *)&sbuf[0x016];
-            sd.stats.sensibility = *(const uint16_t *)&sbuf[0x024];
-            sd.stats.charm       = *(const uint16_t *)&sbuf[0x032];
+            sd.stats.fitness     = *(const uint16_t *)&sbuf[0x00C];
+            sd.stats.knowledge   = *(const uint16_t *)&sbuf[0x01A];
+            sd.stats.sensibility = *(const uint16_t *)&sbuf[0x028];
+            sd.stats.charm       = *(const uint16_t *)&sbuf[0x036];
             sd.stats.rich        = *(const uint32_t *)&sbuf[0x2B0];
             sd.stats.todo        = *(const uint32_t *)&sbuf[0x2D8];
 
@@ -337,9 +363,10 @@ namespace nlpp
             sd.girlfriend.nextHairB = gbuf[0x4B8];
             sd.girlfriend.hairColorActive = gbuf[0x54C];
 
-            sd.girlfriend.sliderX = *(const uint16_t *)&gbuf[0x3C8];
-            sd.girlfriend.sliderY = *(const uint16_t *)&gbuf[0x3DC];
-            sd.girlfriend.sliderZ = *(const uint16_t *)&gbuf[0x3F0];
+            // Section 7.6 & 7.9: Physical 2D personality coordinates at 0x2D0 ~ 0x2D3
+            sd.girlfriend.sliderX = *(const uint16_t *)&gbuf[0x2D0];
+            sd.girlfriend.sliderY = *(const uint16_t *)&gbuf[0x2D2];
+            sd.girlfriend.sliderZ = 0;
         }
 
         // 4. Timeline (savedata12/37/62, 333B)
@@ -354,16 +381,26 @@ namespace nlpp
             sd.timeline.datingDays     = *(const uint32_t *)&tbuf[0x39];
         }
 
-        // Comprehensive empty slot detection
-        if (isSlotDataEmpty(sd))
+        // Final Empty Slot Detection Rule (Section 1.3):
+        // Primary: Card activeFlag == 0x00 && heroineTarget == -1
+        if (cardDetermined)
         {
-            sd.empty = true;
-            sd.profile.empty = true;
+            sd.empty = cardEmpty;
+            sd.profile.empty = cardEmpty;
         }
         else
         {
-            sd.empty = false;
-            sd.profile.empty = false;
+            // Fallback to secondary criteria if card is unavailable
+            if (isSlotDataEmpty(sd))
+            {
+                sd.empty = true;
+                sd.profile.empty = true;
+            }
+            else
+            {
+                sd.empty = false;
+                sd.profile.empty = false;
+            }
         }
 
         return true;
@@ -374,46 +411,98 @@ namespace nlpp
         if (slot < 0 || slot >= NUM_SLOTS) return false;
         SlotData &sd = m_slots[slot];
 
-        int profFile = getSlotFile(FILE_BASE_PROFILE, slot);
+        int cardFile  = getSlotFile(FILE_BASE_CARD, slot);
+        int profFile  = getSlotFile(FILE_BASE_PROFILE, slot);
         int statsFile = getSlotFile(FILE_BASE_STATS, slot);
-        int gfFile = getSlotFile(FILE_BASE_GIRLFRIEND, slot);
-        int timeFile = getSlotFile(FILE_BASE_TIMELINE, slot);
+        int gfFile    = getSlotFile(FILE_BASE_GIRLFRIEND, slot);
+        int timeFile  = getSlotFile(FILE_BASE_TIMELINE, slot);
+
+        time_t rawtime;
+        time(&rawtime);
+        struct tm *ti = localtime(&rawtime);
+
+        // 0. Slot Info Card (savedata6/31/56, 115B)
+        if (m_files[cardFile].size() < 115) m_files[cardFile].resize(115, 0);
+        uint8_t *cbuf = m_files[cardFile].data();
+        *(uint32_t *)&cbuf[0x00] = 4; // Version 4
+
+        if (sd.empty)
+        {
+            cbuf[0x04] = 0x00; // Empty slot flag
+            *(int32_t *)&cbuf[0x08] = -1; // Unbound heroine
+            m_fileDirty[cardFile] = true;
+
+            // Profile
+            if (m_files[profFile].size() < 198) m_files[profFile].resize(198, 0);
+            uint8_t *pbuf = m_files[profFile].data();
+            *(uint32_t *)&pbuf[0x00] = 1;
+            *(uint32_t *)&pbuf[0x80] = 2000;
+            *(uint16_t *)&pbuf[0x90] = 0xFFFF;
+            m_fileDirty[profFile] = true;
+            return true;
+        }
+
+        cbuf[0x04] = 0x01; // Active slot flag
+        *(int32_t *)&cbuf[0x08] = (sd.girlfriend.heroine >= 0) ? (int32_t)sd.girlfriend.heroine : 0;
+        // Section 9.5: Anti-cold-war timestamp sync in Card at 0x18 ~ 0x23
+        if (ti)
+        {
+            *(uint32_t *)&cbuf[0x18] = (uint32_t)(ti->tm_year + 1900);
+            cbuf[0x1C] = (uint8_t)(ti->tm_mon + 1);
+            cbuf[0x1D] = (uint8_t)ti->tm_mday;
+            cbuf[0x1E] = (uint8_t)ti->tm_wday;
+            cbuf[0x1F] = (uint8_t)ti->tm_hour;
+            cbuf[0x20] = (uint8_t)ti->tm_min;
+            cbuf[0x21] = (uint8_t)ti->tm_sec;
+            *(uint16_t *)&cbuf[0x22] = 0;
+        }
+        m_fileDirty[cardFile] = true;
 
         // 1. Profile (198B)
         if (m_files[profFile].size() < 198) m_files[profFile].resize(198, 0);
         uint8_t *pbuf = m_files[profFile].data();
+        *(uint32_t *)&pbuf[0x00] = 1; // Protected header version
 
-        if (sd.empty)
-        {
-            *(uint16_t *)&pbuf[0x90] = 0xFFFF;
-        }
-        else
-        {
-            memset(&pbuf[0x04], 0, 12);
-            memcpy(&pbuf[0x04], sd.profile.firstName.c_str(), std::min(sd.profile.firstName.length(), (size_t)12));
+        memset(&pbuf[0x04], 0, 12);
+        memcpy(&pbuf[0x04], sd.profile.firstName.c_str(), std::min(sd.profile.firstName.length(), (size_t)12));
 
-            memset(&pbuf[0x14], 0, 12);
-            memcpy(&pbuf[0x14], sd.profile.lastName.c_str(), std::min(sd.profile.lastName.length(), (size_t)12));
+        memset(&pbuf[0x14], 0, 12);
+        memcpy(&pbuf[0x14], sd.profile.lastName.c_str(), std::min(sd.profile.lastName.length(), (size_t)12));
 
-            memset(&pbuf[0x64], 0, 12);
-            memcpy(&pbuf[0x64], sd.profile.hn.c_str(), std::min(sd.profile.hn.length(), (size_t)12));
+        memset(&pbuf[0x64], 0, 12);
+        memcpy(&pbuf[0x64], sd.profile.hn.c_str(), std::min(sd.profile.hn.length(), (size_t)12));
 
-            pbuf[0x84] = sd.profile.birthMonth;
-            pbuf[0x85] = sd.profile.birthDay;
-            pbuf[0x8C] = (uint8_t)sd.profile.blood;
-            *(uint16_t *)&pbuf[0x90] = sd.profile.prefecture;
-        }
+        *(uint32_t *)&pbuf[0x80] = 2000; // Protected birth year
+        pbuf[0x84] = sd.profile.birthMonth;
+        pbuf[0x85] = sd.profile.birthDay;
+        pbuf[0x8C] = (uint8_t)sd.profile.blood;
+        *(uint16_t *)&pbuf[0x90] = sd.profile.prefecture;
         m_fileDirty[profFile] = true;
-
-        if (sd.empty) return true;
 
         // 2. Stats (960B)
         if (m_files[statsFile].size() < 960) m_files[statsFile].resize(960, 0);
         uint8_t *sbuf = m_files[statsFile].data();
-        *(uint16_t *)&sbuf[0x008] = std::min(sd.stats.fitness, (uint16_t)255);
-        *(uint16_t *)&sbuf[0x016] = std::min(sd.stats.knowledge, (uint16_t)255);
-        *(uint16_t *)&sbuf[0x024] = std::min(sd.stats.sensibility, (uint16_t)255);
-        *(uint16_t *)&sbuf[0x032] = std::min(sd.stats.charm, (uint16_t)255);
+
+        // Section 6.1: File and component versions
+        *(uint32_t *)&sbuf[0x000] = 3;
+        *(uint32_t *)&sbuf[0x004] = 1;
+
+        // 4 stats: fitness, knowledge, sensibility, charm (14B step at 0x08)
+        // Section 6.5: Dual-write both current (+0x04) and baseline (+0x06)
+        const uint16_t statVals[4] = {
+            (uint16_t)std::min(sd.stats.fitness, (uint16_t)255),
+            (uint16_t)std::min(sd.stats.knowledge, (uint16_t)255),
+            (uint16_t)std::min(sd.stats.sensibility, (uint16_t)255),
+            (uint16_t)std::min(sd.stats.charm, (uint16_t)255)
+        };
+        for (int i = 0; i < 4; ++i)
+        {
+            uint8_t *statPtr = &sbuf[0x08 + i * 0x0E];
+            *(uint32_t *)&statPtr[0x00] = 1; // individual stat version
+            *(uint16_t *)&statPtr[0x04] = statVals[i]; // Current value
+            *(uint16_t *)&statPtr[0x06] = statVals[i]; // Baseline value
+        }
+
         *(uint32_t *)&sbuf[0x2B0] = std::min(sd.stats.rich, (uint32_t)999999);
         *(uint32_t *)&sbuf[0x2D8] = std::min(sd.stats.todo, (uint32_t)9999);
 
@@ -435,13 +524,22 @@ namespace nlpp
         if (m_files[gfFile].size() < 1508) m_files[gfFile].resize(1508, 0);
         uint8_t *gbuf = m_files[gfFile].data();
         gbuf[0x243] = sd.girlfriend.affection;
-        *(uint32_t *)&gbuf[0x2AC] = std::min(sd.girlfriend.coupleExp, (uint32_t)99250);
+        // Section 9.4: Couple title/exp is stored at 0x2AC
+        *(uint32_t *)&gbuf[0x2AC] = sd.girlfriend.coupleExp;
 
-        gbuf[0x466] = sd.girlfriend.hairLength;
+        uint8_t hairLen = std::min(sd.girlfriend.hairLength, (uint8_t)2);
+        gbuf[0x466] = hairLen;
         gbuf[0x468] = sd.girlfriend.hairStyleId;
         gbuf[0x469] = sd.girlfriend.reservedStyleId;
         gbuf[0x46A] = sd.girlfriend.hairTasteTarget;
 
+        // Update hair affinity matrix (0x46B ~ 0x4B2)
+        if (sd.girlfriend.hairStyleId < 24)
+        {
+            gbuf[0x46B + (hairLen * 24 + sd.girlfriend.hairStyleId)] = 5;
+        }
+
+        // Section 7.3 & 7.9: Hair color hexad sync
         gbuf[0x50A] = sd.girlfriend.hairColorId;
         gbuf[0x50B] = sd.girlfriend.nextHairColorId;
         gbuf[0x4B3] = sd.girlfriend.hairR;
@@ -452,17 +550,58 @@ namespace nlpp
         gbuf[0x4B8] = sd.girlfriend.nextHairB;
         gbuf[0x54C] = sd.girlfriend.hairColorActive;
 
-        *(uint16_t *)&gbuf[0x3C8] = std::min(sd.girlfriend.sliderX, (uint16_t)1000);
-        *(uint16_t *)&gbuf[0x3DC] = std::min(sd.girlfriend.sliderY, (uint16_t)1000);
-        *(uint16_t *)&gbuf[0x3F0] = std::min(sd.girlfriend.sliderZ, (uint16_t)4);
+        // Section 7.6 & 7.9: RGB Cache mirror
+        gbuf[0x2DE] = sd.girlfriend.hairR;
+        gbuf[0x2DF] = sd.girlfriend.hairG;
+        gbuf[0x2E0] = sd.girlfriend.hairB;
+
+        // Section 7.2: Active 3D head model ID
+        uint16_t modelId = Dict::getHairModelId(sd.girlfriend.heroine, hairLen, sd.girlfriend.hairStyleId);
+        if (modelId != 0)
+        {
+            *(uint16_t *)&gbuf[0x2DA] = modelId;
+        }
+
+        // Section 7.6 & 7.9: Personality 2D coordinates at 0x2D0 ~ 0x2D3
+        *(uint16_t *)&gbuf[0x2D0] = std::min(sd.girlfriend.sliderX, (uint16_t)1000);
+        *(uint16_t *)&gbuf[0x2D2] = std::min(sd.girlfriend.sliderY, (uint16_t)1000);
         m_fileDirty[gfFile] = true;
 
         // 4. Timeline (333B)
         if (m_files[timeFile].size() < 333) m_files[timeFile].resize(333, 0);
         uint8_t *tbuf = m_files[timeFile].data();
+        *(uint32_t *)&tbuf[0x00] = 2; // Component version 2
         *(uint32_t *)&tbuf[0x04] = sd.timeline.timelineDays;
+        *(uint32_t *)&tbuf[0x08] = sd.timeline.timelineDays; // Active baseline sync
+        if (sd.girlfriend.mode == 2 && sd.timeline.timelineDays > 1)
+        {
+            *(uint32_t *)&tbuf[0x2E] = sd.timeline.timelineDays - 1; // Lover timeline
+            *(uint32_t *)&tbuf[0x32] = (sd.timeline.timelineDays > 3) ? (sd.timeline.timelineDays - 3) : 0; // Home timeline
+        }
+        else
+        {
+            *(uint32_t *)&tbuf[0x2E] = 0;
+            *(uint32_t *)&tbuf[0x32] = 0;
+        }
         *(uint32_t *)&tbuf[0x39] = sd.timeline.datingDays;
-        *(uint16_t *)&tbuf[0x14] = 0; // Clear max absence to avoid cold punishment
+        *(uint16_t *)&tbuf[0x14] = 0; // Clear max absence
+        tbuf[0x38] = 0; // Clear cold war threshold
+
+        // Section 9.5: Anti-cold-war timestamp sync at 0x3D ~ 0x48
+        if (ti)
+        {
+            *(uint32_t *)&tbuf[0x3D] = (uint32_t)(ti->tm_year + 1900);
+            tbuf[0x41] = (uint8_t)(ti->tm_mon + 1);
+            tbuf[0x42] = (uint8_t)ti->tm_mday;
+            tbuf[0x43] = (uint8_t)ti->tm_wday;
+            tbuf[0x44] = (uint8_t)ti->tm_hour;
+            tbuf[0x45] = (uint8_t)ti->tm_min;
+            tbuf[0x46] = (uint8_t)ti->tm_sec;
+            *(uint16_t *)&tbuf[0x47] = 0;
+        }
+
+        // Section 9.5: 256-byte zero padding protection (0x4D ~ 0x14C)
+        memset(&tbuf[0x4D], 0, 256);
         m_fileDirty[timeFile] = true;
 
         // Sync appellations to savedata3 and savedata21
@@ -541,11 +680,11 @@ namespace nlpp
 
         serializeSlot(srcSlot);
 
-        // Copy all 25 files
+        // Section 10.4: Copy all 25 files starting from slot card (file 6)
         for (int i = 0; i < SLOT_STRIDE; ++i)
         {
-            int srcF = 8 + srcSlot * SLOT_STRIDE + i;
-            int dstF = 8 + dstSlot * SLOT_STRIDE + i;
+            int srcF = 6 + srcSlot * SLOT_STRIDE + i;
+            int dstF = 6 + dstSlot * SLOT_STRIDE + i;
             if (srcF < 81 && dstF < 81 && m_fileLoaded[srcF])
             {
                 m_files[dstF] = m_files[srcF];
@@ -554,70 +693,149 @@ namespace nlpp
             }
         }
 
+        // Section 10.4: Global gallery option appellation pointer sync (savedata3 0x3A5A ~ 0x3A5C)
+        if (m_fileLoaded[FILE_GLOBAL_GALLERY] && m_files[FILE_GLOBAL_GALLERY].size() >= 0x3A5D)
+        {
+            uint8_t *gbuf = m_files[FILE_GLOBAL_GALLERY].data();
+            HeroineID h = m_slots[srcSlot].girlfriend.heroine;
+            if (h >= HEROINE_MANAKA && h <= HEROINE_NENE)
+            {
+                gbuf[0x3A5A + (int)h] = (uint8_t)dstSlot;
+                m_fileDirty[FILE_GLOBAL_GALLERY] = true;
+            }
+        }
+
         parseSlot(dstSlot);
         m_modified = true;
         return true;
     }
 
-    void SaveManager::setProfile(int slot, const PlayerProfile &prof)
+    bool SaveManager::clearSlot(int slot)
     {
-        if (slot >= 0 && slot < NUM_SLOTS)
-        {
-            m_slots[slot].profile = prof;
-            m_slots[slot].empty = prof.empty;
-            m_modified = true;
-        }
-    }
+        if (slot < 0 || slot >= NUM_SLOTS) return false;
 
-    void SaveManager::setBoyfriendStats(int slot, const BoyfriendStats &stats)
-    {
-        if (slot >= 0 && slot < NUM_SLOTS)
-        {
-            m_slots[slot].stats = stats;
-            m_modified = true;
-        }
-    }
+        // Try loading from factory clean template (romfs/template/empty_slot.bin)
+        const char *candidates[] = {
+            "romfs:/template/empty_slot.bin",
+            "romfs/template/empty_slot.bin",
+            "d:/Files/GitHub Desktop/Cetaceaqua/NLPPSS/romfs/template/empty_slot.bin"
+        };
 
-    void SaveManager::setGirlfriendStatus(int slot, const GirlfriendStatus &gf)
-    {
-        if (slot >= 0 && slot < NUM_SLOTS)
+        FILE *f = nullptr;
+        for (const char *path : candidates)
         {
-            m_slots[slot].girlfriend = gf;
-            m_modified = true;
+            f = fopen(path, "rb");
+            if (f) break;
         }
-    }
 
-    void SaveManager::setTimelineData(int slot, const TimelineData &timeline)
-    {
-        if (slot >= 0 && slot < NUM_SLOTS)
+        bool loadedFromTemplate = false;
+        if (f)
         {
-            m_slots[slot].timeline = timeline;
-            m_modified = true;
+            char magic[4];
+            uint32_t count = 0;
+            if (fread(magic, 1, 4, f) == 4 && memcmp(magic, "NLES", 4) == 0 &&
+                fread(&count, 4, 1, f) == 1 && count == 25)
+            {
+                struct Entry { uint32_t off; uint32_t size; } entries[25];
+                if (fread(entries, sizeof(Entry), 25, f) == 25)
+                {
+                    bool allOk = true;
+                    for (int k = 0; k < 25; ++k)
+                    {
+                        int targetF = 6 + slot * SLOT_STRIDE + k;
+                        m_files[targetF].resize(entries[k].size);
+                        fseek(f, entries[k].off, SEEK_SET);
+                        if (fread(m_files[targetF].data(), 1, entries[k].size, f) == entries[k].size)
+                        {
+                            m_fileLoaded[targetF] = true;
+                            m_fileDirty[targetF] = true;
+                        }
+                        else
+                        {
+                            allOk = false;
+                            break;
+                        }
+                    }
+                    if (allOk) loadedFromTemplate = true;
+                }
+            }
+            fclose(f);
         }
-    }
 
-    void SaveManager::maxBoyfriendStats(int slot)
-    {
-        if (slot < 0 || slot >= NUM_SLOTS) return;
-        m_slots[slot].stats.fitness = 255;
-        m_slots[slot].stats.knowledge = 255;
-        m_slots[slot].stats.sensibility = 255;
-        m_slots[slot].stats.charm = 255;
+        // Fallback to manual factory initialization if template was missing
+        if (!loadedFromTemplate)
+        {
+            // 1. Slot Card (savedata6/31/56, 115 bytes)
+            static const uint8_t s_emptyCard115[115] = {
+                0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x6C, 0x07, 0x00, 0x00,
+                0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x6C, 0x07, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x6C, 0x07, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x6C, 0x07, 0x00, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0xD0, 0x07, 0x00, 0x00, 0x01, 0x01, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0x00
+            };
+            int cardF = 6 + slot * SLOT_STRIDE;
+            m_files[cardF].assign(s_emptyCard115, s_emptyCard115 + 115);
+            m_fileLoaded[cardF] = true;
+            m_fileDirty[cardF] = true;
+
+            // 2. Profile Card (savedata7/32/57, 170 bytes)
+            int subF = 7 + slot * SLOT_STRIDE;
+            m_files[subF].assign(170, 0);
+            *(uint32_t *)&m_files[subF][0x00] = 1;
+            *(uint16_t *)&m_files[subF][0x0C] = 0xFFFF;
+            m_fileLoaded[subF] = true;
+            m_fileDirty[subF] = true;
+
+            // 3. Player Profile (savedata8/33/58, 198 bytes)
+            int profF = 8 + slot * SLOT_STRIDE;
+            m_files[profF].assign(198, 0);
+            *(uint32_t *)&m_files[profF][0x00] = 1;
+            *(uint16_t *)&m_files[profF][0x90] = 0xFFFF; // Empty prefecture marker
+            m_fileLoaded[profF] = true;
+            m_fileDirty[profF] = true;
+
+            // 4. Stats (savedata9/34/59, 960 bytes)
+            int statsF = 9 + slot * SLOT_STRIDE;
+            m_files[statsF].assign(960, 0);
+            *(uint32_t *)&m_files[statsF][0x00] = 3;
+            *(uint32_t *)&m_files[statsF][0x04] = 1;
+            for (int s = 0; s < 4; ++s)
+            {
+                *(uint32_t *)&m_files[statsF][0x08 + s * 0x0E] = 1;
+            }
+            m_fileLoaded[statsF] = true;
+            m_fileDirty[statsF] = true;
+        }
+
+        // Section 10.5: Global gallery option pointer fallback (savedata3 0x3A5A ~ 0x3A5C)
+        if (m_fileLoaded[FILE_GLOBAL_GALLERY] && m_files[FILE_GLOBAL_GALLERY].size() >= 0x3A5D)
+        {
+            uint8_t *gbuf = m_files[FILE_GLOBAL_GALLERY].data();
+            int fallbackSlot = 0;
+            for (int s = 0; s < NUM_SLOTS; ++s)
+            {
+                if (s != slot && !m_slots[s].empty)
+                {
+                    fallbackSlot = s;
+                    break;
+                }
+            }
+            for (int h = 0; h < 3; ++h)
+            {
+                if (gbuf[0x3A5A + h] == slot)
+                {
+                    gbuf[0x3A5A + h] = (uint8_t)fallbackSlot;
+                    m_fileDirty[FILE_GLOBAL_GALLERY] = true;
+                }
+            }
+        }
+
+        parseSlot(slot);
         m_modified = true;
-    }
-
-    void SaveManager::maxRichMoney(int slot)
-    {
-        if (slot < 0 || slot >= NUM_SLOTS) return;
-        m_slots[slot].stats.rich = 999999;
-        m_modified = true;
-    }
-
-    void SaveManager::maxTodoPoints(int slot)
-    {
-        if (slot < 0 || slot >= NUM_SLOTS) return;
-        m_slots[slot].stats.todo = 9999;
-        m_modified = true;
+        return true;
     }
 
     void SaveManager::removeCameraFilter(int slot)
@@ -625,146 +843,6 @@ namespace nlpp
         if (slot < 0 || slot >= NUM_SLOTS) return;
         m_slots[slot].stats.cameraFilter = -1;
         m_slots[slot].stats.equipMask &= ~(0x04); // Clear bit 2
-        m_modified = true;
-    }
-
-    void SaveManager::maxGirlfriendAffection(int slot)
-    {
-        if (slot < 0 || slot >= NUM_SLOTS) return;
-        m_slots[slot].girlfriend.affection = 255;
-        m_modified = true;
-    }
-
-    void SaveManager::setCoupleTitleRank(int slot, uint8_t rank)
-    {
-        if (slot < 0 || slot >= NUM_SLOTS) return;
-        if (rank < 1) rank = 1;
-        if (rank > 23) rank = 23;
-        m_slots[slot].girlfriend.coupleExp = Dict::getCoupleTitle(rank).exp_min;
-        m_modified = true;
-    }
-
-    void SaveManager::unlockAllWardrobe513(int slot)
-    {
-        if (slot < 0 || slot >= NUM_SLOTS) return;
-        int wFile = getSlotFile(FILE_BASE_WARDROBE, slot);
-        if (m_files[wFile].size() < 5120) m_files[wFile].resize(5120, 0);
-
-        uint8_t *wbuf = m_files[wFile].data();
-        *(uint16_t *)&wbuf[0x02] = 513; // 0x0201
-
-        // Block 1 (items 0..279)
-        memset(&wbuf[0x05], 0xFF, 35);
-        // Clear Block 1 NEW red dots
-        memset(&wbuf[0x28], 0x00, 50);
-
-        // Block 2 (items 280..511)
-        memset(&wbuf[0x5A], 0xFF, 29);
-        // Item 512 only lowest bit
-        wbuf[0x77] = 0x01;
-        // Strictly zero out items 513..559 (boundary safety protection)
-        memset(&wbuf[0x78], 0x00, 5);
-        // Clear Block 2 NEW red dots
-        memset(&wbuf[0x7D], 0x00, 50);
-
-        m_fileDirty[wFile] = true;
-        m_modified = true;
-    }
-
-    void SaveManager::unlockMasterGallery()
-    {
-        if (m_files[FILE_GLOBAL_GALLERY].size() < 24064)
-        {
-            m_files[FILE_GLOBAL_GALLERY].resize(24064, 0);
-        }
-        uint8_t *g = m_files[FILE_GLOBAL_GALLERY].data();
-
-        // 1. Dreams (60B, 20 items per heroine)
-        *(uint32_t *)&g[0x0004] = 1;
-        *(uint32_t *)&g[0x0008] = 0x000FFFFF; // Manaka
-        *(uint32_t *)&g[0x000C] = 0;          // Manaka NEW cleared
-        *(uint32_t *)&g[0x0010] = 0x000FFFFF; // Rinko
-        *(uint32_t *)&g[0x0014] = 0;          // Rinko NEW cleared
-        *(uint32_t *)&g[0x0018] = 0x000FFFFF; // Nene
-        *(uint32_t *)&g[0x001C] = 0;          // Nene NEW cleared
-
-        // 2. After-Dreams (60B, 20 items per heroine)
-        *(uint32_t *)&g[0x0040] = 1;
-        *(uint32_t *)&g[0x0044] = 0x000FFFFF; // Manaka
-        *(uint32_t *)&g[0x0048] = 0;
-        *(uint32_t *)&g[0x004C] = 0x000FFFFF; // Rinko
-        *(uint32_t *)&g[0x0050] = 0;
-        *(uint32_t *)&g[0x0054] = 0x000FFFFF; // Nene
-        *(uint32_t *)&g[0x0058] = 0;
-
-        // 3. Memories (132B, 81 items per heroine: 10B 0xFF + 1B 0x01 + 5B 0x00)
-        *(uint32_t *)&g[0x007C] = 1;
-        // Manaka
-        memset(&g[0x0080], 0xFF, 10);
-        g[0x008A] = 0x01;
-        memset(&g[0x008B], 0x00, 5);
-        memset(&g[0x0090], 0x00, 16); // NEW cleared
-        // Rinko
-        memset(&g[0x00A0], 0xFF, 10);
-        g[0x00AA] = 0x01;
-        memset(&g[0x00AB], 0x00, 5);
-        memset(&g[0x00B0], 0x00, 16);
-        // Nene
-        memset(&g[0x00C0], 0xFF, 10);
-        g[0x00CA] = 0x01;
-        memset(&g[0x00CB], 0x00, 5);
-        memset(&g[0x00D0], 0x00, 16);
-
-        // 4. Trip flags (132B: Manaka 39, Rinko 42, Nene 42)
-        *(uint32_t *)&g[0x0100] = 1;
-        // Manaka: 4B 0xFF + 1B 0x7F + 11B 0x00
-        memset(&g[0x0104], 0xFF, 4);
-        g[0x0108] = 0x7F;
-        memset(&g[0x0109], 0x00, 11);
-        memset(&g[0x0114], 0x00, 16); // NEW cleared
-        // Rinko: 5B 0xFF + 1B 0x03 + 10B 0x00
-        memset(&g[0x0124], 0xFF, 5);
-        g[0x0129] = 0x03;
-        memset(&g[0x012A], 0x00, 10);
-        memset(&g[0x0134], 0x00, 16);
-        // Nene: 5B 0xFF + 1B 0x03 + 10B 0x00
-        memset(&g[0x0144], 0xFF, 5);
-        g[0x0149] = 0x03;
-        memset(&g[0x014A], 0x00, 10);
-        memset(&g[0x0154], 0x00, 16);
-
-        // 5. Contest (474B, 85 items per heroine: 10B 0xFF + 1B 0x1F + 5B 0x00)
-        *(uint32_t *)&g[0x0184] = 1;
-        // Manaka
-        memset(&g[0x0188], 0xFF, 10);
-        g[0x0192] = 0x1F;
-        memset(&g[0x0193], 0x00, 5);
-        memset(&g[0x0198], 0x00, 16);
-        // Rinko
-        memset(&g[0x01A8], 0xFF, 10);
-        g[0x01B2] = 0x1F;
-        memset(&g[0x01B3], 0x00, 5);
-        memset(&g[0x01B8], 0x00, 16);
-        // Nene
-        memset(&g[0x01C8], 0xFF, 10);
-        g[0x01D2] = 0x1F;
-        memset(&g[0x01D3], 0x00, 5);
-        memset(&g[0x01D8], 0x00, 16);
-
-        // 6. Special (180B, 192 items per heroine: 24B 0xFF)
-        *(uint32_t *)&g[0x035E] = 2; // version 2
-        // Manaka
-        memset(&g[0x0362], 0xFF, 24);
-        memset(&g[0x037A], 0x00, 24);
-        // Rinko
-        memset(&g[0x0392], 0xFF, 24);
-        memset(&g[0x03AA], 0x00, 24);
-        // Nene
-        memset(&g[0x03C2], 0xFF, 24);
-        memset(&g[0x03DA], 0x00, 24);
-
-        // NOTE: Trip replay records (0x0412..0x3A59) are strictly kept intact!
-        m_fileDirty[FILE_GLOBAL_GALLERY] = true;
         m_modified = true;
     }
 
@@ -861,6 +939,35 @@ namespace nlpp
                     size_t compSize = 0;
                     LodePNGCompressSettings compSettings;
                     lodepng_compress_settings_init(&compSettings);
+                    int deflateLvl = cfg::config["deflateLevel"];
+                    if (deflateLvl <= 1)
+                    {
+                        compSettings.btype = 1; // Fixed Huffman (Fastest)
+                        compSettings.windowsize = 1024;
+                        compSettings.nicematch = 16;
+                        compSettings.lazymatching = 0;
+                    }
+                    else if (deflateLvl <= 3)
+                    {
+                        compSettings.btype = 2; // Dynamic Huffman
+                        compSettings.windowsize = 2048;
+                        compSettings.nicematch = 32;
+                        compSettings.lazymatching = 0;
+                    }
+                    else if (deflateLvl <= 6)
+                    {
+                        compSettings.btype = 2;
+                        compSettings.windowsize = 4096;
+                        compSettings.nicematch = 128;
+                        compSettings.lazymatching = 1;
+                    }
+                    else
+                    {
+                        compSettings.btype = 2;
+                        compSettings.windowsize = 32768;
+                        compSettings.nicematch = 258;
+                        compSettings.lazymatching = 1;
+                    }
                     unsigned err = lodepng_deflate(&compData, &compSize, inData, inSize, &compSettings);
 
                     uint16_t compMethod = 8;
@@ -1172,9 +1279,6 @@ namespace nlpp
             serializeSlot(i);
         }
 
-        // Auto backup before writing
-        std::string backupPath;
-        createAutoBackup(&backupPath);
 
         // Write all dirty files
         int writtenCount = 0;
@@ -1226,8 +1330,8 @@ namespace nlpp
         m_modified = false;
         if (statusMsg)
         {
-            char buf[128];
-            snprintf(buf, sizeof(buf), "已成功写回 %d 个文件并完成自动备份!\n备份至: %s", writtenCount, backupPath.c_str());
+            char buf[64];
+            snprintf(buf, sizeof(buf), "已成功写回 %d 个文件!", writtenCount);
             *statusMsg = buf;
         }
         return true;

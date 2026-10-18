@@ -57,37 +57,6 @@ std::u16string util::toUtf16(const std::string &conv)
     return std::u16string((char16_t *)tmp);
 }
 
-std::u16string util::createPath(data::titleData &dat, const uint32_t &mode)
-{
-    std::u16string ret;
-    switch (mode)
-    {
-        case ARCHIVE_USER_SAVEDATA:
-        case ARCHIVE_SAVEDATA:
-            ret = toUtf16("/TYSS/Saves/") + dat.getTitleSafe() + toUtf16("/");
-            break;
-
-        case ARCHIVE_SYSTEM_SAVEDATA:
-            ret = toUtf16("/TYSS/SysSave/") + dat.getTitleSafe() + toUtf16("/");
-            break;
-
-        case ARCHIVE_EXTDATA:
-            ret = toUtf16("/TYSS/ExtData/") + dat.getTitleSafe() + toUtf16("/");
-            break;
-
-        case ARCHIVE_BOSS_EXTDATA:
-            ret = toUtf16("/TYSS/Boss/") + dat.getTitleSafe() + toUtf16("/");
-            break;
-
-        case ARCHIVE_SHARED_EXTDATA:
-            char tmp[16];
-            sprintf(tmp, "%08X", (unsigned)dat.getExtData());
-            ret = toUtf16("/TYSS/Shared/") + toUtf16(tmp) + toUtf16("/");
-            break;
-    }
-    return ret;
-}
-
 std::string util::getString(const std::string &hint, bool def)
 {
     SwkbdState state;
@@ -192,37 +161,6 @@ void util::removeLastDirFromString(std::u16string &s)
 {
     unsigned last = s.find_last_of(L'/', s.length() - 2);
     s.erase(last + 1, s.length());
-}
-
-void util::createTitleDir(data::titleData &dat, const uint32_t &mode)
-{
-    std::u16string cr;
-    switch (mode)
-    {
-        case ARCHIVE_USER_SAVEDATA:
-        case ARCHIVE_SAVEDATA:
-            cr = toUtf16("/TYSS/Saves/") + dat.getTitleSafe();
-            break;
-
-        case ARCHIVE_SYSTEM_SAVEDATA:
-            cr = toUtf16("/TYSS/SysSave/") + dat.getTitleSafe();
-            break;
-
-        case ARCHIVE_EXTDATA:
-            cr = toUtf16("/TYSS/ExtData/") + dat.getTitleSafe();
-            break;
-
-        case ARCHIVE_BOSS_EXTDATA:
-            cr = toUtf16("/TYSS/Boss/") + dat.getTitleSafe();
-            break;
-
-        case ARCHIVE_SHARED_EXTDATA:
-            char tmp[16];
-            sprintf(tmp, "%08X", (unsigned)dat.getExtData());
-            cr = toUtf16("/TYSS/Shared/") + toUtf16(tmp);
-            break;
-    }
-    FSUSER_CreateDirectory(fs::getSDMCArch(), fsMakePath(PATH_UTF16, cr.data()), 0);
 }
 
 bool util::touchPressed(const touchPosition &p)

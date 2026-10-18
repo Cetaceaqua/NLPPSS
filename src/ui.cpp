@@ -27,7 +27,6 @@
 
 #include <stdio.h>
 
-#include "data.h"
 #include "gfx.h"
 #include "ui.h"
 #include "util.h"
@@ -165,10 +164,7 @@ bool ui::runApp()
     thrdMgr->update();
     if(thrdMgr->empty())
     {
-        if(ui::state != SLOT_EDITOR && (ui::padKeysDown() & KEY_START))
-            return false;
 
-        data::cartCheck();
 
         switch(state)
         {

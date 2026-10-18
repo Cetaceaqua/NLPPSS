@@ -35,9 +35,9 @@ TARGET		:=	NLPPSS
 BUILD		:=	build
 SOURCES		:=	src src/ui src/ctr src/nlpp
 INCLUDES	:=	inc inc/ui inc/ctr inc/nlpp
-GRAPHICS	:=	gfx
+GRAPHICS	:=	
 ROMFS		:=	romfs
-GFXBUILD	:=	$(ROMFS)/gfx
+GFXBUILD	:=	
 ICON		:=	res/icon.png
 APP_TITLE   :=	NLPP Save Studio
 APP_AUTHOR  :=	Cetaceaqua
@@ -180,16 +180,20 @@ clean:
 $(TARGET)-strip.elf: $(TARGET).elf
 	@$(STRIP) $(TARGET).elf -o $(TARGET)-strip.elf
 
-cia: $(TARGET)-strip.elf
+$(TARGET).smdh: $(ICON)
+	@smdhtool --create "$(APP_TITLE)" "$(APP_DESCRIPTION)" "$(APP_AUTHOR)" "$<" "$@"
+
+cia: $(TARGET)-strip.elf $(TARGET).smdh res/$(TARGET).bnr
 	@$(MAKEROM) -f cia -o $(TARGET).cia -elf $(TARGET)-strip.elf -rsf res/$(TARGET).rsf -exefslogo -target t -icon $(TARGET).smdh -banner res/$(TARGET).bnr -DAPP_SYSTEM_MODE="64MB" $(MAKEROM_VERARGS)
 	@echo Built $(TARGET).cia
 
-cci: $(TARGET)-strip.elf
+cci: $(TARGET)-strip.elf $(TARGET).smdh res/$(TARGET).bnr
 	@$(MAKEROM) -f cci -o $(TARGET).cci -elf $(TARGET)-strip.elf -rsf res/$(TARGET).rsf -exefslogo -target t -icon $(TARGET).smdh -banner res/$(TARGET).bnr -DAPP_SYSTEM_MODE="64MB" $(MAKEROM_VERARGS)
 	@cp -f $(TARGET).cci $(TARGET).3ds
+	@if [ -d "/mnt/d/Files/Azahar" ]; then cp -f $(TARGET).cci "/mnt/d/Files/Azahar/$(TARGET).cci"; echo "Copied to /mnt/d/Files/Azahar/$(TARGET).cci"; fi
 	@echo Built $(TARGET).cci and $(TARGET).3ds
 
-all_formats: $(OUTPUT).3dsx cia cci
+all_formats: all cia cci
 
 send:
 	@3dslink $(TARGET).3dsx

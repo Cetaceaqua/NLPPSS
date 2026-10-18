@@ -23,7 +23,7 @@
 #include "fs.h"
 #include "ctr/3dsgettext.h"
 
-#define NLPPSS_CFG_VER 2
+#define NLPPSS_CFG_VER 4
 
 std::unordered_map<std::string, u8> cfg::config;
 
@@ -33,15 +33,15 @@ void cfg::initToDefault()
     CFGU_GetSystemLanguage(&syslang);
 
     cfg::config["autobackup"] = 1; // 自动备份存档：开
-    cfg::config["zip"] = (u8) false;
+    cfg::config["zip"] = 1;        // 导出到 ZIP：开 (默认启用)
     cfg::config["deflateLevel"] = 6; // 默认 6 (标准压缩)
-    cfg::config["lightback"] = (u8) false;
-    cfg::config["swaplrfunc"] = (u8) false;
+    cfg::config["lightback"] = 0;    // 深色系 (默认)
     cfg::config["titlelang"] = syslang;
     cfg::config["uilang"] = (syslang == CFG_LANGUAGE_ZH ? 0 : (syslang == CFG_LANGUAGE_TW ? 2 : 1));
     cfg::config["autoload"] = 0; // 启动时加载存档：关
     cfg::config["default_type"] = 0; // 默认存档类型：0 数字版, 1 实体版
     cfg::config["default_slot"] = 0; // 默认存档槽位：0 (槽位 1)
+    cfg::config["use_builtinkbd"] = 1; // 内置软键盘：开 (默认启用)
 }
 
 void cfg::setUILanguage(u8 langIndex)
@@ -65,41 +65,47 @@ void cfg::load()
     FILE *cfgIn = fopen("/NLPPSS/config.bin", "rb");
     if(cfgIn)
     {
-        u8 getVal = 0;
-        fread(&getVal, sizeof(u8), 1, cfgIn);
-        if (getVal >= 1)
+        u8 version = 0;
+        fread(&version, sizeof(u8), 1, cfgIn);
+        if (version >= 4)
         {
-            fread(&getVal, sizeof(u8), 1, cfgIn);
-            cfg::config["zip"] = getVal;
+            u8 getVal = 0;
+            fread(&getVal, sizeof(u8), 1, cfgIn); cfg::config["zip"] = getVal;
+            fread(&getVal, sizeof(u8), 1, cfgIn); cfg::config["deflateLevel"] = getVal;
+            fread(&getVal, sizeof(u8), 1, cfgIn); cfg::config["lightback"] = getVal;
+            fread(&getVal, sizeof(u8), 1, cfgIn); cfg::config["titlelang"] = getVal;
+            fread(&getVal, sizeof(u8), 1, cfgIn); cfg::config["uilang"] = getVal;
+            fread(&getVal, sizeof(u8), 1, cfgIn); cfg::config["autobackup"] = getVal;
+            fread(&getVal, sizeof(u8), 1, cfgIn); cfg::config["autoload"] = getVal;
+            fread(&getVal, sizeof(u8), 1, cfgIn); cfg::config["default_type"] = getVal;
+            fread(&getVal, sizeof(u8), 1, cfgIn); cfg::config["default_slot"] = getVal;
+            fread(&getVal, sizeof(u8), 1, cfgIn); cfg::config["use_builtinkbd"] = getVal;
+        }
+        else if (version >= 1)
+        {
+            u8 getVal = 0;
+            fread(&getVal, sizeof(u8), 1, cfgIn); cfg::config["zip"] = getVal;
+            fread(&getVal, sizeof(u8), 1, cfgIn); cfg::config["deflateLevel"] = getVal;
+            fread(&getVal, sizeof(u8), 1, cfgIn); cfg::config["lightback"] = getVal;
+            fread(&getVal, sizeof(u8), 1, cfgIn); /* skip legacy swaplrfunc */
+            fread(&getVal, sizeof(u8), 1, cfgIn); cfg::config["titlelang"] = getVal;
+            fread(&getVal, sizeof(u8), 1, cfgIn); cfg::config["uilang"] = getVal;
 
-            fread(&getVal, sizeof(u8), 1, cfgIn);
-            cfg::config["deflateLevel"] = getVal;
-
-            fread(&getVal, sizeof(u8), 1, cfgIn);
-            cfg::config["lightback"] = getVal;
-
-            fread(&getVal, sizeof(u8), 1, cfgIn);
-            cfg::config["swaplrfunc"] = getVal;
-
-            fread(&getVal, sizeof(u8), 1, cfgIn);
-            cfg::config["titlelang"] = getVal;
-
-            fread(&getVal, sizeof(u8), 1, cfgIn);
-            cfg::config["uilang"] = getVal;
-
-            if (getVal >= 2)
+            if (version >= 2)
             {
-                fread(&getVal, sizeof(u8), 1, cfgIn);
-                cfg::config["autobackup"] = getVal;
+                fread(&getVal, sizeof(u8), 1, cfgIn); cfg::config["autobackup"] = getVal;
+                fread(&getVal, sizeof(u8), 1, cfgIn); cfg::config["autoload"] = getVal;
+                fread(&getVal, sizeof(u8), 1, cfgIn); cfg::config["default_type"] = getVal;
+                fread(&getVal, sizeof(u8), 1, cfgIn); cfg::config["default_slot"] = getVal;
 
-                fread(&getVal, sizeof(u8), 1, cfgIn);
-                cfg::config["autoload"] = getVal;
-
-                fread(&getVal, sizeof(u8), 1, cfgIn);
-                cfg::config["default_type"] = getVal;
-
-                fread(&getVal, sizeof(u8), 1, cfgIn);
-                cfg::config["default_slot"] = getVal;
+                if (version >= 3)
+                {
+                    fread(&getVal, sizeof(u8), 1, cfgIn); cfg::config["use_builtinkbd"] = getVal;
+                }
+                else
+                {
+                    cfg::config["use_builtinkbd"] = 1;
+                }
             }
         }
 
@@ -117,13 +123,13 @@ void cfg::saveCommon()
         fwrite(&cfg::config["zip"], sizeof(u8), 1, cfgOut);
         fwrite(&cfg::config["deflateLevel"], sizeof(u8), 1, cfgOut);
         fwrite(&cfg::config["lightback"], sizeof(u8), 1, cfgOut);
-        fwrite(&cfg::config["swaplrfunc"], sizeof(u8), 1, cfgOut);
         fwrite(&cfg::config["titlelang"], sizeof(u8), 1, cfgOut);
         fwrite(&cfg::config["uilang"], sizeof(u8), 1, cfgOut);
         fwrite(&cfg::config["autobackup"], sizeof(u8), 1, cfgOut);
         fwrite(&cfg::config["autoload"], sizeof(u8), 1, cfgOut);
         fwrite(&cfg::config["default_type"], sizeof(u8), 1, cfgOut);
         fwrite(&cfg::config["default_slot"], sizeof(u8), 1, cfgOut);
+        fwrite(&cfg::config["use_builtinkbd"], sizeof(u8), 1, cfgOut);
         fclose(cfgOut);
     }
 }

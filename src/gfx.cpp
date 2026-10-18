@@ -30,21 +30,7 @@
 
 C3D_RenderTarget *gfx::top, *gfx::bot;
 
-//Needed for icon sub tex. Top UV needs to be higher than bottom so it's rotated.
-Tex3DS_SubTexture gfx::iconSubTex = {48, 48, 0.0f, 0.75f, 0.75f, 0.0f};
-Tex3DS_SubTexture gfx::dsIconSubTex = {32, 32, 0.0f, 1.0f, 1.0f, 0.0f};
-
 u32 gfx::clearClr, gfx::txtCont, gfx::rectLt, gfx::rectSh, gfx::rectSel, gfx::divClr, gfx::btnClr, gfx::btnSel;
-
-C2D_Image gfx::noIcon(void)
-{
-    return C2D_SpriteSheetGetImage(spritesheet, sprites_noicon_idx);
-}
-
-C2D_Image gfx::dsIcon(void)
-{
-    return C2D_SpriteSheetGetImage(spritesheet, sprites_dsicon_idx);
-}
 
 void gfx::setColor(bool light)
 {
@@ -65,7 +51,6 @@ void gfx::init()
     C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
     C2D_Prepare();
 
-    spritesheet = C2D_SpriteSheetLoad("romfs:/gfx/sprites.t3x");
     top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
     bot = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
     font = C2D_FontLoad("romfs:/cbf_std.bcfnt");
@@ -76,7 +61,6 @@ void gfx::exit()
 {
     C2D_FontFree(font);
     C2D_FontFree(font_kor);
-    C2D_SpriteSheetFree(spritesheet);
     C2D_Fini();
     C3D_Fini();
     gfxExit();

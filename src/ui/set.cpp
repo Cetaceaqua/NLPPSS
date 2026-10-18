@@ -107,6 +107,7 @@ static void setMenuToggleColor(void *a)
 {
     toggleBool(a);
     gfx::setColor(cfg::config["lightback"]);
+    cfg::saveCommon();
 }
 
 static void setMenuIncreaseUILang_t(void *a)
@@ -116,6 +117,7 @@ static void setMenuIncreaseUILang_t(void *a)
     toggleUInt(in, 1, 2);
     t->status->setStatus(getUILangMessage(*in));
     cfg::setUILanguage(*in);
+    cfg::saveCommon();
     svcSleepThread(1e+9 / 4);
     t->lock();
     t->argPtr = NULL;
@@ -135,6 +137,7 @@ static void setMenuDecreaseUILang_t(void *a)
     toggleUInt(in, -1, 2);
     t->status->setStatus(getUILangMessage(*in));
     cfg::setUILanguage(*in);
+    cfg::saveCommon();
     svcSleepThread(1e+9 / 4);
     t->lock();
     t->argPtr = NULL;
@@ -151,27 +154,32 @@ static void setMenuIncreaseDeflateLevel(void *a)
 {
     u8 *lvl = (u8 *)a;
     *lvl = (*lvl >= 9) ? 1 : (*lvl + 1);
+    cfg::saveCommon();
 }
 
 static void setMenuDecreaseDeflateLevel(void *a)
 {
     u8 *lvl = (u8 *)a;
     *lvl = (*lvl <= 1) ? 9 : (*lvl - 1);
+    cfg::saveCommon();
 }
 
 static void setMenuToggleBOOL(void *a)
 {
     toggleBool(a);
+    cfg::saveCommon();
 }
 
 static void setMenuToggleType(void *a)
 {
     toggleUInt(a, 1, 1);
+    cfg::saveCommon();
 }
 
 static void setMenuToggleSlot(void *a)
 {
     toggleUInt(a, 1, 2);
+    cfg::saveCommon();
 }
 
 void ui::setInit(void *a)
@@ -197,7 +205,7 @@ void ui::setInit(void *a)
     setMenu.addOptEvent(4, KEY_B, setMenuDecreaseUILang, &cfg::config["uilang"]);
     setMenu.addOptEvent(4, KEY_A, setMenuIncreaseUILang, &cfg::config["uilang"]);
 
-    setMenu.addOpt(getTxt("启动时加载存档"), 320);
+    setMenu.addOpt(getTxt("启动时自动加载存档"), 320);
     setMenu.addOptEvent(5, KEY_A, setMenuToggleBOOL, &cfg::config["autoload"]);
 
     setMenu.addOpt(getTxt("默认存档类型"), 320);
@@ -206,8 +214,8 @@ void ui::setInit(void *a)
     setMenu.addOpt(getTxt("默认存档槽位"), 320);
     setMenu.addOptEvent(7, KEY_A, setMenuToggleSlot, &cfg::config["default_slot"]);
 
-    setMenu.addOpt(getTxt("切换LR按键功能"), 320);
-    setMenu.addOptEvent(8, KEY_A, setMenuToggleBOOL, &cfg::config["swaplrfunc"]);
+    setMenu.addOpt(getTxt("内置键盘"), 320);
+    setMenu.addOptEvent(8, KEY_A, setMenuToggleBOOL, &cfg::config["use_builtinkbd"]);
 
     if (a)
     {
@@ -242,7 +250,7 @@ void ui::setUpdate()
     setMenu.editOpt(2, getDeflateLevelText(cfg::config["deflateLevel"]));
     setMenu.editOpt(3, getTxt("界面主题色") + std::string(": ") + getLightDarkText(cfg::config["lightback"]));
     setMenu.editOpt(4, getUILangText(cfg::config["uilang"]));
-    setMenu.editOpt(5, getTxt("启动时加载存档") + std::string(": ") + getBoolText(cfg::config["autoload"]));
+    setMenu.editOpt(5, getTxt("启动时自动加载存档") + std::string(": ") + getBoolText(cfg::config["autoload"]));
 
     std::string typeTxt = (cfg::config["default_type"] == 1) ? getTxt("实体版") : getTxt("数字版");
     setMenu.editOpt(6, getTxt("默认存档类型") + std::string(": ") + typeTxt);
@@ -251,7 +259,7 @@ void ui::setUpdate()
     snprintf(slotBuf, sizeof(slotBuf), "%s %d", getTxt("槽位"), (int)cfg::config["default_slot"] + 1);
     setMenu.editOpt(7, getTxt("默认存档槽位") + std::string(": ") + slotBuf);
 
-    setMenu.editOpt(8, getTxt("切换LR按键功能") + std::string(": ") + getBoolText(cfg::config["swaplrfunc"]));
+    setMenu.editOpt(8, getTxt("内置键盘") + std::string(": ") + getBoolText(cfg::config["use_builtinkbd"]));
 
     setMenu.update();
 }
@@ -268,31 +276,31 @@ void ui::setDrawBottom()
     switch(setMenu.getSelected())
     {
         case 0:
-            setOptsDesc = getTxt("修改并保存存档数据时，是否自动在 sdmc:/NLPPSS/Saves 生成安全备份。");
+            setOptsDesc = getTxt("保存修改时，自动在 sdmc:/NLPPSS/Saves 中创建备份。");
             break;
         case 1:
             setOptsDesc = getTxt("备份存档时是否使用 ZIP 压缩存储。");
             break;
         case 2:
-            setOptsDesc = getTxt("选择 ZIP 压缩等级 (1~9)。\n(按 A 键增加，按 B 键减少)");
+            setOptsDesc = getTxt("设置 ZIP 备份的压缩等级 (1~9)。");
             break;
         case 3:
-            setOptsDesc = getTxt("选择 UI 界面主题色。\n(浅色系 / 深色系)");
+            setOptsDesc = getTxt("选择界面主题风格。");
             break;
         case 4:
-            setOptsDesc = getTxt("选择 UI 界面显示语言。\n(简体中文 / English / 繁體中文)");
+            setOptsDesc = getTxt("选择界面显示语言。");
             break;
         case 5:
-            setOptsDesc = getTxt("启动时跳过菜单直接载入默认存档。");
+            setOptsDesc = getTxt("启动时跳过菜单，直接加载默认存档。");
             break;
         case 6:
-            setOptsDesc = getTxt("启动软件时默认选中的存档介质类型。\n(数字版 / 实体版)");
+            setOptsDesc = getTxt("启动时默认加载的存档类型。");
             break;
         case 7:
-            setOptsDesc = getTxt("启动软件时默认选中的存档槽位编号。\n(槽位 1 / 槽位 2 / 槽位 3)");
+            setOptsDesc = getTxt("启动时默认加载的存档槽位。");
             break;
         case 8:
-            setOptsDesc = getTxt("切换 L/R 按键和 Left/Right 按键在界面切换中的功能映射。");
+            setOptsDesc = getTxt("输入文本时使用内置键盘。关闭后将使用 3DS 系统键盘。");
             break;
         default:
             break;

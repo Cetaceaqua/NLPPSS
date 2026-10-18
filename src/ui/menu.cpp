@@ -84,21 +84,21 @@ void ui::menu::adjust()
     if (selected > (int)opt.size() - 1)
         selected = opt.size() - 1;
 
-    if (opt.size() < 12)
+    if ((int)opt.size() < maxVisible)
         start = 0;
-    else if (opt.size() > 11 && start + 11 > (int)opt.size() - 1)
-        start--;
+    else if ((int)opt.size() >= maxVisible && start + (maxVisible - 1) > (int)opt.size() - 1)
+        start = std::max(0, (int)opt.size() - maxVisible);
 }
 
 void ui::menu::setSelected(const int &newSel)
 {
-    if (newSel < start || newSel > start + 11)
+    int size = (int)opt.size() - 1;
+    if (newSel < start || newSel > start + (maxVisible - 1))
     {
-        int size = opt.size() - 1;
-        if (newSel + 11 > size)
-            start = size - 11;
+        if (newSel + (maxVisible - 1) > size)
+            start = std::max(0, size - (maxVisible - 1));
         else
-            start = newSel;
+            start = std::max(0, newSel);
 
         selected = newSel;
     }
@@ -111,49 +111,49 @@ void ui::menu::update()
     uint32_t down = ui::padKeysDown();
     uint32_t held = ui::padKeysHeld();
 
-    if ((held & KEY_UP) || (held & KEY_DOWN))
+    if ((held & KEY_DUP) || (held & KEY_DDOWN))
         fc++;
     else
         fc = 0;
     if (fc > 10)
         fc = 0;
 
-    int size = opt.size() - 1;
-    if ((down & KEY_UP) || ((held & KEY_UP) && fc == 10))
+    int size = (int)opt.size() - 1;
+    if ((down & KEY_DUP) || ((held & KEY_DUP) && fc == 10))
     {
         selected--;
         if (selected < 0)
             selected = size;
 
-        if (size < 12)
+        if (size < maxVisible)
             start = 0;
         else if (start > selected)
             start--;
-        else if (selected == size && size > 11)
-            start = size - 11;
+        else if (selected == size && size >= maxVisible)
+            start = std::max(0, size - (maxVisible - 1));
     }
-    else if ((down & KEY_DOWN) || ((held & KEY_DOWN) && fc == 10))
+    else if ((down & KEY_DDOWN) || ((held & KEY_DDOWN) && fc == 10))
     {
         selected++;
         if (selected > size)
             selected = 0;
 
-        if ((selected > (start + 11)) && ((start + 11) < size))
+        if ((selected > (start + (maxVisible - 1))) && ((start + (maxVisible - 1)) < size))
             start++;
         if (selected == 0)
             start = 0;
     }
-    else if (down & KEY_DRIGHT)
+    else if (paging && (down & KEY_DRIGHT))
     {
-        selected += 12;
+        selected += maxVisible;
         if (selected > size)
             selected = size;
-        if ((selected - 11) > start)
-            start = selected - 11;
+        if ((selected - (maxVisible - 1)) > start)
+            start = std::max(0, selected - (maxVisible - 1));
     }
-    else if (down & KEY_DLEFT)
+    else if (paging && (down & KEY_DLEFT))
     {
-        selected -= 12;
+        selected -= maxVisible;
         if (selected < 0)
             selected = 0;
         if (selected < start)
@@ -192,10 +192,10 @@ void ui::menu::draw(const int &x, const int &y, const uint32_t &baseClr, const u
     }
 
     int length = 0;
-    if ((opt.size() - 1) < 12)
+    if ((int)opt.size() < maxVisible)
         length = opt.size();
     else
-        length = start + 12;
+        length = std::min((int)opt.size(), start + maxVisible);
 
     uint32_t rectClr = 0xFF << 24 | 0xC5 << 16 | clrSh << 8 | 0x00;
 

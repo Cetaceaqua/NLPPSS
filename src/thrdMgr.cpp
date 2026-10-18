@@ -39,10 +39,16 @@ ui::threadProcMngr::~threadProcMngr()
     svcCloseHandle(threadLock);
     for(threadInfo *t : threads)
     {
-        threadJoin(t->thrd, U64_MAX);
-        threadFree(t->thrd);
-        delete t->status;
-        delete t;
+        if(t)
+        {
+            if(t->running && t->thrd)
+            {
+                threadJoin(t->thrd, U64_MAX);
+                threadFree(t->thrd);
+            }
+            delete t->status;
+            delete t;
+        }
     }
 }
 

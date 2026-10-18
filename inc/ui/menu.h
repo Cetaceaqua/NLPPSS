@@ -57,11 +57,17 @@ namespace ui
             std::string getOpt(const int& g) { return opt[g].txt; }
 
             void setCallback(funcPtr _cb, void *_args) { cb = _cb; args = _args; }
+            void setMaxVisible(int maxV) { maxVisible = maxV; }
+            int getMaxVisible() const { return maxVisible; }
+            void setPaging(bool enable) { paging = enable; }
+            bool getPaging() const { return paging; }
 
         private:
             uint8_t clrSh = 0x88;
             bool clrAdd = true;
             int selected = 0, start = 0;
+            int maxVisible = 10;
+            bool paging = true;
             int fc = 0;
             funcPtr cb;
             void *args;

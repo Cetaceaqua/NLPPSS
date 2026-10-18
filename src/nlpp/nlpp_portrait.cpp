@@ -1,6 +1,7 @@
 #include "nlpp_portrait.h"
 #include "lodepng.h"
 #include "gfx.h"
+#include "ui.h"
 
 #include <cstdio>
 #include <cstring>
@@ -52,9 +53,9 @@ namespace nlpp
         s_styleSubtex.width = 146;
         s_styleSubtex.height = 170;
         s_styleSubtex.left = 0.0f;
-        s_styleSubtex.top = 170.0f / 256.0f;
+        s_styleSubtex.top = 1.0f;
         s_styleSubtex.right = 146.0f / 256.0f;
-        s_styleSubtex.bottom = 0.0f;
+        s_styleSubtex.bottom = 1.0f - (170.0f / 256.0f);
 
         // Texture 2: Haircolor (256x256 GPU_RGBA8)
         C3D_TexInit(&s_colorTex, 256, 256, GPU_RGBA8);
@@ -69,9 +70,9 @@ namespace nlpp
         s_colorSubtex.width = 146;
         s_colorSubtex.height = 170;
         s_colorSubtex.left = 0.0f;
-        s_colorSubtex.top = 170.0f / 256.0f;
+        s_colorSubtex.top = 1.0f;
         s_colorSubtex.right = 146.0f / 256.0f;
-        s_colorSubtex.bottom = 0.0f;
+        s_colorSubtex.bottom = 1.0f - (170.0f / 256.0f);
 
         s_texInitialized = true;
         s_styleLoaded = false;
@@ -248,68 +249,55 @@ namespace nlpp
     // -------------------------------------------------------------------------
 
     static const struct { uint8_t id; const char *name; } s_styleNames[] = {
-        {0,  "基本 (カジュアル)"},
-        {1,  "自宅 (カジュアル)"},
-        {2,  "かわいいＡ"},
-        {14, "かわいいＢ"},
-        {17, "かわいいＣ"},
-        {3,  "カジュアルＡ"},
-        {15, "カジュアルＢ"},
-        {18, "カジュアルＣ"},
-        {4,  "清楚Ａ"},
-        {16, "清楚Ｂ"},
-        {19, "清楚Ｃ"},
-        {5,  "アップ [水着・着物]"},
-        {6,  "パーティー"},
-        {7,  "ライブ"},
-        {8,  "ゴスロリ"},
-        {9,  "ナチュラル"},
-        {20, "NEW"}
+        {0,  "基本 (休闲)"},
+        {1,  "居家 (休闲)"},
+        {2,  "可爱 A"},
+        {14, "可爱 B"},
+        {17, "可爱 C"},
+        {3,  "休闲 A"},
+        {15, "休闲 B"},
+        {18, "休闲 C"},
+        {4,  "清纯 A"},
+        {16, "清纯 B"},
+        {19, "清纯 C"},
+        {5,  "盘发 [泳装·和服] (清纯)"},
+        {6,  "派对 (清纯)"},
+        {7,  "演唱会 (可爱)"},
+        {8,  "哥特萝莉 (可爱)"},
+        {9,  "自然 (清纯)"},
+        {20, "NEW (可爱)"}
     };
 
     static const char *s_colorNames[19] = {
-        "黒",
-        "明るい／黄色っぽいＡ",
-        "明るい／黄色っぽいＢ",
-        "明るい／赤っぽいＡ",
-        "明るい／赤っぽいＢ",
-        "明るい／黒っぽいＡ",
-        "明るい／黒っぽいＢ",
-        "自然な茶系／黄色っぽいＡ",
-        "自然な茶系／黄色っぽいＢ",
-        "自然な茶系／赤っぽいＡ",
-        "自然な茶系／赤っぽいＢ",
-        "自然な茶系／黒っぽいＡ",
-        "自然な茶系／黒っぽいＢ",
-        "特殊カラー・ピンク",
-        "特殊カラー・ブルー",
-        "特殊カラー・ライトグリーン",
-        "特殊カラー・パープル",
-        "特殊カラー・オレンジ",
-        "特殊カラー・グリーン"
+        "黑色",
+        "明亮色／偏黄 A",
+        "明亮色／偏黄 B",
+        "明亮色／偏红 A",
+        "明亮色／偏红 B",
+        "明亮色／偏黑 A",
+        "明亮色／偏黑 B",
+        "自然茶色／偏黄 A",
+        "自然茶色／偏黄 B",
+        "自然茶色／偏红 A",
+        "自然茶色／偏红 B",
+        "自然茶色／偏黑 A",
+        "自然茶色／偏黑 B",
+        "特殊色／粉红",
+        "特殊色／蓝色",
+        "特殊色／浅绿",
+        "特殊色／紫色",
+        "特殊色／橙色",
+        "特殊色／绿色"
     };
 
     // Determine hair length category: 0: Short, 1: Medium, 2: Long
+    // In physical savedata18[0x466]: 2 is Long, 1 is Medium, 0 is Short for all heroines
     static int getLengthCategory(HeroineID heroine, uint8_t hairLength)
     {
-        if (heroine == HEROINE_MANAKA)
-        {
-            if (hairLength >= 3) return 2; // Long
-            if (hairLength >= 1) return 1; // Medium
-            return 0; // Short
-        }
-        else if (heroine == HEROINE_RINKO)
-        {
-            if (hairLength >= 3) return 2; // Long
-            if (hairLength >= 1) return 1; // Medium (stage 2 / stage 1)
-            return 0; // Short
-        }
-        else // Nene
-        {
-            if (hairLength >= 2) return 2; // Long
-            if (hairLength >= 1) return 1; // Medium
-            return 0; // Short
-        }
+        (void)heroine;
+        if (hairLength >= 2) return 2; // Long
+        if (hairLength == 1) return 1; // Medium
+        return 0; // Short
     }
 
     std::vector<HairStyleOption> getStyleOptions(HeroineID heroine, uint8_t hairLength)
@@ -335,7 +323,7 @@ namespace nlpp
                 opt.portraitIndex = i + 1; // 1-based index in Long section
                 for (const auto &item : s_styleNames)
                 {
-                    if (item.id == opt.styleId) { opt.displayName = item.name; break; }
+                    if (item.id == opt.styleId) { opt.displayName = getTxt(item.name); break; }
                 }
                 opts.push_back(opt);
             }
@@ -350,7 +338,7 @@ namespace nlpp
                 opt.portraitIndex = baseIndex + i;
                 for (const auto &item : s_styleNames)
                 {
-                    if (item.id == opt.styleId) { opt.displayName = item.name; break; }
+                    if (item.id == opt.styleId) { opt.displayName = getTxt(item.name); break; }
                 }
                 opts.push_back(opt);
             }
@@ -365,7 +353,7 @@ namespace nlpp
                 opt.portraitIndex = baseIndex + i;
                 for (const auto &item : s_styleNames)
                 {
-                    if (item.id == opt.styleId) { opt.displayName = item.name; break; }
+                    if (item.id == opt.styleId) { opt.displayName = getTxt(item.name); break; }
                 }
                 opts.push_back(opt);
             }
@@ -384,7 +372,7 @@ namespace nlpp
             HairColorOption opt;
             opt.colorId = i + 1;
             opt.portraitIndex = i + 1;
-            opt.displayName = s_colorNames[i];
+            opt.displayName = getTxt(s_colorNames[i]);
             opts.push_back(opt);
         }
         return opts;
@@ -409,7 +397,16 @@ namespace nlpp
 
     bool portraitLoadByColor(HeroineID heroine, uint8_t colorId)
     {
-        if (colorId < 1 || colorId > 19) colorId = 1;
+        if (colorId < 1 || colorId > 19)
+        {
+            // Default color from Section 7.2.5:
+            // Manaka: 黑 (Color 1)
+            // Rinko: 自然な茶系／黒っぽいＢ (Color 13)
+            // Nene: 自然な茶系／黄色っぽいＢ (Color 9)
+            if (heroine == HEROINE_RINKO) colorId = 13;
+            else if (heroine == HEROINE_NENE) colorId = 9;
+            else colorId = 1;
+        }
         return portraitLoadColorIndex(heroine, colorId);
     }
 
@@ -417,17 +414,17 @@ namespace nlpp
     {
         for (const auto &item : s_styleNames)
         {
-            if (item.id == styleId) return item.name;
+            if (item.id == styleId) return getTxt(item.name);
         }
-        return "基本 (カジュアル)";
+        return getTxt("基本 (休闲)");
     }
 
     std::string getCleanColorName(HeroineID heroine, uint8_t colorId)
     {
         if (colorId >= 1 && colorId <= 19)
         {
-            return s_colorNames[colorId - 1];
+            return getTxt(s_colorNames[colorId - 1]);
         }
-        return "黒";
+        return getTxt("默认发色");
     }
 }

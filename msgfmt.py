@@ -27,13 +27,22 @@ def generate_mo(po_path, mo_path):
         while i < len(s):
             if s[i] == '\\' and i + 1 < len(s):
                 c = s[i+1]
-                if c == 'n': res.append('\n')
-                elif c == 't': res.append('\t')
-                elif c == 'r': res.append('\r')
-                elif c == '"': res.append('"')
-                elif c == '\\': res.append('\\')
-                else: res.append(c)
-                i += 2
+                if c == 'n': res.append('\n'); i += 2
+                elif c == 't': res.append('\t'); i += 2
+                elif c == 'r': res.append('\r'); i += 2
+                elif c == '"': res.append('"'); i += 2
+                elif c == '\\': res.append('\\'); i += 2
+                elif c in ('u', 'U') and i + 5 < len(s):
+                    hex_len = 8 if (c == 'U' and i + 9 < len(s)) else 4
+                    try:
+                        res.append(chr(int(s[i+2:i+2+hex_len], 16)))
+                        i += 2 + hex_len
+                    except ValueError:
+                        res.append(c)
+                        i += 2
+                else:
+                    res.append(c)
+                    i += 2
             else:
                 res.append(s[i])
                 i += 1

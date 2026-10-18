@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <cstring>
 #include <algorithm>
+#include <unordered_set>
 
 namespace nlpp
 {
@@ -48,50 +49,25 @@ namespace nlpp
     };
 
     static const HairStyleDef s_allStyles[] = {
-        {0,  "基本",                   "カジュアル", "デート",   false, false},
-        {1,  "自宅",                   "カジュアル", "自宅",     false, false},
-        {2,  "かわいいＡ",             "かわいい",   "デート",   false, false},
-        {3,  "カジュアルＡ",           "カジュアル", "デート",   false, false},
-        {4,  "清楚Ａ",                 "清楚",       "デート",   false, false},
-        {5,  "アップ [水着・着物]",    "清楚",       "イベント", false, false},
-        {6,  "パーティー",             "清楚",       "イベント", false, false},
-        {7,  "ライブ",                 "かわいい",   "イベント", true,  false},
-        {8,  "ゴスロリ",               "かわいい",   "イベント", true,  false},
-        {9,  "ナチュラル",             "清楚",       "イベント", true,  true},
-        {14, "かわいいＢ",             "かわいい",   "デート",   false, false},
-        {15, "カジュアルＢ",           "カジュアル", "デート",   false, false},
-        {16, "清楚Ｂ",                 "清楚",       "デート",   false, false},
-        {17, "かわいいＣ",             "かわいい",   "デート",   false, false},
-        {18, "カジュアルＣ",           "カジュアル", "デート",   false, false},
-        {19, "清楚Ｃ",                 "清楚",       "デート",   false, false},
-        {20, "NEW",                    "かわいい",   "デート",   false, false}
+        {0,  "基本 (休闲)",             "休闲",       "约会",   false, false},
+        {1,  "居家 (休闲)",             "休闲",       "居家",   false, false},
+        {2,  "可爱 A",                 "可爱",       "约会",   false, false},
+        {3,  "休闲 A",                 "休闲",       "约会",   false, false},
+        {4,  "清纯 A",                 "清纯",       "约会",   false, false},
+        {5,  "盘发 [泳装·和服] (清纯)", "清纯",       "活动",   false, false},
+        {6,  "派对 (清纯)",             "清纯",       "活动",   false, false},
+        {7,  "演唱会 (可爱)",           "可爱",       "活动",   true,  false},
+        {8,  "哥特萝莉 (可爱)",         "可爱",       "活动",   true,  false},
+        {9,  "自然 (清纯)",             "清纯",       "活动",   true,  true},
+        {14, "可爱 B",                 "可爱",       "约会",   false, false},
+        {15, "休闲 B",                 "休闲",       "约会",   false, false},
+        {16, "清纯 B",                 "清纯",       "约会",   false, false},
+        {17, "可爱 C",                 "可爱",       "约会",   false, false},
+        {18, "休闲 C",                 "休闲",       "约会",   false, false},
+        {19, "清纯 C",                 "清纯",       "约会",   false, false},
+        {20, "NEW (可爱)",             "可爱",       "约会",   false, false}
     };
 
-    static const CoupleTitleDef s_coupleTitles[23] = {
-        {1,  "恋愛ビギナー",       "恋爱新手",       0,     1},
-        {2,  "平凡カップル",       "平凡情侣",       100,   2},
-        {3,  "中堅カップル",       "中坚情侣",       250,   3},
-        {4,  "ベテランカップル",   "老手情侣",       750,   4},
-        {5,  "恋人本格派",         "恋人本格派",     1200,  5},
-        {6,  "熟練のふたり",       "熟练的二人",     2500,  6},
-        {7,  "シニアカップル",     "资深情侣",       3500,  7},
-        {8,  "二人はラブラブ",     "卿卿我我",       5000,  8},
-        {9,  "ベストパートナー",   "最佳拍档",       7500,  9},
-        {10, "とわのふたり",       "永久的二人",     9999,  10},
-        {11, "究極のふたり",       "究极的二人",     13000, 11},
-        {12, "空前絶後のふたり",   "空前绝后的二人", 14500, 12},
-        {13, "不出世のふたり",     "旷世绝代的二人", 16250, 13},
-        {14, "前代未聞のふたり",   "前所未闻的二人", 18250, 14},
-        {15, "天下無双のふたり",   "天下无双的二人", 20500, 15},
-        {16, "世界のふたり",       "举世瞩目的二人", 23000, 16},
-        {17, "太陽系のふたり",     "太阳系的二人",   25750, 17},
-        {18, "銀河系のふたり",     "银河系的二人",   28750, 18},
-        {19, "宇宙のふたり",       "宇宙级的二人",   32000, 19},
-        {20, "伝説のふたり",       "传说的二人",     35500, 20},
-        {21, "完全無欠のふたり",   "完美无瑕的二人", 39250, 21},
-        {22, "永遠のふたり",       "永远的二人",     43250, 22},
-        {23, "最愛のふたり",       "最爱的二人",     47500, 23}
-    };
 
     bool Dict::init()
     {
@@ -177,7 +153,13 @@ namespace nlpp
             uint32_t offset = rawIndices[i].str_offset;
             if (offset < stringsPool.size())
             {
-                s_readings[i].text = &stringsPool[offset];
+                const char *t = &stringsPool[offset];
+                s_readings[i].text = t;
+                size_t tLen = strlen(t);
+                if (offset + tLen + 1 < stringsPool.size())
+                {
+                    s_readings[i].romaji = &stringsPool[offset + tLen + 1];
+                }
             }
             s_readingMap[s_readings[i].id] = i;
         }
@@ -206,11 +188,105 @@ namespace nlpp
 
     std::string Dict::getReadingText(uint16_t id)
     {
+        if (id == 0xFFFF) return getTxt("(空)");
         const ReadingEntry *entry = getReadingById(id);
         if (entry) return entry->text;
         char buf[16];
         snprintf(buf, sizeof(buf), "[%u]", id);
         return std::string(buf);
+    }
+
+    std::string Dict::getReadingDisplay(uint16_t id)
+    {
+        if (id == 0xFFFF) return getTxt("(空)");
+        const ReadingEntry *entry = getReadingById(id);
+        if (entry)
+        {
+            if (!entry->romaji.empty())
+                return entry->text + " (" + entry->romaji + ")";
+            return entry->text;
+        }
+        char buf[16];
+        snprintf(buf, sizeof(buf), "[%u]", id);
+        return std::string(buf);
+    }
+
+    static std::string cleanSearchStr(const std::string &s)
+    {
+        std::string res;
+        res.reserve(s.size());
+        for (char c : s)
+        {
+            if (c != '-' && c != '\'' && c != ' ' && c != '_')
+                res += (char)tolower((unsigned char)c);
+        }
+        return res;
+    }
+
+    static std::string romajiPrefixToKana(const std::string &romaji)
+    {
+        static const struct { const char *rom; const char *kana; } s_map[] = {
+            {"kya", "きゃ"}, {"kyu", "きゅ"}, {"kyo", "きょ"},
+            {"sha", "しゃ"}, {"shu", "しゅ"}, {"sho", "しょ"},
+            {"cha", "ちゃ"}, {"chu", "ちゅ"}, {"cho", "ちょ"},
+            {"nya", "にゃ"}, {"nyu", "にゅ"}, {"nyo", "にょ"},
+            {"hya", "ひゃ"}, {"hyu", "ひゅ"}, {"hyo", "ひょ"},
+            {"mya", "みゃ"}, {"myu", "みゅ"}, {"myo", "みょ"},
+            {"rya", "りゃ"}, {"ryu", "りゅ"}, {"ryo", "りょ"},
+            {"gya", "ぎゃ"}, {"gyu", "ぎゅ"}, {"gyo", "ぎょ"},
+            {"shi", "し"}, {"chi", "ち"}, {"tsu", "つ"},
+            {"ka", "か"}, {"ki", "き"}, {"ku", "く"}, {"ke", "け"}, {"ko", "こ"},
+            {"sa", "さ"}, {"si", "し"}, {"su", "す"}, {"se", "せ"}, {"so", "そ"},
+            {"ta", "た"}, {"ti", "ち"}, {"tu", "つ"}, {"te", "て"}, {"to", "と"},
+            {"na", "な"}, {"ni", "に"}, {"nu", "ぬ"}, {"ne", "ね"}, {"no", "の"},
+            {"ha", "は"}, {"hi", "ひ"}, {"fu", "ふ"}, {"hu", "ふ"}, {"he", "へ"}, {"ho", "ほ"},
+            {"ma", "ま"}, {"mi", "み"}, {"mu", "む"}, {"me", "め"}, {"mo", "も"},
+            {"ya", "や"}, {"yu", "ゆ"}, {"yo", "よ"},
+            {"ra", "ら"}, {"ri", "り"}, {"ru", "る"}, {"re", "れ"}, {"ro", "ろ"},
+            {"wa", "わ"}, {"wo", "を"},
+            {"ga", "が"}, {"gi", "ぎ"}, {"gu", "ぐ"}, {"ge", "げ"}, {"go", "ご"},
+            {"za", "ざ"}, {"ji", "じ"}, {"zi", "じ"}, {"zu", "ず"}, {"ze", "ぜ"}, {"zo", "ぞ"},
+            {"da", "だ"}, {"di", "ぢ"}, {"du", "づ"}, {"de", "で"}, {"do", "ど"},
+            {"ba", "ば"}, {"bi", "び"}, {"bu", "ぶ"}, {"be", "べ"}, {"bo", "ぼ"},
+            {"pa", "ぱ"}, {"pi", "ぴ"}, {"pu", "ぷ"}, {"pe", "ぺ"}, {"po", "ぽ"},
+            {"a", "あ"}, {"i", "い"}, {"u", "う"}, {"e", "え"}, {"o", "お"}
+        };
+        for (const auto &item : s_map)
+        {
+            size_t len = strlen(item.rom);
+            if (romaji.size() >= len && romaji.compare(0, len, item.rom) == 0)
+            {
+                return item.kana;
+            }
+        }
+        return "";
+    }
+
+    static std::string kanaToHiragana(const std::string &str)
+    {
+        std::string res;
+        res.reserve(str.size());
+        const uint8_t *p = (const uint8_t *)str.data();
+        size_t len = str.size();
+        size_t i = 0;
+        while (i < len)
+        {
+            if (i + 2 < len && p[i] == 0xE3)
+            {
+                uint32_t cp = ((p[i] & 0x0F) << 12) | ((p[i+1] & 0x3F) << 6) | (p[i+2] & 0x3F);
+                if (cp >= 0x30A1 && cp <= 0x30F6) // Katakana -> Hiragana
+                {
+                    cp -= 0x60;
+                    res += (char)(0xE0 | ((cp >> 12) & 0x0F));
+                    res += (char)(0x80 | ((cp >> 6) & 0x3F));
+                    res += (char)(0x80 | (cp & 0x3F));
+                    i += 3;
+                    continue;
+                }
+            }
+            res += str[i++];
+        }
+        return res;
     }
 
     std::vector<const ReadingEntry *> Dict::filterReadings(uint8_t slotMask, uint8_t heroineMask, const std::string &search)
@@ -219,16 +295,137 @@ namespace nlpp
         std::vector<const ReadingEntry *> result;
         result.reserve(256);
 
+        if (search.empty())
+        {
+            for (const auto &entry : s_readings)
+            {
+                if (slotMask && !(entry.slot_mask & slotMask)) continue;
+                if (heroineMask && !(entry.heroine_mask & heroineMask)) continue;
+                result.push_back(&entry);
+            }
+            return result;
+        }
+
+        std::string lowerSearch;
+        lowerSearch.reserve(search.size());
+        for (char c : search) lowerSearch += (char)tolower((unsigned char)c);
+        std::string cleanSearch = cleanSearchStr(lowerSearch);
+        std::string hSearch = kanaToHiragana(search);
+
+        std::unordered_set<uint16_t> seenIds;
+
+        // Phase 1: Candidate 0 (首假名延长音) for base readings (Slot 0 / Slot 1)
+        if ((slotMask & 0x03) != 0)
+        {
+            std::string firstChar;
+            unsigned char c = (unsigned char)search[0];
+            if (c < 0x80)
+            {
+                // Romaji input -> map first syllable to Kana
+                firstChar = romajiPrefixToKana(lowerSearch);
+            }
+            else
+            {
+                // UTF-8 Kana input (normalized to Hiragana)
+                if (!hSearch.empty())
+                {
+                    unsigned char hc = (unsigned char)hSearch[0];
+                    size_t charLen = 1;
+                    if ((hc & 0xE0) == 0xC0) charLen = 2;
+                    else if ((hc & 0xF0) == 0xE0) charLen = 3;
+                    else if ((hc & 0xF8) == 0xF0) charLen = 4;
+                    if (charLen <= hSearch.size())
+                    {
+                        firstChar = hSearch.substr(0, charLen);
+                    }
+                }
+            }
+
+            if (!firstChar.empty() && firstChar != "っ" && firstChar != "ッ")
+            {
+                std::string prolonged = firstChar + "ー";
+                for (const auto &entry : s_readings)
+                {
+                    if (entry.id <= 957 && entry.text == prolonged)
+                    {
+                        result.push_back(&entry);
+                        seenIds.insert(entry.id);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Phase 2: Exact matches (完全匹配: text, kana normalized, romaji, or cleanRomaji)
         for (const auto &entry : s_readings)
         {
             if (slotMask && !(entry.slot_mask & slotMask)) continue;
             if (heroineMask && !(entry.heroine_mask & heroineMask)) continue;
-            if (!search.empty())
+            if (seenIds.find(entry.id) != seenIds.end()) continue;
+
+            std::string hText = kanaToHiragana(entry.text);
+            bool match = (entry.text == search || (!hSearch.empty() && hText == hSearch) || entry.romaji == lowerSearch);
+            if (!match && !cleanSearch.empty())
             {
-                if (entry.text.find(search) == std::string::npos) continue;
+                std::string cleanRom = cleanSearchStr(entry.romaji);
+                if (cleanRom == cleanSearch) match = true;
             }
-            result.push_back(&entry);
+
+            if (match)
+            {
+                result.push_back(&entry);
+                seenIds.insert(entry.id);
+            }
         }
+
+        // Phase 3: Prefix matches (前缀匹配)
+        for (const auto &entry : s_readings)
+        {
+            if (slotMask && !(entry.slot_mask & slotMask)) continue;
+            if (heroineMask && !(entry.heroine_mask & heroineMask)) continue;
+            if (seenIds.find(entry.id) != seenIds.end()) continue;
+
+            std::string hText = kanaToHiragana(entry.text);
+            bool match = (entry.text.rfind(search, 0) == 0 ||
+                          (!hSearch.empty() && hText.rfind(hSearch, 0) == 0) ||
+                          entry.romaji.rfind(lowerSearch, 0) == 0);
+            if (!match && !cleanSearch.empty())
+            {
+                std::string cleanRom = cleanSearchStr(entry.romaji);
+                if (cleanRom.rfind(cleanSearch, 0) == 0) match = true;
+            }
+
+            if (match)
+            {
+                result.push_back(&entry);
+                seenIds.insert(entry.id);
+            }
+        }
+
+        // Phase 4: Substring matches (模糊包含匹配)
+        for (const auto &entry : s_readings)
+        {
+            if (slotMask && !(entry.slot_mask & slotMask)) continue;
+            if (heroineMask && !(entry.heroine_mask & heroineMask)) continue;
+            if (seenIds.find(entry.id) != seenIds.end()) continue;
+
+            std::string hText = kanaToHiragana(entry.text);
+            bool match = (entry.text.find(search) != std::string::npos ||
+                          (!hSearch.empty() && hText.find(hSearch) != std::string::npos) ||
+                          entry.romaji.find(lowerSearch) != std::string::npos);
+            if (!match && !cleanSearch.empty())
+            {
+                std::string cleanRom = cleanSearchStr(entry.romaji);
+                if (cleanRom.find(cleanSearch) != std::string::npos) match = true;
+            }
+
+            if (match)
+            {
+                result.push_back(&entry);
+                seenIds.insert(entry.id);
+            }
+        }
+
         return result;
     }
 
@@ -280,11 +477,8 @@ namespace nlpp
         static std::vector<HairStyleDef> cached;
         cached.clear();
 
-        // Length stage 3 (or 2 for Nene) is Long
-        bool isLong = false;
-        if (heroine == HEROINE_MANAKA && hairLength == 3) isLong = true;
-        else if (heroine == HEROINE_RINKO && hairLength == 3) isLong = true;
-        else if (heroine == HEROINE_NENE && hairLength == 2) isLong = true;
+        // Length stage 2 is Long for all heroines (0x466 = 2)
+        bool isLong = (hairLength >= 2);
 
         for (const auto &style : s_allStyles)
         {
@@ -299,73 +493,72 @@ namespace nlpp
     {
         for (const auto &s : s_allStyles)
         {
-            if (s.style_id == styleId) return s.name;
+            if (s.style_id == styleId) return getTxt(s.name);
         }
-        return "基本";
+        return getTxt("基本 (休闲)");
+    }
+
+    uint16_t Dict::getHairModelId(HeroineID heroine, uint8_t hairLength, uint8_t styleId)
+    {
+        // hairLength: 2 = Long, 1 = Middle, 0 = Short
+        // heroine: 0 = Manaka, 1 = Rinko, 2 = Nene
+        if (heroine < HEROINE_MANAKA || heroine > HEROINE_NENE) return 0;
+        int h = (int)heroine;
+        int l = std::min((int)hairLength, 2);
+
+        struct StyleModelRow {
+            uint8_t styleId;
+            uint16_t modelIds[3][3]; // [heroine: 0=Manaka, 1=Rinko, 2=Nene][length: 0=Short, 1=Mid, 2=Long]
+        };
+
+        static const StyleModelRow s_table[] = {
+            { 0, {{ 19,  11,   0}, { 45,  37,  27}, { 69,  61,  51}} },
+            { 1, {{ 20,  12,   1}, { 46,  38,  28}, { 70,  62,  52}} },
+            { 2, {{ 21,  13,   2}, { 47,  39,  29}, { 71,  63,  53}} },
+            { 3, {{ 22,  14,   3}, { 46,  40,  30}, { 72,  64,  54}} },
+            { 4, {{ 23,  15,   4}, { 48,  41,  31}, { 73,  65,  55}} },
+            { 5, {{ 24,  16,   5}, { 46,  42,  32}, { 74,  66,  56}} },
+            { 6, {{ 25,  17,   6}, { 49,  43,  33}, { 75,  67,  57}} },
+            { 7, {{  0,   0,   7}, {  0,   0,  34}, {  0,   0,  58}} },
+            { 8, {{  0,   0,   8}, {  0,   0,  35}, {  0,   0,  59}} },
+            { 9, {{  0,   0,   9}, {  0,   0,   0}, {  0,   0,   0}} },
+            {14, {{341, 335, 329}, {359, 353, 347}, {377, 371, 365}} },
+            {15, {{343, 337, 331}, {361, 355, 349}, {379, 373, 367}} },
+            {16, {{345, 339, 333}, {363, 357, 351}, {381, 375, 369}} },
+            {17, {{342, 336, 330}, {360, 354, 348}, {378, 372, 366}} },
+            {18, {{344, 338, 332}, {362, 356, 350}, {380, 374, 368}} },
+            {19, {{346, 340, 334}, {364, 358, 352}, {382, 376, 370}} },
+            {20, {{438, 434, 430}, {450, 446, 442}, {462, 458, 454}} }
+        };
+
+        for (const auto &row : s_table)
+        {
+            if (row.styleId == styleId)
+            {
+                return row.modelIds[h][l];
+            }
+        }
+        return 0;
     }
 
     std::string Dict::getHairLengthName(HeroineID heroine, uint8_t stage)
     {
-        // 0: Long, 1: Medium, 2: Short
-        int cat = 1;
-        switch (heroine)
-        {
-            case HEROINE_MANAKA:
-                if (stage >= 3) cat = 0;
-                else if (stage == 2 || stage == 1) cat = 1;
-                else cat = 2;
-                break;
-            case HEROINE_RINKO:
-                if (stage >= 3) cat = 0;
-                else if (stage == 2 || stage == 1) cat = 1;
-                else cat = 2;
-                break;
-            case HEROINE_NENE:
-                if (stage >= 2) cat = 0;
-                else if (stage == 1) cat = 1;
-                else cat = 2;
-                break;
-            default:
-                cat = 1;
-                break;
-        }
-
-        if (cat == 0) return std::string("ロング ") + getTxt("长发");
-        if (cat == 1) return std::string("ミドル ") + getTxt("中长发");
-        return std::string("ショート ") + getTxt("短发");
+        (void)heroine;
+        // Physical savedata18[0x466]:
+        // 2: 长发 (Long)
+        // 1: 中长发 (Medium)
+        // 0: 短发 (Short)
+        if (stage >= 2) return getTxt("长发");
+        if (stage == 1) return getTxt("中长发");
+        return getTxt("短发");
     }
 
     std::vector<uint8_t> Dict::getValidLengthStages(HeroineID heroine)
     {
-        switch (heroine)
-        {
-            case HEROINE_MANAKA: return {3, 2, 0};
-            case HEROINE_RINKO:  return {3, 2, 0};
-            case HEROINE_NENE:   return {2, 1, 0};
-            default:             return {0};
-        }
+        (void)heroine;
+        // All heroines support 3 stages in 0x466: 2 (Long), 1 (Middle), 0 (Short)
+        return {2, 1, 0};
     }
 
-    const CoupleTitleDef &Dict::getCoupleTitle(uint8_t rank)
-    {
-        if (rank >= 1 && rank <= 23) return s_coupleTitles[rank - 1];
-        return s_coupleTitles[0];
-    }
 
-    const CoupleTitleDef &Dict::getCoupleTitleByExp(uint32_t exp)
-    {
-        for (int i = 22; i >= 0; --i)
-        {
-            if (exp >= s_coupleTitles[i].exp_min)
-            {
-                return s_coupleTitles[i];
-            }
-        }
-        return s_coupleTitles[0];
-    }
-
-    int Dict::getCoupleTitleCount()
-    {
-        return 23;
-    }
 }

@@ -23,7 +23,6 @@
 #include "fs.h"
 #include "ui.h"
 #include "util.h"
-#include "data.h"
 #include "sys.h"
 #include "cfg.h"
 
@@ -33,7 +32,6 @@
 int main(int argc, const char *argv[])
 {
     sys::init();
-    data::init();
     gfx::init();
     fs::init();
     cfg::initToDefault();
@@ -46,13 +44,12 @@ int main(int argc, const char *argv[])
 
     while(aptMainLoop() && ui::runApp()){ }
 
+    cfg::saveCommon();
+    ui::exit();
     nlpp::g_saveMgr.exit();
     nlpp::Dict::exit();
-    data::saveFav();
-    sys::exit();
-    gfx::exit();
     fs::exit();
-    data::exit();
-    ui::exit();
+    gfx::exit();
+    sys::exit();
     return 0;
 }

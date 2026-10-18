@@ -21,12 +21,8 @@
 
 #include <citro2d.h>
 #include <string>
-#include "sprites.h"
-#include "type.h"
-
 #define GFX_DEPTH_DEFAULT 0.5f
 
-inline C2D_SpriteSheet spritesheet;
 inline C2D_Font font = NULL;
 inline C2D_Font font_kor = NULL;
 
@@ -37,12 +33,7 @@ namespace gfx
     void setColor(bool light = false);
 
     extern C3D_RenderTarget *top, *bot;
-    extern Tex3DS_SubTexture iconSubTex;
-    extern Tex3DS_SubTexture dsIconSubTex;
     extern u32 clearClr, txtCont, rectLt, rectSh, rectSel, divClr, btnClr, btnSel;
-
-    C2D_Image noIcon(void);
-    C2D_Image dsIcon(void);
 
     inline void frameBegin()
     {

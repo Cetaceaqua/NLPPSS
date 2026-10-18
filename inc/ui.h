@@ -22,7 +22,6 @@
 #include <string>
 #include <vector>
 
-#include "data.h"
 #include "thrdMgr.h"
 #include "type.h"
 #include "cfg.h"
@@ -51,22 +50,14 @@ enum selop
 // Key values extend.
 enum
 {
-    KEY_PAGE_LEFT  = KEY_CSTICK_LEFT  | KEY_CPAD_LEFT  | KEY_ZL,
-    KEY_PAGE_RIGHT = KEY_CSTICK_RIGHT | KEY_CPAD_RIGHT | KEY_ZR,
+    KEY_PAGE_LEFT  = KEY_CSTICK_LEFT  | KEY_CPAD_LEFT  | KEY_ZL | KEY_L,
+    KEY_PAGE_RIGHT = KEY_CSTICK_RIGHT | KEY_CPAD_RIGHT | KEY_ZR | KEY_R,
 };
 
 extern const std::string TITLE_TEXT;
 
-#ifdef ENABLE_DRIVE
-#define FLD_GUIDE_TEXT_DRIVE getTxt("\ue000 选择 \ue002 删除 \ue003 恢复 \ue005 上传 \ue001 关闭")
-#endif
-#define FLD_GUIDE_TEXT getTxt("\ue000 选择 \ue002 删除 \ue003 恢复 \ue001 关闭")
-
 namespace ui
 {
-    inline void ttlRefresh(int = 0) {}
-    inline void ttlOptBack() {}
-    inline void fldRefresh() {}
 
     enum
     {
@@ -89,19 +80,6 @@ namespace ui
         down = hidKeysDown();
         held = hidKeysHeld();
         touchRead(&pos);
-
-        if (cfg::config["swaplrfunc"])
-        {
-            bool lPressed = down & KEY_L;
-            bool zlPressed = down & KEY_ZL;
-            bool rPressed = down & KEY_R;
-            bool zrPressed = down & KEY_ZR;
-            down &= ~(KEY_L | KEY_ZL | KEY_R | KEY_ZR);
-            if (lPressed) down |= KEY_ZL;
-            if (zlPressed) down |= KEY_L;
-            if (rPressed) down |= KEY_ZR;
-            if (zrPressed) down |= KEY_R;
-        }
     }
 
     inline uint32_t padKeysDown(){ return down; }

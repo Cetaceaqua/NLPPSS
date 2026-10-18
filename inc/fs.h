@@ -21,7 +21,6 @@
 
 #include <3ds.h>
 #include <string>
-#include "data.h"
 #include "ui.h"
 namespace fs
 {
@@ -35,25 +34,14 @@ namespace fs
         seek_end
     };
 
-    enum class BunchType {
-        Bunch_CTR,
-        Bunch_TWL,
-        Bunch_AGB
-    };
-
     FS_Archive getSDMCArch();
     FS_Archive getSaveArch();
     FS_ArchiveID getSaveMode();
     Handle getPxiHandle();
 
-    bool openArchive(data::titleData& dat, const uint32_t& mode, bool error, FS_Archive& arch);
-    bool openArchive(data::titleData& dat, const uint32_t& mode, bool error);
     void closeSaveArch();
     void closePxiSaveArch();
     void commitData(const uint32_t& mode);
-    void deleteSv(const uint32_t& mode, const data::titleData& dat);
-    void exportSv(const uint32_t& mode, const std::u16string& _dst, const data::titleData& dat);
-    void importSv(const uint32_t& mode, const std::u16string& _src, const data::titleData& dat);
 
     bool fexists(const std::string& path);
     bool fexists(const FS_Archive& _arch, const std::string& _path);
@@ -136,9 +124,6 @@ namespace fs
     void copyFileThreaded(const FS_Archive& _srcArch, const std::u16string& _src, const FS_Archive& _dstArch, const std::u16string& _dst, bool commit, bool isPxi = false);
     void copyDirToDir(const FS_Archive& _srcArch, const std::u16string& _src, const FS_Archive& _dstArch, const std::u16string& _dst, bool commit, threadInfo *t, bool isRecursion = false);
     void copyDirToDirThreaded(const FS_Archive& _srcArch, const std::u16string& _src, const FS_Archive& _dstArch, const std::u16string& _dst, bool commit);
-
-    void backupTitles_t(void *a);
-    void backupTitles(std::vector<data::titleData>& vect, const uint32_t &mode, BunchType type);
 }
 
 #endif // FS_H
