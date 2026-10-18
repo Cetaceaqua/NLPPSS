@@ -84,11 +84,20 @@ msgstr "★ 重新載入"
 msgid "♥ 保存修改"
 msgstr "♥ 儲存修改"
 
+msgid "三重县"
+msgstr "三重縣"
+
 msgid "上线天数"
 msgstr "上線天數"
 
+msgid "东京都"
+msgstr "東京都"
+
 msgid "中长发"
 msgstr "中長髮"
+
+msgid "京都府"
+msgstr "京都府"
 
 msgid "休闲 A"
 msgstr "休閒 A"
@@ -98,6 +107,9 @@ msgstr "休閒 B"
 
 msgid "休闲 C"
 msgstr "休閒 C"
+
+msgid "佐贺县"
+msgstr "佐賀縣"
 
 msgid "使用中"
 msgstr "使用中"
@@ -117,17 +129,32 @@ msgstr "假名"
 msgid "关"
 msgstr "關"
 
+msgid "兵库县"
+msgstr "兵庫縣"
+
 msgid "其他"
 msgstr "其他"
 
 msgid "内置键盘"
 msgstr "內置鍵盤"
 
+msgid "冈山县"
+msgstr "岡山縣"
+
 msgid "写入存档数据失败！\n错误：0x%08X"
 msgstr "寫入存檔資料失敗！\n錯誤：0x%08X"
 
+msgid "冲绳县"
+msgstr "沖繩縣"
+
 msgid "出身地"
 msgstr "出身地"
+
+msgid "北海道"
+msgstr "北海道"
+
+msgid "千叶县"
+msgstr "千葉縣"
 
 msgid "发型"
 msgstr "髮型"
@@ -168,11 +195,17 @@ msgstr "啟動時預設載入的存檔槽位。"
 msgid "启动时默认加载的存档类型。"
 msgstr "啟動時預設載入的存檔類型。"
 
+msgid "和歌山县"
+msgstr "和歌山縣"
+
 msgid "哥特萝莉 (可爱)"
 msgstr "哥德蘿莉 (可愛)"
 
 msgid "基本 (休闲)"
 msgstr "基本 (休閒)"
+
+msgid "埼玉县"
+msgstr "埼玉縣"
 
 msgid "备份"
 msgstr "備份"
@@ -195,8 +228,17 @@ msgstr "複製槽位"
 msgid "大写"
 msgstr "大寫"
 
+msgid "大分县"
+msgstr "大分縣"
+
+msgid "大阪府"
+msgstr "大阪府"
+
 msgid "天"
 msgstr "天"
+
+msgid "奈良县"
+msgstr "奈良縣"
 
 msgid "女友发型"
 msgstr "女友髮型"
@@ -234,6 +276,15 @@ msgstr "完成"
 msgid "实体版"
 msgstr "實體版"
 
+msgid "宫城县"
+msgstr "宮城縣"
+
+msgid "宫崎县"
+msgstr "宮崎縣"
+
+msgid "富山县"
+msgstr "富山縣"
+
 msgid "导出到 ZIP"
 msgstr "匯出到 ZIP"
 
@@ -249,6 +300,24 @@ msgstr "小早川凜子"
 msgid "居家 (休闲)"
 msgstr "居家 (休閒)"
 
+msgid "山口县"
+msgstr "山口縣"
+
+msgid "山形县"
+msgstr "山形縣"
+
+msgid "山梨县"
+msgstr "山梨縣"
+
+msgid "岐阜县"
+msgstr "岐阜縣"
+
+msgid "岛根县"
+msgstr "島根縣"
+
+msgid "岩手县"
+msgstr "岩手縣"
+
 msgid "已将女友的发型和发色重置为默认值！"
 msgstr "已將女友的髮型與髮色重設為預設值！"
 
@@ -261,6 +330,9 @@ msgstr "已重新載入目前的存檔資料！"
 msgid "平假名"
 msgstr "平假名"
 
+msgid "广岛县"
+msgstr "廣島縣"
+
 msgid "开"
 msgstr "開"
 
@@ -269,6 +341,9 @@ msgstr "當前使用"
 
 msgid "当前存档槽位处于朋友模式。\n修改功能主要为恋人模式设计，\n确定要继续编辑吗？"
 msgstr "當前存檔槽位處於朋友模式。\n修改功能主要為戀人模式設計，\n確定要繼續編輯嗎？"
+
+msgid "德岛县"
+msgstr "德島縣"
 
 msgid "总天数"
 msgstr "總天數"
@@ -293,6 +368,9 @@ msgstr "搜尋讀音"
 
 msgid "数字版"
 msgstr "數位版"
+
+msgid "新潟县"
+msgstr "新潟縣"
 
 msgid "无滤镜"
 msgstr "無濾鏡"
@@ -333,6 +411,12 @@ msgstr "未插入遊戲卡匣，或未檢測到卡匣存檔！"
 msgid "未检测到数字版存档！"
 msgstr "未檢測到數位版存檔！"
 
+msgid "未设定"
+msgstr "未設定"
+
+msgid "栃木县"
+msgstr "栃木縣"
+
 msgid "槽位"
 msgstr "槽位"
 
@@ -369,6 +453,9 @@ msgstr "清純 B"
 msgid "清纯 C"
 msgstr "清純 C"
 
+msgid "滋贺县"
+msgstr "滋賀縣"
+
 msgid "滤镜"
 msgstr "濾鏡"
 
@@ -377,6 +464,15 @@ msgstr "演唱會 (可愛)"
 
 msgid "点"
 msgstr "點"
+
+msgid "熊本县"
+msgstr "熊本縣"
+
+msgid "爱媛县"
+msgstr "愛媛縣"
+
+msgid "爱知县"
+msgstr "愛知縣"
 
 msgid "片假名"
 msgstr "片假名"
@@ -426,6 +522,9 @@ msgstr "知識屬性值"
 msgid "短发"
 msgstr "短髮"
 
+msgid "石川县"
+msgstr "石川縣"
+
 msgid "确定 \ue000"
 msgstr "確定 \ue000"
 
@@ -453,11 +552,29 @@ msgstr "確定要清空槽位 %d 嗎？"
 msgid "确定要退出存档编辑吗？"
 msgstr "確定要退出存檔編輯嗎？"
 
+msgid "神奈川县"
+msgstr "神奈川縣"
+
+msgid "福井县"
+msgstr "福井縣"
+
+msgid "福冈县"
+msgstr "福岡縣"
+
+msgid "福岛县"
+msgstr "福島縣"
+
+msgid "秋田县"
+msgstr "秋田縣"
+
 msgid "移除滤镜"
 msgstr "移除濾鏡"
 
 msgid "空格"
 msgstr "空格"
+
+msgid "群马县"
+msgstr "群馬縣"
 
 msgid "自动备份存档"
 msgstr "自動備份存檔"
@@ -482,6 +599,9 @@ msgstr "自然茶色／黑 A"
 
 msgid "自然茶色／黑 B"
 msgstr "自然茶色／黑 B"
+
+msgid "茨城县"
+msgstr "茨城縣"
 
 msgid "血型"
 msgstr "血型"
@@ -570,11 +690,35 @@ msgstr "金錢"
 msgid "长发"
 msgstr "長髮"
 
+msgid "长崎县"
+msgstr "長崎縣"
+
+msgid "长野县"
+msgstr "長野縣"
+
+msgid "青森县"
+msgstr "青森縣"
+
+msgid "静冈县"
+msgstr "靜岡縣"
+
+msgid "香川县"
+msgstr "香川縣"
+
 msgid "高岭爱花"
 msgstr "高嶺愛花"
 
+msgid "高知县"
+msgstr "高知縣"
+
 msgid "魅力属性值"
 msgstr "魅力屬性值"
+
+msgid "鸟取县"
+msgstr "鳥取縣"
+
+msgid "鹿儿岛县"
+msgstr "鹿兒島縣"
 
 msgid "黑色"
 msgstr "黑色"

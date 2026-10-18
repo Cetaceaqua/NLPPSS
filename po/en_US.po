@@ -84,11 +84,20 @@ msgstr "★ Reload"
 msgid "♥ 保存修改"
 msgstr "♥ Save Changes"
 
+msgid "三重县"
+msgstr "Mie"
+
 msgid "上线天数"
 msgstr "Dating Days"
 
+msgid "东京都"
+msgstr "Tokyo"
+
 msgid "中长发"
 msgstr "Medium"
+
+msgid "京都府"
+msgstr "Kyoto"
 
 msgid "休闲 A"
 msgstr "Casual A"
@@ -98,6 +107,9 @@ msgstr "Casual B"
 
 msgid "休闲 C"
 msgstr "Casual C"
+
+msgid "佐贺县"
+msgstr "Saga"
 
 msgid "使用中"
 msgstr "Equipped"
@@ -117,17 +129,32 @@ msgstr "Kana"
 msgid "关"
 msgstr "OFF"
 
+msgid "兵库县"
+msgstr "Hyogo"
+
 msgid "其他"
 msgstr "Other"
 
 msgid "内置键盘"
 msgstr "Built-in Keyboard"
 
+msgid "冈山县"
+msgstr "Okayama"
+
 msgid "写入存档数据失败！\n错误：0x%08X"
 msgstr "Failed to write save data!\nError: 0x%08X"
 
+msgid "冲绳县"
+msgstr "Okinawa"
+
 msgid "出身地"
 msgstr "Hometown"
+
+msgid "北海道"
+msgstr "Hokkaido"
+
+msgid "千叶县"
+msgstr "Chiba"
 
 msgid "发型"
 msgstr "Hairstyle"
@@ -168,11 +195,17 @@ msgstr "Default save slot loaded on startup."
 msgid "启动时默认加载的存档类型。"
 msgstr "Default save type loaded on startup."
 
+msgid "和歌山县"
+msgstr "Wakayama"
+
 msgid "哥特萝莉 (可爱)"
 msgstr "Gothic Lolita (Cute)"
 
 msgid "基本 (休闲)"
 msgstr "Basic (Casual)"
+
+msgid "埼玉县"
+msgstr "Saitama"
 
 msgid "备份"
 msgstr "Backup"
@@ -195,8 +228,17 @@ msgstr "Clone Slot"
 msgid "大写"
 msgstr "Caps"
 
+msgid "大分县"
+msgstr "Oita"
+
+msgid "大阪府"
+msgstr "Osaka"
+
 msgid "天"
 msgstr "Days"
+
+msgid "奈良县"
+msgstr "Nara"
 
 msgid "女友发型"
 msgstr "Girlfriend Hairstyle"
@@ -234,6 +276,15 @@ msgstr "Done"
 msgid "实体版"
 msgstr "Cartridge"
 
+msgid "宫城县"
+msgstr "Miyagi"
+
+msgid "宫崎县"
+msgstr "Miyazaki"
+
+msgid "富山县"
+msgstr "Toyama"
+
 msgid "导出到 ZIP"
 msgstr "Export to ZIP"
 
@@ -249,6 +300,24 @@ msgstr "Rinko Kobayakawa"
 msgid "居家 (休闲)"
 msgstr "Home (Casual)"
 
+msgid "山口县"
+msgstr "Yamaguchi"
+
+msgid "山形县"
+msgstr "Yamagata"
+
+msgid "山梨县"
+msgstr "Yamanashi"
+
+msgid "岐阜县"
+msgstr "Gifu"
+
+msgid "岛根县"
+msgstr "Shimane"
+
+msgid "岩手县"
+msgstr "Iwate"
+
 msgid "已将女友的发型和发色重置为默认值！"
 msgstr "Girlfriend's hairstyle and hair color reset to defaults!"
 
@@ -261,6 +330,9 @@ msgstr "Current save data reloaded!"
 msgid "平假名"
 msgstr "Hiragana"
 
+msgid "广岛县"
+msgstr "Hiroshima"
+
 msgid "开"
 msgstr "ON"
 
@@ -269,6 +341,9 @@ msgstr "Active"
 
 msgid "当前存档槽位处于朋友模式。\n修改功能主要为恋人模式设计，\n确定要继续编辑吗？"
 msgstr "This save slot is in Friend Mode.\nEdit features are designed for Lover Mode.\nDo you want to proceed?"
+
+msgid "德岛县"
+msgstr "Tokushima"
 
 msgid "总天数"
 msgstr "Total Days"
@@ -293,6 +368,9 @@ msgstr "Search Reading"
 
 msgid "数字版"
 msgstr "Digital"
+
+msgid "新潟县"
+msgstr "Niigata"
 
 msgid "无滤镜"
 msgstr "No Filter"
@@ -333,6 +411,12 @@ msgstr "No cartridge inserted or no cartridge save data found!"
 msgid "未检测到数字版存档！"
 msgstr "No digital save data found!"
 
+msgid "未设定"
+msgstr "Not Set"
+
+msgid "栃木县"
+msgstr "Tochigi"
+
 msgid "槽位"
 msgstr "Slot"
 
@@ -369,6 +453,9 @@ msgstr "Pure B"
 msgid "清纯 C"
 msgstr "Pure C"
 
+msgid "滋贺县"
+msgstr "Shiga"
+
 msgid "滤镜"
 msgstr "Camera Filter"
 
@@ -377,6 +464,15 @@ msgstr "Concert (Cute)"
 
 msgid "点"
 msgstr "Pts"
+
+msgid "熊本县"
+msgstr "Kumamoto"
+
+msgid "爱媛县"
+msgstr "Ehime"
+
+msgid "爱知县"
+msgstr "Aichi"
 
 msgid "片假名"
 msgstr "Katakana"
@@ -426,6 +522,9 @@ msgstr "Knowledge"
 msgid "短发"
 msgstr "Short"
 
+msgid "石川县"
+msgstr "Ishikawa"
+
 msgid "确定 \ue000"
 msgstr "OK \ue000"
 
@@ -453,11 +552,29 @@ msgstr "Clear Slot %d?"
 msgid "确定要退出存档编辑吗？"
 msgstr "Exit save editing?"
 
+msgid "神奈川县"
+msgstr "Kanagawa"
+
+msgid "福井县"
+msgstr "Fukui"
+
+msgid "福冈县"
+msgstr "Fukuoka"
+
+msgid "福岛县"
+msgstr "Fukushima"
+
+msgid "秋田县"
+msgstr "Akita"
+
 msgid "移除滤镜"
 msgstr "Remove Filter"
 
 msgid "空格"
 msgstr "Space"
+
+msgid "群马县"
+msgstr "Gunma"
 
 msgid "自动备份存档"
 msgstr "Auto Backup"
@@ -482,6 +599,9 @@ msgstr "Natural Brown / Dark A"
 
 msgid "自然茶色／黑 B"
 msgstr "Natural Brown / Dark B"
+
+msgid "茨城县"
+msgstr "Ibaraki"
 
 msgid "血型"
 msgstr "Blood Type"
@@ -570,11 +690,35 @@ msgstr "Rich"
 msgid "长发"
 msgstr "Long"
 
+msgid "长崎县"
+msgstr "Nagasaki"
+
+msgid "长野县"
+msgstr "Nagano"
+
+msgid "青森县"
+msgstr "Aomori"
+
+msgid "静冈县"
+msgstr "Shizuoka"
+
+msgid "香川县"
+msgstr "Kagawa"
+
 msgid "高岭爱花"
 msgstr "Manaka Takane"
 
+msgid "高知县"
+msgstr "Kochi"
+
 msgid "魅力属性值"
 msgstr "Charm"
+
+msgid "鸟取县"
+msgstr "Tottori"
+
+msgid "鹿儿岛县"
+msgstr "Kagoshima"
 
 msgid "黑色"
 msgstr "Black"
