@@ -572,7 +572,8 @@ namespace ui
         ACTION_READING_PICKER,
         ACTION_HAIR_LENGTH,
         ACTION_HAIR_STYLE,
-        ACTION_HAIR_COLOR
+        ACTION_HAIR_COLOR,
+        ACTION_COUPLE_TITLE
     };
 
     static std::vector<nlpp::HairStyleOption> s_curStyleOptions;
@@ -675,6 +676,18 @@ namespace ui
 
             snprintf(numBuf, sizeof(numBuf), "%s: %d %s", getTxt("TODO"), (int)sd.stats.todo, getTxt("点"));
             s_editorMenu.addOpt(numBuf, 300);
+
+            if (sd.isFriendMode())
+            {
+                s_editorMenu.addOpt(std::string(getTxt("称号")) + ": " + getTxt("无 (未交往)"), 300);
+            }
+            else
+            {
+                int rank = nlpp::Dict::getCoupleRank(sd.girlfriend.coupleExp);
+                char titleBuf[128];
+                snprintf(titleBuf, sizeof(titleBuf), "%s: Lv.%d %s", getTxt("称号"), rank, nlpp::Dict::getCoupleTitleName(rank).c_str());
+                s_editorMenu.addOpt(titleBuf, 300);
+            }
 
             s_editorMenu.addOpt(getTxt("移除滤镜"), 300);
 
@@ -1007,6 +1020,28 @@ namespace ui
                     s_editorSubMenuOpen = false;
                     s_subAction = ACTION_NONE;
                     refreshEditorPageMenu();
+                    return;
+                }
+                else if (s_subAction == ACTION_COUPLE_TITLE)
+                {
+                    if (sel >= 0 && sel < 23)
+                    {
+                        sd.girlfriend.coupleExp = nlpp::Dict::getCoupleRankExp(sel + 1);
+                        s_editorSubMenuOpen = false;
+                        s_subAction = ACTION_NONE;
+                        refreshEditorPageMenu();
+                    }
+                    else if (sel == 23) // 自定义经历点数
+                    {
+                        s_editorSubMenuOpen = false;
+                        s_subAction = ACTION_NONE;
+                        int v = util::getInt(getTxt("输入经历点数 (0-99250)"), sd.girlfriend.coupleExp, 99250);
+                        if (v >= 0)
+                        {
+                            sd.girlfriend.coupleExp = v;
+                        }
+                        refreshEditorPageMenu();
+                    }
                     return;
                 }
             }
@@ -1371,14 +1406,38 @@ namespace ui
                 else if (sel == 5) { int v = util::getInt(getTxt("输入魅力属性值 (0-255)"), sd.stats.charm, 255); if (v >= 0) { sd.stats.charm = v; refreshEditorPageMenu(); } }
                 else if (sel == 6) { int v = util::getInt(getTxt("输入金钱 (0-999999)"), sd.stats.rich, 999999); if (v >= 0) { sd.stats.rich = v; refreshEditorPageMenu(); } }
                 else if (sel == 7) { int v = util::getInt(getTxt("输入TODO点数 (0-9999)"), sd.stats.todo, 9999); if (v >= 0) { sd.stats.todo = v; refreshEditorPageMenu(); } }
-                else if (sel == 8) // 卸下滤镜
+                else if (sel == 8) // 称号
+                {
+                    if (sd.isFriendMode())
+                    {
+                        ui::showMessage(getTxt("当前槽位处于朋友模式（未告白阶段），无法修改情侣称号！"));
+                    }
+                    else
+                    {
+                        s_subAction = ACTION_COUPLE_TITLE;
+                        s_editorSubMenuOpen = true;
+                        s_editorSubMenu.reset();
+                        s_editorSubMenu.setPaging(true);
+                        s_editorSubMenu.setMaxVisible(10);
+                        for (int r = 1; r <= 23; ++r)
+                        {
+                            char buf[128];
+                            snprintf(buf, sizeof(buf), "Lv.%02d %s (%u pt)", r, nlpp::Dict::getCoupleTitleName(r).c_str(), (unsigned int)nlpp::Dict::getCoupleRankExp(r));
+                            s_editorSubMenu.addOpt(buf, 300);
+                        }
+                        s_editorSubMenu.addOpt(getTxt("自定义经历点数"), 300);
+                        int curRank = nlpp::Dict::getCoupleRank(sd.girlfriend.coupleExp);
+                        s_editorSubMenu.setSelected(curRank - 1);
+                    }
+                }
+                else if (sel == 9) // 卸下滤镜
                 {
                     nlpp::g_saveMgr.removeCameraFilter(s_editorSlot);
                     refreshEditorPageMenu();
                     ui::showMessage(getTxt("已成功移除相机滤镜！"));
                 }
-                else if (sel == 9) { onConfirmReloadSlot(nullptr); }
-                else if (sel == 10) { onConfirmSaveSlot(nullptr); }
+                else if (sel == 10) { onConfirmReloadSlot(nullptr); }
+                else if (sel == 11) { onConfirmSaveSlot(nullptr); }
             }
             return;
         }
@@ -1463,6 +1522,20 @@ namespace ui
             char buf[512];
             bool hasFilter = (sd.stats.cameraFilter != -1) && ((sd.stats.equipMask & 0x04) != 0);
             std::string fStr = hasFilter ? getTxt("使用中") : getTxt("无滤镜");
+
+            std::string titleStr;
+            if (sd.isFriendMode())
+            {
+                titleStr = getTxt("无 (未交往)");
+            }
+            else
+            {
+                int rank = nlpp::Dict::getCoupleRank(sd.girlfriend.coupleExp);
+                char tBuf[128];
+                snprintf(tBuf, sizeof(tBuf), "Lv.%d %s (%u pt)", rank, nlpp::Dict::getCoupleTitleName(rank).c_str(), (unsigned int)sd.girlfriend.coupleExp);
+                titleStr = tBuf;
+            }
+
             snprintf(buf, sizeof(buf),
                      "%s: %d %s\n"
                      "%s: %d %s\n"
@@ -1472,6 +1545,7 @@ namespace ui
                      "%s: %d\n"
                      "%s: %d G\n"
                      "%s: %d %s\n"
+                     "%s: %s\n"
                      "%s: %s",
                      getTxt("总天数"), (int)sd.timeline.timelineDays, getTxt("日"),
                      getTxt("上线天数"), (int)sd.timeline.datingDays, getTxt("天"),
@@ -1481,8 +1555,9 @@ namespace ui
                      getTxt("魅力属性值"), (int)sd.stats.charm,
                      getTxt("金钱"), (int)sd.stats.rich,
                      getTxt("TODO"), (int)sd.stats.todo, getTxt("点"),
+                     getTxt("称号"), titleStr.c_str(),
                      getTxt("滤镜"), fStr.c_str());
-            gfx::drawText(buf, 20, 32, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
+            gfx::drawText(buf, 20, 24, GFX_DEPTH_DEFAULT, 0.48f, gfx::txtCont);
         }
     }
 

@@ -40,6 +40,11 @@ namespace nlpp
         static std::string getHairLengthName(HeroineID heroine, uint8_t stage);
         static std::vector<uint8_t> getValidLengthStages(HeroineID heroine);
 
+        // Couple titles (Rank 1..23)
+        static int getCoupleRank(uint32_t exp);
+        static std::string getCoupleTitleName(int rank);
+        static uint32_t getCoupleRankExp(int rank);
+        static int getCoupleTitleCount();
 
     private:
         static bool s_loaded;

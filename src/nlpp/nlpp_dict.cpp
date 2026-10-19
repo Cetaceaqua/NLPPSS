@@ -560,5 +560,70 @@ namespace nlpp
         return {2, 1, 0};
     }
 
+    static const uint32_t s_rankThresholds[22] = {
+        100, 250, 750, 1200, 2500, 3500, 5000, 7500, 9999, 13000,
+        14500, 16250, 18250, 20500, 23000, 25750, 28750, 32000, 35500, 39250,
+        43250, 47500
+    };
 
+    static const uint32_t s_recommendedExp[23] = {
+        50, 150, 500, 1000, 1800, 3000, 4200, 6000, 8800, 11500,
+        13800, 15500, 17200, 19500, 21800, 24500, 27200, 30500, 33800, 37500,
+        41200, 45500, 50000
+    };
+
+    static const char *s_coupleTitleNames[23] = {
+        "恋爱新手",
+        "平凡情侣",
+        "中坚情侣",
+        "老手情侣",
+        "恋人本格派",
+        "熟练二人组",
+        "资深情侣",
+        "恩爱二人组",
+        "最佳拍档",
+        "永远二人组",
+        "究极二人组",
+        "空前绝后二人组",
+        "绝代二人组",
+        "前所未闻二人组",
+        "天下无双二人组",
+        "举世瞩目二人组",
+        "太阳系二人组",
+        "银河系二人组",
+        "全宇宙二人组",
+        "传说二人组",
+        "完美无瑕二人组",
+        "永恒二人组",
+        "最爱二人组 (满级)"
+    };
+
+    int Dict::getCoupleRank(uint32_t exp)
+    {
+        for (int i = 0; i < 22; ++i)
+        {
+            if (s_rankThresholds[i] > exp)
+                return i + 1;
+        }
+        return 23;
+    }
+
+    std::string Dict::getCoupleTitleName(int rank)
+    {
+        if (rank < 1 || rank > 23) return getTxt("无");
+        return getTxt(s_coupleTitleNames[rank - 1]);
+    }
+
+    uint32_t Dict::getCoupleRankExp(int rank)
+    {
+        if (rank < 1) rank = 1;
+        if (rank > 23) rank = 23;
+        return s_recommendedExp[rank - 1];
+    }
+
+    int Dict::getCoupleTitleCount()
+    {
+        return 23;
+    }
 }
+

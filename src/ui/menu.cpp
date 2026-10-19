@@ -17,6 +17,7 @@
  */
 
 #include <string>
+#include <algorithm>
 
 #include "ui.h"
 #include "gfx.h"
@@ -81,33 +82,53 @@ void ui::menu::reset()
 
 void ui::menu::adjust()
 {
-    if (selected > (int)opt.size() - 1)
-        selected = opt.size() - 1;
-
-    if ((int)opt.size() < maxVisible)
+    if (opt.empty())
+    {
+        selected = 0;
         start = 0;
-    else if ((int)opt.size() >= maxVisible && start + (maxVisible - 1) > (int)opt.size() - 1)
-        start = std::max(0, (int)opt.size() - maxVisible);
+        return;
+    }
+    int size = (int)opt.size() - 1;
+    selected = std::clamp(selected, 0, size);
+
+    if ((int)opt.size() <= maxVisible)
+        start = 0;
+    else
+    {
+        int maxStart = (int)opt.size() - maxVisible;
+        int half = maxVisible / 2;
+        start = std::clamp(selected - half, 0, maxStart);
+    }
 }
 
 void ui::menu::setSelected(const int &newSel)
 {
-    int size = (int)opt.size() - 1;
-    if (newSel < start || newSel > start + (maxVisible - 1))
+    if (opt.empty())
     {
-        if (newSel + (maxVisible - 1) > size)
-            start = std::max(0, size - (maxVisible - 1));
-        else
-            start = std::max(0, newSel);
+        selected = 0;
+        start = 0;
+        return;
+    }
+    int size = (int)opt.size() - 1;
+    selected = std::clamp(newSel, 0, size);
 
-        selected = newSel;
+    if ((int)opt.size() <= maxVisible)
+    {
+        start = 0;
     }
     else
-        selected = newSel;
+    {
+        int maxStart = (int)opt.size() - maxVisible;
+        int half = maxVisible / 2;
+        start = std::clamp(selected - half, 0, maxStart);
+    }
 }
 
 void ui::menu::update()
 {
+    if (opt.empty())
+        return;
+
     uint32_t down = ui::padKeysDown();
     uint32_t held = ui::padKeysHeld();
 
@@ -119,45 +140,68 @@ void ui::menu::update()
         fc = 0;
 
     int size = (int)opt.size() - 1;
+    int maxStart = std::max(0, (int)opt.size() - maxVisible);
+    int half = maxVisible / 2;
+
     if ((down & KEY_DUP) || ((held & KEY_DUP) && fc == 10))
     {
         selected--;
         if (selected < 0)
+        {
             selected = size;
-
-        if (size < maxVisible)
+            start = maxStart;
+        }
+        else if (size < maxVisible)
+        {
             start = 0;
-        else if (start > selected)
-            start--;
-        else if (selected == size && size >= maxVisible)
-            start = std::max(0, size - (maxVisible - 1));
+        }
+        else
+        {
+            if (selected - start < half && start > 0)
+                start--;
+            if (start > selected)
+                start = selected;
+        }
     }
     else if ((down & KEY_DDOWN) || ((held & KEY_DDOWN) && fc == 10))
     {
         selected++;
         if (selected > size)
+        {
             selected = 0;
-
-        if ((selected > (start + (maxVisible - 1))) && ((start + (maxVisible - 1)) < size))
-            start++;
-        if (selected == 0)
             start = 0;
+        }
+        else if (size < maxVisible)
+        {
+            start = 0;
+        }
+        else
+        {
+            if (selected - start > half && start < maxStart)
+                start++;
+            if (selected > start + (maxVisible - 1))
+                start = selected - (maxVisible - 1);
+        }
     }
     else if (paging && (down & KEY_DRIGHT))
     {
         selected += maxVisible;
         if (selected > size)
             selected = size;
-        if ((selected - (maxVisible - 1)) > start)
-            start = std::max(0, selected - (maxVisible - 1));
+        if ((int)opt.size() <= maxVisible)
+            start = 0;
+        else
+            start = std::clamp(selected - half, 0, maxStart);
     }
     else if (paging && (down & KEY_DLEFT))
     {
         selected -= maxVisible;
         if (selected < 0)
             selected = 0;
-        if (selected < start)
-            start = selected;
+        if ((int)opt.size() <= maxVisible)
+            start = 0;
+        else
+            start = std::clamp(selected - half, 0, maxStart);
     }
 
     if (down && !opt[selected].events.empty())
