@@ -498,38 +498,38 @@ namespace nlpp
         {
             case 0:
             case 1:
-                return getTxt("纯白自然反光高光");
+                return getTxt("自然纯白");
             case 2:
             case 3:
-                return getTxt("金色冷光/淡黄高光");
+                return getTxt("淡金冷光");
             case 4:
             case 5:
-                return getTxt("暖淡紫粉反射高光");
+                return getTxt("暖淡紫粉");
             case 6:
             case 7:
-                return getTxt("冷灰银白高光");
+                return getTxt("银白冷灰");
             case 8:
             case 9:
             case 12:
             case 13:
-                return getTxt("柔和栗茶琥珀高光");
+                return getTxt("琥珀栗茶");
             case 10:
             case 11:
-                return getTxt("深赤茶/酒红高光");
+                return getTxt("深赤酒红");
             case 14:
-                return getTxt("艳丽粉红反射高光");
+                return getTxt("艳丽粉红");
             case 15:
-                return getTxt("宝石蓝/天蓝反光高光");
+                return getTxt("天蓝反光");
             case 16:
-                return getTxt("翡翠绿/草绿反光高光");
+                return getTxt("翡翠草绿");
             case 17:
-                return getTxt("魅惑紫/紫罗兰高光");
+                return getTxt("魅惑紫罗");
             case 18:
-                return getTxt("明艳珊瑚橙反光高光");
+                return getTxt("明艳珊瑚");
             case 19:
-                return getTxt("深青/墨绿反光高光");
+                return getTxt("墨绿深青");
             default:
-                return getTxt("标准中性反射高光");
+                return getTxt("标准中性");
         }
     }
 

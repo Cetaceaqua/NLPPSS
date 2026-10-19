@@ -828,11 +828,11 @@ msgstr "遊戲卡帶已拔出！"
 msgid "自定义发色"
 msgstr "自訂髮色"
 
-msgid "当前发型效果"
-msgstr "目前髮型效果"
+msgid "目标自定义发色"
+msgstr "目標自訂髮色"
 
-msgid "自定义颜色预览"
-msgstr "自訂顏色預覽"
+msgid "渲染分析与存档状态"
+msgstr "渲染分析與存檔狀態"
 
 msgid "匹配发色"
 msgstr "匹配髮色"
@@ -849,29 +849,32 @@ msgstr "啟動 (0x00)"
 msgid "未激活 (0xFF)"
 msgstr "未啟動 (0xFF)"
 
-msgid "当前存档RGB"
-msgstr "目前存檔RGB"
+msgid "存档色号"
+msgstr "存檔色號"
 
-msgid "当前存档色号"
-msgstr "目前存檔色號"
+msgid "存档RGB"
+msgstr "存檔RGB"
 
-msgid "RGB 滑块微调与数值输入"
-msgstr "RGB 滑塊微調與數值輸入"
+msgid "自定义发色设置"
+msgstr "自訂髮色設定"
 
-msgid "\ue003 HEX 键盘输入"
-msgstr "\ue003 HEX 鍵盤輸入"
+msgid "红色通道 R"
+msgstr "紅色通道 R"
 
-msgid "RGB 数值输入"
-msgstr "RGB 數值輸入"
+msgid "绿色通道 G"
+msgstr "綠色通道 G"
 
-msgid "\ue000 应用发色"
-msgstr "\ue000 套用髮色"
+msgid "蓝色通道 B"
+msgstr "藍色通道 B"
 
-msgid "\ue002 恢复默认色"
-msgstr "\ue002 恢復預設色"
+msgid "HEX 颜色代码"
+msgstr "HEX 顏色代碼"
 
-msgid "\ue000 应用  \ue003 HEX输入  \ue002 恢复默认  \ue01A\ue077\ue019 切换页面"
-msgstr "\ue000 套用  \ue003 HEX輸入  \ue002 恢復預設  \ue01A\ue077\ue019 切換頁面"
+msgid "恢复标准色号"
+msgstr "恢復標準色號"
+
+msgid "\ue000 修改/执行  \ue001 返回  \ue01A\ue077\ue019 切换页面"
+msgstr "\ue000 修改/執行  \ue001 返回  \ue01A\ue077\ue019 切換頁面"
 
 msgid "输入HEX颜色代码 (如 #D8335B 或 D8335B)"
 msgstr "輸入HEX顏色代碼 (如 #D8335B 或 D8335B)"
@@ -888,51 +891,48 @@ msgstr "輸入綠色通道 (G: 0-255)"
 msgid "输入蓝色通道 (B: 0-255)"
 msgstr "輸入藍色通道 (B: 0-255)"
 
-msgid "已应用自定义发色并匹配最佳高光！\n请记得在菜单中保存修改。"
-msgstr "已套用自訂髮色並匹配最佳高光！\n請記得在選單中儲存修改。"
+msgid "确定要恢复当前色号对应的标准色吗？"
+msgstr "確定要恢復目前色號對應的標準色嗎？"
 
-msgid "确定要恢复默认发色吗？"
-msgstr "確定要恢復預設髮色嗎？"
+msgid "已将 RGB 恢复为当前色号对应的标准色！"
+msgstr "已將 RGB 恢復為目前色號對應的標準色！"
 
-msgid "已恢复女友的默认发色！\n请记得在菜单中保存修改。"
-msgstr "已恢復女友的預設髮色！\n請記得在選單中儲存修改。"
+msgid "自然纯白"
+msgstr "自然純白"
 
-msgid "纯白自然反光高光"
-msgstr "純白自然反光高光"
+msgid "淡金冷光"
+msgstr "淡金冷光"
 
-msgid "金色冷光/淡黄高光"
-msgstr "金色冷光/淡黃高光"
+msgid "暖淡紫粉"
+msgstr "暖淡紫粉"
 
-msgid "暖淡紫粉反射高光"
-msgstr "暖淡紫粉反射高光"
+msgid "银白冷灰"
+msgstr "銀白冷灰"
 
-msgid "冷灰银白高光"
-msgstr "冷灰銀白高光"
+msgid "琥珀栗茶"
+msgstr "琥珀栗茶"
 
-msgid "柔和栗茶琥珀高光"
-msgstr "柔和栗茶琥珀高光"
+msgid "深赤酒红"
+msgstr "深赤酒紅"
 
-msgid "深赤茶/酒红高光"
-msgstr "深赤茶/酒紅高光"
+msgid "艳丽粉红"
+msgstr "艷麗粉紅"
 
-msgid "艳丽粉红反射高光"
-msgstr "艷麗粉紅反射高光"
+msgid "天蓝反光"
+msgstr "天藍反光"
 
-msgid "宝石蓝/天蓝反光高光"
-msgstr "寶石藍/天藍反光高光"
+msgid "翡翠草绿"
+msgstr "翡翠草綠"
 
-msgid "翡翠绿/草绿反光高光"
-msgstr "翡翠綠/草綠反光高光"
+msgid "魅惑紫罗"
+msgstr "魅惑紫羅"
 
-msgid "魅惑紫/紫罗兰高光"
-msgstr "魅惑紫/紫羅蘭高光"
+msgid "明艳珊瑚"
+msgstr "明艷珊瑚"
 
-msgid "明艳珊瑚橙反光高光"
-msgstr "明艷珊瑚橙反光高光"
+msgid "墨绿深青"
+msgstr "墨綠深青"
 
-msgid "深青/墨绿反光高光"
-msgstr "深青/墨綠反光高光"
-
-msgid "标准中性反射高光"
-msgstr "標準中性反射高光"
+msgid "标准中性"
+msgstr "標準中性"
 

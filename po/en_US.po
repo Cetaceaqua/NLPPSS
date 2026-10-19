@@ -828,11 +828,11 @@ msgstr "Game cartridge was removed!"
 msgid "自定义发色"
 msgstr "Custom Hair Color"
 
-msgid "当前发型效果"
-msgstr "Current Hairstyle"
+msgid "目标自定义发色"
+msgstr "Target Custom Color"
 
-msgid "自定义颜色预览"
-msgstr "Custom Color Preview"
+msgid "渲染分析与存档状态"
+msgstr "Render Analysis & Save State"
 
 msgid "匹配发色"
 msgstr "Matched Tone"
@@ -849,29 +849,32 @@ msgstr "Active (0x00)"
 msgid "未激活 (0xFF)"
 msgstr "Inactive (0xFF)"
 
-msgid "当前存档RGB"
-msgstr "Save Hair RGB"
-
-msgid "当前存档色号"
+msgid "存档色号"
 msgstr "Save Color ID"
 
-msgid "RGB 滑块微调与数值输入"
-msgstr "RGB Sliders & Numerical Input"
+msgid "存档RGB"
+msgstr "Save Hair RGB"
 
-msgid "\ue003 HEX 键盘输入"
-msgstr "\ue003 HEX Input"
+msgid "自定义发色设置"
+msgstr "Custom Hair Color Settings"
 
-msgid "RGB 数值输入"
-msgstr "RGB Input"
+msgid "红色通道 R"
+msgstr "Red Channel (R)"
 
-msgid "\ue000 应用发色"
-msgstr "\ue000 Apply Color"
+msgid "绿色通道 G"
+msgstr "Green Channel (G)"
 
-msgid "\ue002 恢复默认色"
-msgstr "\ue002 Reset Default"
+msgid "蓝色通道 B"
+msgstr "Blue Channel (B)"
 
-msgid "\ue000 应用  \ue003 HEX输入  \ue002 恢复默认  \ue01A\ue077\ue019 切换页面"
-msgstr "\ue000 Apply  \ue003 HEX  \ue002 Reset  \ue01A\ue077\ue019 Switch Page"
+msgid "HEX 颜色代码"
+msgstr "HEX Color Code"
+
+msgid "恢复标准色号"
+msgstr "Reset to Standard Color"
+
+msgid "\ue000 修改/执行  \ue001 返回  \ue01A\ue077\ue019 切换页面"
+msgstr "\ue000 Edit/Execute  \ue001 Back  \ue01A\ue077\ue019 Switch Page"
 
 msgid "输入HEX颜色代码 (如 #D8335B 或 D8335B)"
 msgstr "Enter HEX Color Code (e.g. #D8335B or D8335B)"
@@ -888,51 +891,48 @@ msgstr "Enter Green Channel (G: 0-255)"
 msgid "输入蓝色通道 (B: 0-255)"
 msgstr "Enter Blue Channel (B: 0-255)"
 
-msgid "已应用自定义发色并匹配最佳高光！\n请记得在菜单中保存修改。"
-msgstr "Custom hair color applied with matched highlight!\nPlease remember to save changes."
+msgid "确定要恢复当前色号对应的标准色吗？"
+msgstr "Reset RGB to official standard color for current tone?"
 
-msgid "确定要恢复默认发色吗？"
-msgstr "Reset girlfriend's hair color to default?"
+msgid "已将 RGB 恢复为当前色号对应的标准色！"
+msgstr "Reset RGB to standard palette for current tone!"
 
-msgid "已恢复女友的默认发色！\n请记得在菜单中保存修改。"
-msgstr "Restored girlfriend's hair color to default!\nPlease remember to save changes."
+msgid "自然纯白"
+msgstr "Natural White"
 
-msgid "纯白自然反光高光"
-msgstr "Pure White Natural Specular"
+msgid "淡金冷光"
+msgstr "Pale Gold"
 
-msgid "金色冷光/淡黄高光"
-msgstr "Golden Cool / Pale Yellow Specular"
+msgid "暖淡紫粉"
+msgstr "Warm Violet"
 
-msgid "暖淡紫粉反射高光"
-msgstr "Warm Pale Violet-Pink Specular"
+msgid "银白冷灰"
+msgstr "Cool Silver"
 
-msgid "冷灰银白高光"
-msgstr "Cool Gray Silver-White Specular"
+msgid "琥珀栗茶"
+msgstr "Amber Brown"
 
-msgid "柔和栗茶琥珀高光"
-msgstr "Soft Chestnut Amber Specular"
+msgid "深赤酒红"
+msgstr "Wine Red"
 
-msgid "深赤茶/酒红高光"
-msgstr "Deep Wine Red / Crimson Specular"
+msgid "艳丽粉红"
+msgstr "Vivid Pink"
 
-msgid "艳丽粉红反射高光"
-msgstr "Vivid Pink Specular"
+msgid "天蓝反光"
+msgstr "Sky Blue"
 
-msgid "宝石蓝/天蓝反光高光"
-msgstr "Sapphire / Sky Blue Specular"
+msgid "翡翠草绿"
+msgstr "Grass Green"
 
-msgid "翡翠绿/草绿反光高光"
-msgstr "Emerald / Grass Green Specular"
+msgid "魅惑紫罗"
+msgstr "Glamour Violet"
 
-msgid "魅惑紫/紫罗兰高光"
-msgstr "Glamour Violet Specular"
+msgid "明艳珊瑚"
+msgstr "Coral Orange"
 
-msgid "明艳珊瑚橙反光高光"
-msgstr "Vivid Coral Orange Specular"
+msgid "墨绿深青"
+msgstr "Deep Cyan"
 
-msgid "深青/墨绿反光高光"
-msgstr "Dark Cyan / Deep Green Specular"
-
-msgid "标准中性反射高光"
-msgstr "Standard Neutral Specular"
+msgid "标准中性"
+msgstr "Neutral"
 
