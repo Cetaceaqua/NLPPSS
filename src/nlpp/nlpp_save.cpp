@@ -483,7 +483,7 @@ namespace nlpp
         }
 
         cbuf[0x04] = 0x01; // Active slot flag
-        *(int32_t *)&cbuf[0x08] = (sd.girlfriend.heroine >= 0) ? (int32_t)sd.girlfriend.heroine : -1;
+        // Notice: cbuf[0x08] (Card target heroine) is strictly read-only for active slots and must never be altered
         // Section 9.5: Anti-cold-war timestamp sync in Card at 0x18 ~ 0x23
         if (ti)
         {
@@ -574,10 +574,7 @@ namespace nlpp
         // 3. Girlfriend (1508B)
         if (m_files[gfFile].size() < 1508) m_files[gfFile].resize(1508, 0);
         uint8_t *gbuf = m_files[gfFile].data();
-        if (sd.girlfriend.heroine >= 0 && sd.girlfriend.mode == 2)
-        {
-            gbuf[0x221] = (uint8_t)sd.girlfriend.heroine;
-        }
+        // Notice: gbuf[0x221] (Lover internal heroine ID) is strictly read-only and must never be altered
         gbuf[0x243] = sd.girlfriend.affection;
         // Section 9.4: Couple title/exp is stored at 0x2AC
         *(uint32_t *)&gbuf[0x2AC] = sd.girlfriend.coupleExp;
@@ -1370,11 +1367,8 @@ namespace nlpp
             return false;
         }
 
-        // Serialize all 3 slots
-        for (int i = 0; i < NUM_SLOTS; ++i)
-        {
-            serializeSlot(i);
-        }
+        // Note: commitChanges strictly commits dirty in-memory file buffers to the archive.
+        // Slot serialization must be invoked explicitly before commitChanges.
 
 
         // Write all dirty files

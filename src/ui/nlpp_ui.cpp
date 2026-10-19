@@ -69,7 +69,10 @@ namespace ui
         if (s_copySrcSlot >= 0 && dstSlot >= 0 && s_copySrcSlot != dstSlot)
         {
             // Auto-backup before copy
-            nlpp::g_saveMgr.createAutoBackup(nullptr);
+            if (cfg::config["autobackup"])
+            {
+                nlpp::g_saveMgr.createAutoBackup(nullptr);
+            }
             nlpp::g_saveMgr.cloneSlot(s_copySrcSlot, dstSlot);
             nlpp::g_saveMgr.commitChanges();
             refreshSlotMenu();
@@ -94,7 +97,10 @@ namespace ui
         if (s_clearTargetSlot >= 0 && s_clearTargetSlot < nlpp::NUM_SLOTS)
         {
             // Auto-backup before clear
-            nlpp::g_saveMgr.createAutoBackup(nullptr);
+            if (cfg::config["autobackup"])
+            {
+                nlpp::g_saveMgr.createAutoBackup(nullptr);
+            }
             if (nlpp::g_saveMgr.clearSlot(s_clearTargetSlot))
             {
                 nlpp::g_saveMgr.commitChanges();
@@ -406,8 +412,15 @@ namespace ui
         if (sel >= 0 && sel < (int)s_backups.size())
         {
             nlpp::g_saveMgr.switchSource(targetSource);
+            // Auto-backup current state before restoring over it
+            if (cfg::config["autobackup"])
+            {
+                nlpp::g_saveMgr.createAutoBackup(nullptr);
+            }
             if (nlpp::g_saveMgr.restoreBackup(s_backups[sel].fullPath) && nlpp::g_saveMgr.commitChanges())
             {
+                nlpp::g_saveMgr.reloadAll();
+                refreshSlotMenu();
                 ui::showMessage(getTxt("存档恢复成功！"));
             }
             else
