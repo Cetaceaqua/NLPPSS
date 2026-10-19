@@ -828,111 +828,78 @@ msgstr "遊戲卡帶已拔出！"
 msgid "自定义发色"
 msgstr "自訂髮色"
 
-msgid "目标自定义发色"
-msgstr "目標自訂髮色"
-
-msgid "渲染分析与存档状态"
-msgstr "渲染分析與存檔狀態"
-
 msgid "匹配发色"
 msgstr "匹配髮色"
 
-msgid "高光类型"
-msgstr "高光類型"
+msgid "匹配高光"
+msgstr "匹配高光"
 
-msgid "染色状态"
-msgstr "染色狀態"
+msgid "HEX"
+msgstr "HEX"
 
-msgid "激活 (0x00)"
-msgstr "啟動 (0x00)"
-
-msgid "未激活 (0xFF)"
-msgstr "未啟動 (0xFF)"
-
-msgid "存档色号"
-msgstr "存檔色號"
-
-msgid "存档RGB"
-msgstr "存檔RGB"
-
-msgid "自定义发色设置"
-msgstr "自訂髮色設定"
-
-msgid "红色通道 R"
-msgstr "紅色通道 R"
-
-msgid "绿色通道 G"
-msgstr "綠色通道 G"
-
-msgid "蓝色通道 B"
-msgstr "藍色通道 B"
-
-msgid "HEX 颜色代码"
-msgstr "HEX 顏色代碼"
-
-msgid "恢复标准色号"
-msgstr "恢復標準色號"
+msgid "重新加载预设发色"
+msgstr "重新載入預設髮色"
 
 msgid "\ue000 修改/执行  \ue001 返回  \ue01A\ue077\ue019 切换页面"
 msgstr "\ue000 修改/執行  \ue001 返回  \ue01A\ue077\ue019 切換頁面"
 
-msgid "输入HEX颜色代码 (如 #D8335B 或 D8335B)"
-msgstr "輸入HEX顏色代碼 (如 #D8335B 或 D8335B)"
+msgid "输入 HEX 值 (#39C5BB 或 39C5BB)"
+msgstr "輸入 HEX 值 (#39C5BB 或 39C5BB)"
 
-msgid "无效的 HEX 颜色代码！\n格式应为 6 位十六进制，例如 #D8335B"
-msgstr "無效的 HEX 顏色代碼！\n格式應為 6 位十六進制，例如 #D8335B"
+msgid "无效的 HEX 值！"
+msgstr "無效的 HEX 值！"
 
-msgid "输入红色通道 (R: 0-255)"
-msgstr "輸入紅色通道 (R: 0-255)"
+msgid "输入 R 值 (0-255)"
+msgstr "輸入 R 值 (0-255)"
 
-msgid "输入绿色通道 (G: 0-255)"
-msgstr "輸入綠色通道 (G: 0-255)"
+msgid "输入 G 值 (0-255)"
+msgstr "輸入 G 值 (0-255)"
 
-msgid "输入蓝色通道 (B: 0-255)"
-msgstr "輸入藍色通道 (B: 0-255)"
+msgid "输入 B 值 (0-255)"
+msgstr "輸入 B 值 (0-255)"
 
-msgid "确定要恢复当前色号对应的标准色吗？"
-msgstr "確定要恢復目前色號對應的標準色嗎？"
+msgid "确定要重新加载预设发色吗？"
+msgstr "確定要重新載入預設髮色嗎？"
 
-msgid "已将 RGB 恢复为当前色号对应的标准色！"
-msgstr "已將 RGB 恢復為目前色號對應的標準色！"
+msgid "已重新加载预设发色的 RGB！"
+msgstr "已重新載入預設髮色的 RGB！"
 
-msgid "自然纯白"
-msgstr "自然純白"
+msgid "白色"
+msgstr "白色"
 
-msgid "淡金冷光"
-msgstr "淡金冷光"
+msgid "浅金色"
+msgstr "淺金色"
 
-msgid "暖淡紫粉"
-msgstr "暖淡紫粉"
+msgid "浅粉色"
+msgstr "淺粉色"
 
-msgid "银白冷灰"
-msgstr "銀白冷灰"
+msgid "银灰色"
+msgstr "銀灰色"
 
-msgid "琥珀栗茶"
-msgstr "琥珀栗茶"
+msgid "浅棕色"
+msgstr "淺棕色"
 
-msgid "深赤酒红"
-msgstr "深赤酒紅"
+msgid "酒红色"
+msgstr "酒紅色"
 
-msgid "艳丽粉红"
-msgstr "艷麗粉紅"
+msgid "鲜粉色"
+msgstr "鮮粉色"
 
-msgid "天蓝反光"
-msgstr "天藍反光"
+msgid "天蓝色"
+msgstr "天藍色"
 
-msgid "翡翠草绿"
-msgstr "翡翠草綠"
+msgid "草绿色"
+msgstr "草綠色"
 
-msgid "魅惑紫罗"
-msgstr "魅惑紫羅"
+msgid "紫色"
+msgstr "紫色"
 
-msgid "明艳珊瑚"
-msgstr "明艷珊瑚"
+msgid "橙色"
+msgstr "橙色"
 
-msgid "墨绿深青"
-msgstr "墨綠深青"
+msgid "墨绿色"
+msgstr "墨綠色"
 
-msgid "标准中性"
-msgstr "標準中性"
+msgid "标准色"
+msgstr "標準色"
 

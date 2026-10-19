@@ -956,11 +956,11 @@ namespace ui
         bool ok = false;
         if (cfg::config["use_builtinkbd"])
         {
-            ok = ui::showKeyboard(getTxt("输入HEX颜色代码 (如 #D8335B 或 D8335B)"), hexBuf, 10, in, ui::editorDrawTop, ui::KBD_MODE_EN);
+            ok = ui::showKeyboard(getTxt("输入 HEX 值 (#39C5BB 或 39C5BB)"), hexBuf, 10, in, ui::editorDrawTop, ui::KBD_MODE_EN);
         }
         else
         {
-            in = util::getString(getTxt("输入HEX颜色代码 (如 #D8335B 或 D8335B)"), false);
+            in = util::getString(getTxt("输入 HEX 值 (#39C5BB 或 39C5BB)"), false);
             ok = !in.empty();
         }
         if (ok)
@@ -974,12 +974,12 @@ namespace ui
             }
             else
             {
-                ui::showMessage(getTxt("无效的 HEX 颜色代码！\n格式应为 6 位十六进制，例如 #D8335B"));
+                ui::showMessage(getTxt("无效的 HEX 值！"));
             }
         }
     }
 
-    static void onConfirmResetStandardColor_t(void *a)
+    static void onConfirmReloadPresetColor_t(void *a)
     {
         threadInfo *t = (threadInfo *)a;
         const auto &sd = nlpp::g_saveMgr.getSlotData(s_editorSlot);
@@ -998,7 +998,7 @@ namespace ui
         s_customR = r;
         s_customG = g;
         s_customB = b;
-        ui::showMessage(getTxt("已将 RGB 恢复为当前色号对应的标准色！"));
+        ui::showMessage(getTxt("已重新加载预设发色的 RGB！"));
         t->finished = true;
     }
 
@@ -1023,11 +1023,15 @@ namespace ui
 
     static void editorDrawCustomColorBot()
     {
-        gfx::drawText(getTxt("自定义发色设置"), 10, 10, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
+        bool isLight = (bool)cfg::config["lightback"];
+        u32 trackBg = isLight ? C2D_Color32(218, 218, 218, 255) : C2D_Color32(40, 40, 40, 255);
+        u32 trackBorder = isLight ? C2D_Color32(185, 185, 185, 255) : C2D_Color32(70, 70, 70, 255);
+        u32 knobBorder = isLight ? C2D_Color32(120, 120, 120, 255) : C2D_Color32(25, 25, 25, 255);
+        u32 knobFill = isLight ? C2D_Color32(255, 255, 255, 255) : C2D_Color32(240, 240, 240, 255);
 
         for (int i = 0; i < 7; ++i)
         {
-            int y = 30 + i * 26;
+            int y = 20 + i * 26;
 
             if (s_customChannelSel == i)
             {
@@ -1038,58 +1042,71 @@ namespace ui
             if (i < 3)
             {
                 uint8_t val = (i == 0) ? s_customR : (i == 1) ? s_customG : s_customB;
-                const char *cName = (i == 0) ? getTxt("红色通道 R") : (i == 1) ? getTxt("绿色通道 G") : getTxt("蓝色通道 B");
-                gfx::drawText(cName, 22, y + 3, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
+                const char *cName = (i == 0) ? "R" : (i == 1) ? "G" : "B";
+                gfx::drawText(cName, 24, y + 3, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
 
-                int trackX = 135;
-                int trackW = 110;
+                int trackX = 46;
+                int trackW = 202;
                 int trackY = y + 4;
                 int trackH = 14;
 
-                C2D_DrawRectSolid(trackX, trackY, GFX_DEPTH_DEFAULT, trackW, trackH, C2D_Color32(50, 50, 50, 255));
-                C2D_DrawRectSolid(trackX, trackY, GFX_DEPTH_DEFAULT, trackW, 1, C2D_Color32(90, 90, 90, 255));
-                C2D_DrawRectSolid(trackX, trackY + trackH - 1, GFX_DEPTH_DEFAULT, trackW, 1, C2D_Color32(90, 90, 90, 255));
+                C2D_DrawRectSolid(trackX, trackY, GFX_DEPTH_DEFAULT, trackW, trackH, trackBg);
+                C2D_DrawRectSolid(trackX, trackY, GFX_DEPTH_DEFAULT, trackW, 1, trackBorder);
+                C2D_DrawRectSolid(trackX, trackY + trackH - 1, GFX_DEPTH_DEFAULT, trackW, 1, trackBorder);
 
                 int fillW = (int)((val / 255.0f) * trackW);
-                u32 fillCol = (i == 0) ? C2D_Color32(val, 30, 30, 255) : (i == 1) ? C2D_Color32(30, val, 30, 255) : C2D_Color32(30, 30, val, 255);
                 if (fillW > 0)
                 {
+                    u32 fillCol;
+                    if (isLight)
+                    {
+                        fillCol = (i == 0) ? C2D_Color32(std::max(160, (int)val), 65, 75, 255) :
+                                  (i == 1) ? C2D_Color32(50, std::max(150, (int)val), 70, 255) :
+                                             C2D_Color32(55, 105, std::max(165, (int)val), 255);
+                    }
+                    else
+                    {
+                        fillCol = (i == 0) ? C2D_Color32(std::max(80, (int)val), 35, 45, 255) :
+                                  (i == 1) ? C2D_Color32(35, std::max(80, (int)val), 45, 255) :
+                                             C2D_Color32(35, 55, std::max(90, (int)val), 255);
+                    }
                     C2D_DrawRectSolid(trackX, trackY, GFX_DEPTH_DEFAULT, fillW, trackH, fillCol);
                 }
 
                 int knobX = trackX + fillW - 2;
                 if (knobX < trackX) knobX = trackX;
                 if (knobX > trackX + trackW - 4) knobX = trackX + trackW - 4;
-                C2D_DrawRectSolid(knobX, y + 2, GFX_DEPTH_DEFAULT, 4, 18, C2D_Color32(255, 255, 255, 255));
+
+                C2D_DrawRectSolid(knobX - 1, y + 1, GFX_DEPTH_DEFAULT, 6, 20, knobBorder);
+                C2D_DrawRectSolid(knobX, y + 2, GFX_DEPTH_DEFAULT, 4, 18, knobFill);
 
                 char vBuf[16];
                 snprintf(vBuf, sizeof(vBuf), "%3d", (int)val);
-                gfx::drawText(vBuf, 258, y + 3, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
+                gfx::drawText(vBuf, 260, y + 3, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
             }
             else if (i == 3)
             {
-                char hexStr[64];
-                snprintf(hexStr, sizeof(hexStr), "%s: #%02X%02X%02X", getTxt("HEX 颜色代码"), s_customR, s_customG, s_customB);
-                gfx::drawText(hexStr, 22, y + 3, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
+                char hexStr[32];
+                snprintf(hexStr, sizeof(hexStr), "%s: #%02X%02X%02X", getTxt("HEX"), s_customR, s_customG, s_customB);
+                gfx::drawText(hexStr, 24, y + 3, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
             }
             else if (i == 4)
             {
-                gfx::drawText(getTxt("恢复标准色号"), 22, y + 3, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
+                gfx::drawText(getTxt("重新加载预设发色"), 24, y + 3, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
             }
             else if (i == 5)
             {
-                gfx::drawText(getTxt("★ 重新加载"), 22, y + 3, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
+                gfx::drawText(getTxt("★ 重新加载"), 24, y + 3, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
             }
             else if (i == 6)
             {
-                gfx::drawText(getTxt("♥ 保存修改"), 22, y + 3, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
+                gfx::drawText(getTxt("♥ 保存修改"), 24, y + 3, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
             }
         }
     }
 
     static void handleCustomColorUpdate(uint32_t down, uint32_t held)
     {
-        // D-Pad Navigation
         if (down & KEY_UP)
         {
             if (s_customChannelSel > 0) s_customChannelSel--;
@@ -1113,7 +1130,6 @@ namespace ui
             else if (s_customChannelSel == 2 && s_customB < 255) s_customB++;
         }
 
-        // D-Pad Left/Right repeating while held (items 0..2)
         if (held & (KEY_DLEFT | KEY_DRIGHT))
         {
             s_dpadRepeatCount++;
@@ -1139,22 +1155,21 @@ namespace ui
             s_dpadRepeatCount = 0;
         }
 
-        // A Button execution
         if (down & KEY_A)
         {
             if (s_customChannelSel == 0)
             {
-                int v = util::getInt(getTxt("输入红色通道 (R: 0-255)"), s_customR, 255);
+                int v = util::getInt(getTxt("输入 R 值 (0-255)"), s_customR, 255);
                 if (v >= 0) s_customR = (uint8_t)v;
             }
             else if (s_customChannelSel == 1)
             {
-                int v = util::getInt(getTxt("输入绿色通道 (G: 0-255)"), s_customG, 255);
+                int v = util::getInt(getTxt("输入 G 值 (0-255)"), s_customG, 255);
                 if (v >= 0) s_customG = (uint8_t)v;
             }
             else if (s_customChannelSel == 2)
             {
-                int v = util::getInt(getTxt("输入蓝色通道 (B: 0-255)"), s_customB, 255);
+                int v = util::getInt(getTxt("输入 B 值 (0-255)"), s_customB, 255);
                 if (v >= 0) s_customB = (uint8_t)v;
             }
             else if (s_customChannelSel == 3)
@@ -1163,7 +1178,7 @@ namespace ui
             }
             else if (s_customChannelSel == 4)
             {
-                ui::confirm(getTxt("确定要恢复当前色号对应的标准色吗？"), onConfirmResetStandardColor_t, nullptr, nullptr);
+                ui::confirm(getTxt("确定要重新加载预设发色吗？"), onConfirmReloadPresetColor_t, nullptr, nullptr);
             }
             else if (s_customChannelSel == 5)
             {
@@ -1825,51 +1840,27 @@ namespace ui
         }
         else if (s_editorPage == 3)
         {
-            // Left Panel: Target Custom Color Preview & Codes
-            gfx::drawText(getTxt("目标自定义发色"), 24, 26, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
+            bool isLight = (bool)cfg::config["lightback"];
+            u32 swatchBorder = isLight ? C2D_Color32(185, 185, 185, 255) : C2D_Color32(80, 80, 80, 255);
 
-            // Large Swatch Box (150 x 60)
-            C2D_DrawRectSolid(23, 49, GFX_DEPTH_DEFAULT, 152, 62, C2D_Color32(200, 200, 200, 255));
-            C2D_DrawRectSolid(24, 50, GFX_DEPTH_DEFAULT, 150, 60, C2D_Color32(s_customR, s_customG, s_customB, 255));
+            C2D_DrawRectSolid(19, 35, GFX_DEPTH_DEFAULT, 222, 48, swatchBorder);
+            C2D_DrawRectSolid(20, 36, GFX_DEPTH_DEFAULT, 220, 46, C2D_Color32(s_customR, s_customG, s_customB, 255));
 
-            char hBuf[32], rgbBuf[32];
-            snprintf(hBuf, sizeof(hBuf), "HEX: #%02X%02X%02X", s_customR, s_customG, s_customB);
-            gfx::drawText(hBuf, 24, 122, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
+            char buf[128];
+            snprintf(buf, sizeof(buf), "RGB: (%d, %d, %d)", (int)s_customR, (int)s_customG, (int)s_customB);
+            gfx::drawText(buf, 20, 96, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
 
-            snprintf(rgbBuf, sizeof(rgbBuf), "RGB: (%d, %d, %d)", (int)s_customR, (int)s_customG, (int)s_customB);
-            gfx::drawText(rgbBuf, 24, 146, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
+            snprintf(buf, sizeof(buf), "HEX: #%02X%02X%02X", s_customR, s_customG, s_customB);
+            gfx::drawText(buf, 20, 124, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
 
-            // Right Panel: Analysis & Save Status
-            gfx::drawText(getTxt("渲染分析与存档状态"), 200, 26, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
-
-            // Perceptually matched Color ID and tone name (in localized language)
             uint8_t matchedId = nlpp::Dict::matchClosestColorId(s_customR, s_customG, s_customB);
             std::string matchedColorName = nlpp::getCleanColorName(sd.girlfriend.heroine, matchedId);
+            snprintf(buf, sizeof(buf), "%s: %s", getTxt("匹配发色"), matchedColorName.c_str());
+            gfx::drawText(buf, 20, 152, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
 
-            char buf[256];
-            snprintf(buf, sizeof(buf), "%s: %s (ID: %d)", getTxt("匹配发色"), matchedColorName.c_str(), (int)matchedId);
-            gfx::drawText(buf, 200, 52, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
-
-            // Specular highlight description (simplified concise term)
             std::string hlDesc = nlpp::Dict::getColorHighlightDesc(matchedId);
-            snprintf(buf, sizeof(buf), "%s: %s", getTxt("高光类型"), hlDesc.c_str());
-            gfx::drawText(buf, 200, 76, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
-
-            // Dyeing status
-            bool isAct = (sd.girlfriend.hairColorActive == 0x00);
-            snprintf(buf, sizeof(buf), "%s: %s", getTxt("染色状态"), isAct ? getTxt("激活 (0x00)") : getTxt("未激活 (0xFF)"));
-            gfx::drawText(buf, 200, 100, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
-
-            // Subtle divider line
-            C2D_DrawRectSolid(200, 126, GFX_DEPTH_DEFAULT, 180, 1, gfx::divClr);
-
-            // Current Save Data
-            std::string curSaveColorName = nlpp::getCleanColorName(sd.girlfriend.heroine, sd.girlfriend.hairColorId);
-            snprintf(buf, sizeof(buf), "%s: %s (ID: %d)", getTxt("存档色号"), curSaveColorName.c_str(), (int)sd.girlfriend.hairColorId);
-            gfx::drawText(buf, 200, 136, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
-
-            snprintf(buf, sizeof(buf), "%s: (%d, %d, %d)", getTxt("存档RGB"), (int)sd.girlfriend.hairR, (int)sd.girlfriend.hairG, (int)sd.girlfriend.hairB);
-            gfx::drawText(buf, 200, 160, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
+            snprintf(buf, sizeof(buf), "%s: %s", getTxt("匹配高光"), hlDesc.c_str());
+            gfx::drawText(buf, 20, 180, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
         }
         else if (s_editorPage == 4)
         {

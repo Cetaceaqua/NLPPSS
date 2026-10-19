@@ -3,7 +3,7 @@ NLPPSS - NEWラブプラス+ Save Studio
 
 <p align="left">
 <a href="http://www.gnu.org/copyleft/gpl.html"><img alt="license" src="https://img.shields.io/badge/license-GPL%20V3-blue.svg?style=flat"/></a>
-<a href="https://github.com/Cetaceaqua/NLPPSS/releases/latest"><img alt="release" src="https://img.shields.io/badge/release-v1.2.1-brightgreen.svg?style=flat"/></a>
+<a href="https://github.com/Cetaceaqua/NLPPSS/releases/latest"><img alt="release" src="https://img.shields.io/badge/release-v1.3.0-brightgreen.svg?style=flat"/></a>
 <a href="https://github.com/Cetaceaqua/NLPPSS"><img alt="platform" src="https://img.shields.io/badge/platform-Nintendo%203DS-red.svg?style=flat"/></a>
 </p>
 
@@ -31,7 +31,7 @@ NLPPSS - NEWラブプラス+ Save Studio
   - Edit last name, first name, and handle nickname (HN).
   - Edit birthday, blood type, and hometown.
   - Edit last name reading, first name reading, suffix reading, preset reading, and custom reading, with quick search across all available readings.
-  - Edit hair length, hairstyle, and hair color, with real-time portrait preview.
+  - Edit hair length, hairstyle, and hair color, with real-time portrait preview; support custom RGB and HEX hair colors with automatic specular highlight matching.
   - Edit total days and dating days.
   - Edit fitness, knowledge, sensibility, and charm values.
   - Edit Rich and TODO points.

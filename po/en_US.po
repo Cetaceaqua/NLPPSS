@@ -828,111 +828,78 @@ msgstr "Game cartridge was removed!"
 msgid "自定义发色"
 msgstr "Custom Hair Color"
 
-msgid "目标自定义发色"
-msgstr "Target Custom Color"
-
-msgid "渲染分析与存档状态"
-msgstr "Render Analysis & Save State"
-
 msgid "匹配发色"
 msgstr "Matched Tone"
 
-msgid "高光类型"
-msgstr "Specular Highlight"
+msgid "匹配高光"
+msgstr "Matched Highlight"
 
-msgid "染色状态"
-msgstr "Dyeing Status"
+msgid "HEX"
+msgstr "HEX"
 
-msgid "激活 (0x00)"
-msgstr "Active (0x00)"
-
-msgid "未激活 (0xFF)"
-msgstr "Inactive (0xFF)"
-
-msgid "存档色号"
-msgstr "Save Color ID"
-
-msgid "存档RGB"
-msgstr "Save Hair RGB"
-
-msgid "自定义发色设置"
-msgstr "Custom Hair Color Settings"
-
-msgid "红色通道 R"
-msgstr "Red Channel (R)"
-
-msgid "绿色通道 G"
-msgstr "Green Channel (G)"
-
-msgid "蓝色通道 B"
-msgstr "Blue Channel (B)"
-
-msgid "HEX 颜色代码"
-msgstr "HEX Color Code"
-
-msgid "恢复标准色号"
-msgstr "Reset to Standard Color"
+msgid "重新加载预设发色"
+msgstr "Reload Preset Color"
 
 msgid "\ue000 修改/执行  \ue001 返回  \ue01A\ue077\ue019 切换页面"
 msgstr "\ue000 Edit/Execute  \ue001 Back  \ue01A\ue077\ue019 Switch Page"
 
-msgid "输入HEX颜色代码 (如 #D8335B 或 D8335B)"
-msgstr "Enter HEX Color Code (e.g. #D8335B or D8335B)"
+msgid "输入 HEX 值 (#39C5BB 或 39C5BB)"
+msgstr "Enter HEX value (e.g. #39C5BB or 39C5BB)"
 
-msgid "无效的 HEX 颜色代码！\n格式应为 6 位十六进制，例如 #D8335B"
-msgstr "Invalid HEX color code!\nExpected 6-digit hex, e.g. #D8335B"
+msgid "无效的 HEX 值！"
+msgstr "Invalid HEX value!"
 
-msgid "输入红色通道 (R: 0-255)"
-msgstr "Enter Red Channel (R: 0-255)"
+msgid "输入 R 值 (0-255)"
+msgstr "Enter R value (0-255)"
 
-msgid "输入绿色通道 (G: 0-255)"
-msgstr "Enter Green Channel (G: 0-255)"
+msgid "输入 G 值 (0-255)"
+msgstr "Enter G value (0-255)"
 
-msgid "输入蓝色通道 (B: 0-255)"
-msgstr "Enter Blue Channel (B: 0-255)"
+msgid "输入 B 值 (0-255)"
+msgstr "Enter B value (0-255)"
 
-msgid "确定要恢复当前色号对应的标准色吗？"
-msgstr "Reset RGB to official standard color for current tone?"
+msgid "确定要重新加载预设发色吗？"
+msgstr "Reload RGB of current preset hair color?"
 
-msgid "已将 RGB 恢复为当前色号对应的标准色！"
-msgstr "Reset RGB to standard palette for current tone!"
+msgid "已重新加载预设发色的 RGB！"
+msgstr "Reloaded RGB of current preset hair color!"
 
-msgid "自然纯白"
-msgstr "Natural White"
+msgid "白色"
+msgstr "White"
 
-msgid "淡金冷光"
+msgid "浅金色"
 msgstr "Pale Gold"
 
-msgid "暖淡紫粉"
-msgstr "Warm Violet"
+msgid "浅粉色"
+msgstr "Light Pink"
 
-msgid "银白冷灰"
-msgstr "Cool Silver"
+msgid "银灰色"
+msgstr "Silver Gray"
 
-msgid "琥珀栗茶"
-msgstr "Amber Brown"
+msgid "浅棕色"
+msgstr "Light Brown"
 
-msgid "深赤酒红"
+msgid "酒红色"
 msgstr "Wine Red"
 
-msgid "艳丽粉红"
+msgid "鲜粉色"
 msgstr "Vivid Pink"
 
-msgid "天蓝反光"
+msgid "天蓝色"
 msgstr "Sky Blue"
 
-msgid "翡翠草绿"
+msgid "草绿色"
 msgstr "Grass Green"
 
-msgid "魅惑紫罗"
-msgstr "Glamour Violet"
+msgid "紫色"
+msgstr "Purple"
 
-msgid "明艳珊瑚"
-msgstr "Coral Orange"
+msgid "橙色"
+msgstr "Orange"
 
-msgid "墨绿深青"
-msgstr "Deep Cyan"
+msgid "墨绿色"
+msgstr "Dark Green"
 
-msgid "标准中性"
-msgstr "Neutral"
+msgid "标准色"
+msgstr "Standard"
 
