@@ -19,6 +19,7 @@ namespace ui
 {
     // Main Menu - Save Slots & Backup Management
     static nlpp::SaveSource s_currentSource = nlpp::SOURCE_SD;
+    static bool s_lastCardInserted = false;
     static ui::menu s_mediaMenu;
     static ui::menu s_slotMenu;
     static bool s_slotSelectOpen = false;
@@ -132,13 +133,23 @@ namespace ui
     void saveSelectInit(void *)
     {
         nlpp::g_saveMgr.detectSources();
-        s_currentSource = (cfg::config["default_type"] == 1) ? nlpp::SOURCE_GAMECARD : nlpp::SOURCE_SD;
+        s_lastCardInserted = nlpp::g_saveMgr.hasGameCard();
+        nlpp::SaveSource preferred = (cfg::config["default_type"] == 1) ? nlpp::SOURCE_GAMECARD : nlpp::SOURCE_SD;
+        if (preferred == nlpp::SOURCE_GAMECARD && !nlpp::g_saveMgr.hasGameCard() && nlpp::g_saveMgr.hasSD())
+        {
+            preferred = nlpp::SOURCE_SD;
+        }
+        else if (preferred == nlpp::SOURCE_SD && !nlpp::g_saveMgr.hasSD() && nlpp::g_saveMgr.hasGameCard())
+        {
+            preferred = nlpp::SOURCE_GAMECARD;
+        }
+        s_currentSource = preferred;
         nlpp::g_saveMgr.switchSource(s_currentSource);
 
         s_mediaMenu.reset();
         s_mediaMenu.addOpt(getTxt("数字版"), 400);
         s_mediaMenu.addOpt(getTxt("实体版"), 400);
-        s_mediaMenu.setSelected((cfg::config["default_type"] == 1) ? 1 : 0);
+        s_mediaMenu.setSelected((s_currentSource == nlpp::SOURCE_GAMECARD) ? 1 : 0);
 
         s_slotSelectOpen = false;
         s_slotCopyOpen = false;
@@ -196,6 +207,23 @@ namespace ui
     void saveSelectUpdate()
     {
         uint32_t down = ui::padKeysDown();
+
+        bool cardIns = false;
+        if (R_SUCCEEDED(FSUSER_CardSlotIsInserted(&cardIns)))
+        {
+            if (cardIns != s_lastCardInserted)
+            {
+                s_lastCardInserted = cardIns;
+                nlpp::g_saveMgr.detectSources();
+                if (s_slotSelectOpen && s_currentSource == nlpp::SOURCE_GAMECARD && !cardIns)
+                {
+                    nlpp::g_saveMgr.closeSaveArchive();
+                    s_slotSelectOpen = false;
+                    ui::showMessage(getTxt("游戏卡带已拔出！"));
+                    return;
+                }
+            }
+        }
 
         if (s_slotCopyOpen)
         {
@@ -785,6 +813,15 @@ namespace ui
 
     static void onConfirmSaveSlot(void *)
     {
+        if (nlpp::g_saveMgr.getSource() == nlpp::SOURCE_GAMECARD)
+        {
+            bool ins = false;
+            if (R_FAILED(FSUSER_CardSlotIsInserted(&ins)) || !ins)
+            {
+                ui::showMessage(getTxt("未插入游戏卡带，或未检测到卡带存档！"));
+                return;
+            }
+        }
         ui::confirm(getTxt("确定要保存当前槽位的修改吗？"), onConfirmSaveSlot_t, nullptr, nullptr);
     }
 

@@ -822,3 +822,5 @@ msgstr "Eternal Pair"
 msgid "最爱的二人"
 msgstr "Beloved Pair"
 
+msgid "游戏卡带已拔出！"
+msgstr "Game cartridge was removed!"

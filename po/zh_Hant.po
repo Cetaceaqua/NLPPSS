@@ -822,3 +822,5 @@ msgstr "永恆的二人"
 msgid "最爱的二人"
 msgstr "最愛的二人"
 
+msgid "游戏卡带已拔出！"
+msgstr "遊戲卡帶已拔出！"

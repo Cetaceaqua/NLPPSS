@@ -98,20 +98,43 @@ namespace nlpp
             res = FSUSER_GetCardType(&cardType);
             if (R_SUCCEEDED(res) && cardType == CARD_CTR)
             {
-                u32 count = 0;
-                res = AM_GetTitleCount(MEDIATYPE_GAME_CARD, &count);
-                if (R_SUCCEEDED(res) && count > 0)
+                // Primary: ARCHIVE_USER_SAVEDATA with MEDIATYPE_GAME_CARD
+                uint32_t cartPath[3] = {MEDIATYPE_GAME_CARD, (uint32_t)TITLE_ID, (uint32_t)(TITLE_ID >> 32)};
+                FS_Path binData = {PATH_BINARY, 12, cartPath};
+                FS_Archive testArch = 0;
+                res = FSUSER_OpenArchive(&testArch, ARCHIVE_USER_SAVEDATA, binData);
+                if (R_SUCCEEDED(res))
                 {
-                    uint64_t cartID = 0;
-                    res = AM_GetTitleList(NULL, MEDIATYPE_GAME_CARD, 1, &cartID);
-                    if (R_SUCCEEDED(res) && cartID == TITLE_ID)
+                    m_hasGameCard = true;
+                    FSUSER_CloseArchive(testArch);
+                }
+                else
+                {
+                    // Fallback: Check Title ID list via AM service and retry
+                    u32 count = 0;
+                    if (R_SUCCEEDED(AM_GetTitleCount(MEDIATYPE_GAME_CARD, &count)) && count > 0)
                     {
-                        FS_Archive testArch = 0;
-                        res = FSUSER_OpenArchive(&testArch, ARCHIVE_SAVEDATA, fsMakePath(PATH_EMPTY, ""));
-                        if (R_SUCCEEDED(res))
+                        std::vector<uint64_t> cartIDs(count);
+                        u32 readCount = 0;
+                        if (R_SUCCEEDED(AM_GetTitleList(&readCount, MEDIATYPE_GAME_CARD, count, cartIDs.data())))
                         {
-                            m_hasGameCard = true;
-                            FSUSER_CloseArchive(testArch);
+                            for (u32 i = 0; i < readCount; ++i)
+                            {
+                                if (cartIDs[i] == TITLE_ID)
+                                {
+                                    res = FSUSER_OpenArchive(&testArch, ARCHIVE_USER_SAVEDATA, binData);
+                                    if (R_FAILED(res))
+                                    {
+                                        res = FSUSER_OpenArchive(&testArch, ARCHIVE_SAVEDATA, fsMakePath(PATH_EMPTY, ""));
+                                    }
+                                    if (R_SUCCEEDED(res))
+                                    {
+                                        m_hasGameCard = true;
+                                        FSUSER_CloseArchive(testArch);
+                                    }
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
@@ -153,7 +176,13 @@ namespace nlpp
         Result res = -1;
         if (m_source == SOURCE_GAMECARD)
         {
-            res = FSUSER_OpenArchive(&m_saveArch, ARCHIVE_SAVEDATA, fsMakePath(PATH_EMPTY, ""));
+            uint32_t path[3] = {MEDIATYPE_GAME_CARD, (uint32_t)TITLE_ID, (uint32_t)(TITLE_ID >> 32)};
+            FS_Path binData = {PATH_BINARY, 12, path};
+            res = FSUSER_OpenArchive(&m_saveArch, ARCHIVE_USER_SAVEDATA, binData);
+            if (R_FAILED(res))
+            {
+                res = FSUSER_OpenArchive(&m_saveArch, ARCHIVE_SAVEDATA, fsMakePath(PATH_EMPTY, ""));
+            }
         }
         else if (m_source == SOURCE_SD)
         {
