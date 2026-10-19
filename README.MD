@@ -3,7 +3,7 @@ NLPPSS - NEWラブプラス+ Save Studio
 
 <p align="left">
 <a href="http://www.gnu.org/copyleft/gpl.html"><img alt="license" src="https://img.shields.io/badge/license-GPL%20V3-blue.svg?style=flat"/></a>
-<a href="https://github.com/Cetaceaqua/NLPPSS/releases/latest"><img alt="release" src="https://img.shields.io/badge/release-v1.2.0-brightgreen.svg?style=flat"/></a>
+<a href="https://github.com/Cetaceaqua/NLPPSS/releases/latest"><img alt="release" src="https://img.shields.io/badge/release-v1.2.1-brightgreen.svg?style=flat"/></a>
 <a href="https://github.com/Cetaceaqua/NLPPSS"><img alt="platform" src="https://img.shields.io/badge/platform-Nintendo%203DS-red.svg?style=flat"/></a>
 </p>
 
@@ -88,6 +88,7 @@ Distributed under the **GNU General Public License v3.0**. See [LICENSE](./LICEN
     - 闪光
     - zhizhi0w0
     - Check
+    - Anonymous
 * **TYSS**
   - [R-YaTian](https://github.com/R-YaTian): Main Developer
   - [J-D-K](https://github.com/J-D-K) for the original [JKSM](https://github.com/J-D-K/JKSM) version.
