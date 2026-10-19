@@ -68,12 +68,12 @@ namespace ui
         SCREEN_BOT
     };
 
-    typedef struct 
+    struct confArgs 
     {
         std::string q;
         funcPtr onConfirm = NULL, onCancel = NULL;
         void *args = NULL;
-    } confArgs;
+    };
     
     extern uint32_t down, held;
     extern touchPosition pos;

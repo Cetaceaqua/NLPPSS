@@ -38,14 +38,14 @@ static std::u16string dataPath;
 static Handle fsPxiHandle;
 static const u32 pxiPath[5] = { 1,1,3,0,0 };
 
-typedef struct 
+struct cpyArgs 
 {
     FS_Archive srcArch, dstArch;
     std::u16string src, dst;
     uint64_t offset = 0;
     bool commit = false;
     bool isPxi = false;
-} cpyArgs;
+};
 
 
 void fs::createDir(const std::string& path)

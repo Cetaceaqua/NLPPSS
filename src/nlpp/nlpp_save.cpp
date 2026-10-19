@@ -247,10 +247,7 @@ namespace nlpp
         if (sd.profile.lastName.empty() && sd.profile.firstName == "*PR*@")
             return true;
 
-        // 4. Factory default placeholder group:
-        // lastName == "ぷれいや" && firstName == "太郎" && hn == "ぷれ" &&
-        // birthMonth == 1 && birthDay == 1 && blood == 0 && prefecture == 12 &&
-        // lastNameReadingId == 0 && firstNameReadingId == 0
+        // 4. Default uninitialized placeholder group
         if (sd.profile.lastName == "ぷれいや" && sd.profile.firstName == "太郎" &&
             sd.profile.hn == "ぷれ" && sd.profile.birthMonth == 1 && sd.profile.birthDay == 1 &&
             (int)sd.profile.blood == 0 && sd.profile.prefecture == 12 &&
@@ -360,17 +357,16 @@ namespace nlpp
             const uint8_t *gbuf = m_files[gfFile].data();
             sd.girlfriend.mode = gbuf[0x04];
 
-            // Section 1.4 & 7.9: Physical Lover Object cross-validation & determination
-            // In Lover mode (mode == 2 or 3), savedata18 offset 0x221 holds the physical ground truth
-            // of the Lover Data object. If cardFile has a desynchronized or corrupted heroine,
-            // savedata18[0x221] takes authoritative precedence and heals it.
+            // Physical Lover Object validation & heroine determination
+            // In Lover mode (mode == 2 or 3), savedata18 offset 0x221 holds the authoritative
+            // heroine ID of the Lover Data object.
             if ((sd.girlfriend.mode == 2 || sd.girlfriend.mode == 3) && gbuf[0x221] <= 2)
             {
                 sd.girlfriend.heroine = (HeroineID)gbuf[0x221];
             }
             else if (sd.girlfriend.mode == 1 || cardHeroine == -1)
             {
-                sd.girlfriend.heroine = HEROINE_NONE; // Friend mode (未告白阶段)
+                sd.girlfriend.heroine = HEROINE_NONE; // Friend mode
             }
             else if (cardHeroine >= 0 && cardHeroine <= 2)
             {
@@ -403,7 +399,7 @@ namespace nlpp
             sd.girlfriend.nextHairB = gbuf[0x4B8];
             sd.girlfriend.hairColorActive = gbuf[0x54C];
 
-            // Section 7.6 & 7.9: Physical 2D personality coordinates at 0x2D0 ~ 0x2D3
+            // Personality coordinates at 0x2D0 ~ 0x2D3
             sd.girlfriend.sliderX = *(const uint16_t *)&gbuf[0x2D0];
             sd.girlfriend.sliderY = *(const uint16_t *)&gbuf[0x2D2];
             sd.girlfriend.sliderZ = 0;
@@ -421,8 +417,7 @@ namespace nlpp
             sd.timeline.datingDays     = *(const uint32_t *)&tbuf[0x39];
         }
 
-        // Final Empty Slot Detection Rule (Section 1.3):
-        // Primary: Card activeFlag == 0x00 && heroineTarget == -1
+        // Empty slot determination
         if (cardDetermined)
         {
             sd.empty = cardEmpty;
@@ -483,8 +478,7 @@ namespace nlpp
         }
 
         cbuf[0x04] = 0x01; // Active slot flag
-        // Notice: cbuf[0x08] (Card target heroine) is strictly read-only for active slots and must never be altered
-        // Section 9.5: Anti-cold-war timestamp sync in Card at 0x18 ~ 0x23
+        // Timestamp synchronization in Card at 0x18 ~ 0x23
         if (ti)
         {
             *(uint32_t *)&cbuf[0x18] = (uint32_t)(ti->tm_year + 1900);
@@ -501,7 +495,7 @@ namespace nlpp
         // 1. Profile (198B)
         if (m_files[profFile].size() < 198) m_files[profFile].resize(198, 0);
         uint8_t *pbuf = m_files[profFile].data();
-        *(uint32_t *)&pbuf[0x00] = 1; // Protected header version
+        *(uint32_t *)&pbuf[0x00] = 1;
 
         memset(&pbuf[0x04], 0, 12);
         memcpy(&pbuf[0x04], sd.profile.firstName.c_str(), std::min(sd.profile.firstName.length(), (size_t)12));
@@ -512,7 +506,7 @@ namespace nlpp
         memset(&pbuf[0x64], 0, 12);
         memcpy(&pbuf[0x64], sd.profile.hn.c_str(), std::min(sd.profile.hn.length(), (size_t)12));
 
-        *(uint32_t *)&pbuf[0x80] = 2000; // Protected birth year
+        *(uint32_t *)&pbuf[0x80] = 2000;
         pbuf[0x84] = sd.profile.birthMonth;
         pbuf[0x85] = sd.profile.birthDay;
         pbuf[0x8C] = (uint8_t)sd.profile.blood;
@@ -523,12 +517,10 @@ namespace nlpp
         if (m_files[statsFile].size() < 960) m_files[statsFile].resize(960, 0);
         uint8_t *sbuf = m_files[statsFile].data();
 
-        // Section 6.1: File and component versions
         *(uint32_t *)&sbuf[0x000] = 3;
         *(uint32_t *)&sbuf[0x004] = 1;
 
-        // 4 stats: fitness, knowledge, sensibility, charm (14B step at 0x08)
-        // Section 6.5: Dual-write both current (+0x04) and baseline (+0x06)
+        // Write both current (+0x04) and baseline (+0x06) for 4 stats (fitness, knowledge, sensibility, charm)
         const uint16_t statVals[4] = {
             (uint16_t)std::min(sd.stats.fitness, (uint16_t)255),
             (uint16_t)std::min(sd.stats.knowledge, (uint16_t)255),
@@ -559,24 +551,22 @@ namespace nlpp
         *(int16_t *)&sbuf[0x308] = sd.stats.cameraExternal;
         sbuf[0x318] = sd.stats.equipMask;
 
-        // Camera Filter Removal - Six-in-One Atomic Standard (Section 6.4.8, 6.5)
+        // Reset camera filter parameters to default
         if (sd.stats.cameraFilter == -1 || (sd.stats.equipMask & 0x04) == 0)
         {
             *(int16_t *)&sbuf[0x304] = -1;
             sbuf[0x318] &= ~(0x04);
-            *(uint32_t *)&sbuf[0x33C] = 38; // Factory bare lens shutter speed (26 00 00 00)
-            *(uint32_t *)&sbuf[0x344] = 20; // Factory bare lens ISO sensitivity (14 00 00 00)
-            *(uint32_t *)&sbuf[0x34C] = 9;  // filter_mode_5 (bare lens white balance override A)
-            *(uint32_t *)&sbuf[0x350] = 3;  // filter_mode_6 (bare lens white balance override B)
+            *(uint32_t *)&sbuf[0x33C] = 38; // Default shutter speed
+            *(uint32_t *)&sbuf[0x344] = 20; // Default ISO sensitivity
+            *(uint32_t *)&sbuf[0x34C] = 9;  // Default white balance A
+            *(uint32_t *)&sbuf[0x350] = 3;  // Default white balance B
         }
         m_fileDirty[statsFile] = true;
 
         // 3. Girlfriend (1508B)
         if (m_files[gfFile].size() < 1508) m_files[gfFile].resize(1508, 0);
         uint8_t *gbuf = m_files[gfFile].data();
-        // Notice: gbuf[0x221] (Lover internal heroine ID) is strictly read-only and must never be altered
         gbuf[0x243] = sd.girlfriend.affection;
-        // Section 9.4: Couple title/exp is stored at 0x2AC
         *(uint32_t *)&gbuf[0x2AC] = sd.girlfriend.coupleExp;
 
         uint8_t hairLen = std::min(sd.girlfriend.hairLength, (uint8_t)2);
@@ -591,7 +581,7 @@ namespace nlpp
             gbuf[0x46B + (hairLen * 24 + sd.girlfriend.hairStyleId)] = 5;
         }
 
-        // Section 7.3 & 7.9: Hair color hexad sync
+        // Hair color synchronization
         gbuf[0x50A] = sd.girlfriend.hairColorId;
         gbuf[0x50B] = sd.girlfriend.nextHairColorId;
         gbuf[0x4B3] = sd.girlfriend.hairR;
@@ -602,19 +592,19 @@ namespace nlpp
         gbuf[0x4B8] = sd.girlfriend.nextHairB;
         gbuf[0x54C] = sd.girlfriend.hairColorActive;
 
-        // Section 7.6 & 7.9: RGB Cache mirror
+        // Hair RGB cache mirror
         gbuf[0x2DE] = sd.girlfriend.hairR;
         gbuf[0x2DF] = sd.girlfriend.hairG;
         gbuf[0x2E0] = sd.girlfriend.hairB;
 
-        // Section 7.2: Active 3D head model ID
+        // Active 3D head model ID
         uint16_t modelId = Dict::getHairModelId(sd.girlfriend.heroine, hairLen, sd.girlfriend.hairStyleId);
         if (modelId != 0)
         {
             *(uint16_t *)&gbuf[0x2DA] = modelId;
         }
 
-        // Section 7.6 & 7.9: Personality 2D coordinates at 0x2D0 ~ 0x2D3
+        // Personality coordinates at 0x2D0 ~ 0x2D3
         *(uint16_t *)&gbuf[0x2D0] = std::min(sd.girlfriend.sliderX, (uint16_t)1000);
         *(uint16_t *)&gbuf[0x2D2] = std::min(sd.girlfriend.sliderY, (uint16_t)1000);
         m_fileDirty[gfFile] = true;
@@ -639,7 +629,7 @@ namespace nlpp
         *(uint16_t *)&tbuf[0x14] = 0; // Clear max absence
         tbuf[0x38] = 0; // Clear cold war threshold
 
-        // Section 9.5: Anti-cold-war timestamp sync at 0x3D ~ 0x48
+        // Timestamp synchronization at 0x3D ~ 0x48
         if (ti)
         {
             *(uint32_t *)&tbuf[0x3D] = (uint32_t)(ti->tm_year + 1900);
@@ -652,11 +642,10 @@ namespace nlpp
             *(uint16_t *)&tbuf[0x47] = 0;
         }
 
-        // Section 9.5: 256-byte zero padding protection (0x4D ~ 0x14C)
         memset(&tbuf[0x4D], 0, 256);
         m_fileDirty[timeFile] = true;
 
-        // Section 1.5: Most Recently Played slot timestamp update (savedata7/32/57 at 0x18 ~ 0x1F)
+        // Most recently played slot timestamp update (savedata7/32/57 at 0x18 ~ 0x1F)
         int ctxFile = getSlotFile(FILE_BASE_PROFILE_CARD, slot);
         if (m_fileLoaded[ctxFile] && m_files[ctxFile].size() >= 0x20)
         {
@@ -707,7 +696,7 @@ namespace nlpp
                     memcpy(&g3[offset], &sbuf[0x281], 24);
                 }
             }
-            // Section 10.4: Global gallery option pointer sync (savedata3 0x3A5A ~ 0x3A5C)
+            // Global gallery option pointer sync (savedata3 0x3A5A ~ 0x3A5C)
             if (h >= 0 && h <= 2 && m_files[FILE_GLOBAL_GALLERY].size() >= 0x3A5D)
             {
                 g3[0x3A5A + h] = (uint8_t)slot;
@@ -760,7 +749,7 @@ namespace nlpp
 
         serializeSlot(srcSlot);
 
-        // Section 10.4: Copy all 25 files starting from slot card (file 6)
+        // Copy all 25 files for the slot
         for (int i = 0; i < SLOT_STRIDE; ++i)
         {
             int srcF = 6 + srcSlot * SLOT_STRIDE + i;
@@ -773,7 +762,7 @@ namespace nlpp
             }
         }
 
-        // Section 10.4: Global gallery option appellation pointer sync (savedata3 0x3A5A ~ 0x3A5C)
+        // Global gallery option pointer sync (savedata3 0x3A5A ~ 0x3A5C)
         if (m_fileLoaded[FILE_GLOBAL_GALLERY] && m_files[FILE_GLOBAL_GALLERY].size() >= 0x3A5D)
         {
             uint8_t *gbuf = m_files[FILE_GLOBAL_GALLERY].data();
@@ -925,17 +914,17 @@ namespace nlpp
         m_slots[slot].stats.equipMask &= ~(0x04); // Clear bit 2
         m_modified = true;
 
-        // Section 6.4.8, 6.5: Six-in-One Atomic Standard immediately applied to raw buffer
+        // Reset camera filter parameters to default in raw buffer
         int statsFile = (slot == 0) ? 9 : (slot == 1 ? 34 : 59);
         if (m_files[statsFile].size() >= 0x354)
         {
             uint8_t *sbuf = m_files[statsFile].data();
             *(int16_t *)&sbuf[0x304] = -1;
             sbuf[0x318] &= ~(0x04);
-            *(uint32_t *)&sbuf[0x33C] = 38; // Factory bare lens shutter speed (26 00 00 00)
-            *(uint32_t *)&sbuf[0x344] = 20; // Factory bare lens ISO sensitivity (14 00 00 00)
-            *(uint32_t *)&sbuf[0x34C] = 9;  // filter_mode_5 (bare lens white balance override A)
-            *(uint32_t *)&sbuf[0x350] = 3;  // filter_mode_6 (bare lens white balance override B)
+            *(uint32_t *)&sbuf[0x33C] = 38; // Default shutter speed
+            *(uint32_t *)&sbuf[0x344] = 20; // Default ISO sensitivity
+            *(uint32_t *)&sbuf[0x34C] = 9;  // Default white balance A
+            *(uint32_t *)&sbuf[0x350] = 3;  // Default white balance B
             m_fileDirty[statsFile] = true;
         }
     }

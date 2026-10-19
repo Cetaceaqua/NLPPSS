@@ -166,7 +166,7 @@ namespace nlpp
     // Timeline & Anniversary Data (savedata12/37/62)
     struct TimelineData
     {
-        uint32_t timelineDays = 1;  // 0x04 (Total calendar days, displayed as %d日)
+        uint32_t timelineDays = 1;  // 0x04 (Total calendar days)
         uint32_t activeBaseline = 1;// 0x08
         uint16_t maxAbsence = 0;    // 0x14 (Longest offline interval)
         uint32_t loverTimeline = 0; // 0x2E (Days since confession)

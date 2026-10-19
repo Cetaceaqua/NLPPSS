@@ -17,10 +17,7 @@
 
 namespace ui
 {
-    // =========================================================================
-    // Mode 1: Main Menu - 存档 (Save Slots) & 备份 (Backup Management)
-    // =========================================================================
-
+    // Main Menu - Save Slots & Backup Management
     static nlpp::SaveSource s_currentSource = nlpp::SOURCE_SD;
     static ui::menu s_mediaMenu;
     static ui::menu s_slotMenu;
@@ -54,7 +51,7 @@ namespace ui
                 else if (!sd.profile.hn.empty())
                     playerName = sd.profile.hn;
                 else
-                    playerName = "无名氏";
+                    playerName = "---";
 
                 snprintf(itemBuf, sizeof(itemBuf), "%s %d: %s", getTxt("槽位"), i + 1, playerName.c_str());
             }
@@ -287,7 +284,7 @@ namespace ui
                 return;
             }
 
-            if (down & KEY_X) // 复制
+            if (down & KEY_X)
             {
                 int slot = s_slotMenu.getSelected();
                 if (nlpp::g_saveMgr.isSlotEmpty(slot))
@@ -301,13 +298,13 @@ namespace ui
                 return;
             }
 
-            if (down & KEY_Y) // 备份
+            if (down & KEY_Y)
             {
                 ui::confirm(getTxt("确定要备份此存档吗？"), onConfirmBackupSlot_t, nullptr, nullptr);
                 return;
             }
 
-            if (down & KEY_SELECT) // 清除
+            if (down & KEY_SELECT)
             {
                 int slot = s_slotMenu.getSelected();
                 if (nlpp::g_saveMgr.isSlotEmpty(slot))
@@ -356,9 +353,7 @@ namespace ui
         }
     }
 
-    // =========================================================================
-    // Mode 1: Main Menu - 备份 (Backup Management)
-    // =========================================================================
+    // Backup Management
 
     static ui::menu s_bakMenu;
     static std::vector<nlpp::BackupInfo> s_backups;
@@ -488,14 +483,12 @@ namespace ui
 
         if (s_backups.empty()) return;
 
-        // A: Restore backup
         if (down & KEY_A)
         {
             s_restoreMenuOpen = true;
             return;
         }
 
-        // X: Delete backup
         if (down & KEY_X)
         {
             int sel = s_bakMenu.getSelected();
@@ -548,12 +541,9 @@ namespace ui
         ui::drawUIBar(getTxt("\ue000 恢复  \ue002 删除  \ue01A\ue077\ue019 切换页面"), ui::SCREEN_BOT, true);
     }
 
-    // =========================================================================
-    // Mode 2: Slot Editor - 4 Pages
-    // =========================================================================
-
+    // Slot Editor
     static int s_editorSlot = 0;
-    static int s_editorPage = 0; // 0: 玩家信息, 1: 玩家读音, 2: 女友发型, 3: 其他
+    static int s_editorPage = 0; // 0: Profile, 1: Readings, 2: Hairstyle, 3: Misc
 
     static ui::menu s_editorMenu;
     static bool s_editorSubMenuOpen = false;
@@ -653,7 +643,7 @@ namespace ui
         else if (s_editorPage == 3) // 4. 其他
         {
             char numBuf[96];
-            snprintf(numBuf, sizeof(numBuf), "%s: %d %s", getTxt("总天数"), (int)sd.timeline.timelineDays, getTxt("日"));
+            snprintf(numBuf, sizeof(numBuf), "%s: %d %s", getTxt("总天数"), (int)sd.timeline.timelineDays, getTxt("天"));
             s_editorMenu.addOpt(numBuf, 300);
 
             snprintf(numBuf, sizeof(numBuf), "%s: %d %s", getTxt("上线天数"), (int)sd.timeline.datingDays, getTxt("天"));
@@ -814,31 +804,28 @@ namespace ui
         threadInfo *t = (threadInfo *)a;
         auto &sd = nlpp::g_saveMgr.getSlotData(s_editorSlot);
 
-        // Master reverse engineering doc (7.2.3 & 7.5.5):
-        // ROM byte_7ABB51 default hair length:
-        // Manaka: LengthStage 2 (Long / 高马尾日常)
-        // Rinko:  LengthStage 0 (Short / 出厂短发造型)
-        // Nene:   LengthStage 1 (Middle / 出厂俏丽波波头)
+        // Default initial hair length and style per heroine:
+        // Manaka: Long (2), Rinko: Short (0), Nene: Medium (1)
         if (sd.girlfriend.heroine == nlpp::HEROINE_MANAKA)
         {
-            sd.girlfriend.hairLength = 2; // Long
+            sd.girlfriend.hairLength = 2;
             sd.girlfriend.hairStyleId = 0;
-            sd.girlfriend.hairColorId = 0; // Default color
-            sd.girlfriend.hairTasteTarget = 0; // 清楚 / キレイ
+            sd.girlfriend.hairColorId = 0;
+            sd.girlfriend.hairTasteTarget = 0;
         }
         else if (sd.girlfriend.heroine == nlpp::HEROINE_RINKO)
         {
-            sd.girlfriend.hairLength = 0; // Short
+            sd.girlfriend.hairLength = 0;
             sd.girlfriend.hairStyleId = 0;
-            sd.girlfriend.hairColorId = 0; // Default color
-            sd.girlfriend.hairTasteTarget = 1; // かわいい / 休闲个性
+            sd.girlfriend.hairColorId = 0;
+            sd.girlfriend.hairTasteTarget = 1;
         }
         else if (sd.girlfriend.heroine == nlpp::HEROINE_NENE)
         {
-            sd.girlfriend.hairLength = 1; // Middle
+            sd.girlfriend.hairLength = 1;
             sd.girlfriend.hairStyleId = 0;
-            sd.girlfriend.hairColorId = 0; // Default color
-            sd.girlfriend.hairTasteTarget = 0; // 清楚 / 成熟温婉
+            sd.girlfriend.hairColorId = 0;
+            sd.girlfriend.hairTasteTarget = 0;
         }
 
         uint8_t r = 0, g = 0, b = 0;
@@ -1259,7 +1246,7 @@ namespace ui
                         }
                     }
                 }
-                else if (sel == 4) // 3 预设称呼 (PresetReading, 严格 24 项, 直接点选)
+                else if (sel == 4)
                 {
                     s_targetCallIndex = 3;
                     s_curReadingMatches = nlpp::Dict::filterReadings(0x08, 0, "");
@@ -1279,7 +1266,7 @@ namespace ui
                     }
                     s_editorSubMenu.setSelected(curSel);
                 }
-                else if (sel == 5) // 4 特殊称呼 (CustomReading, 假名查找, 留空显示全部)
+                else if (sel == 5)
                 {
                     s_targetCallIndex = 4;
                     uint8_t heroineMask = (sd.girlfriend.heroine >= 0 && sd.girlfriend.heroine <= 2) ?
@@ -1325,7 +1312,7 @@ namespace ui
                 else if (sel == 6) { onConfirmReloadSlot(nullptr); }
                 else if (sel == 7) { onConfirmSaveSlot(nullptr); }
             }
-            else if (s_editorPage == 2) // 女友发型
+            else if (s_editorPage == 2)
             {
                 if (sel == 0) // 发长
                 {
@@ -1395,7 +1382,7 @@ namespace ui
                 else if (sel == 5) { int v = util::getInt(getTxt("输入魅力属性值 (0-255)"), sd.stats.charm, 255); if (v >= 0) { sd.stats.charm = v; refreshEditorPageMenu(); } }
                 else if (sel == 6) { int v = util::getInt(getTxt("输入金钱 (0-999999)"), sd.stats.rich, 999999); if (v >= 0) { sd.stats.rich = v; refreshEditorPageMenu(); } }
                 else if (sel == 7) { int v = util::getInt(getTxt("输入TODO点数 (0-9999)"), sd.stats.todo, 9999); if (v >= 0) { sd.stats.todo = v; refreshEditorPageMenu(); } }
-                else if (sel == 8) // 称号
+                else if (sel == 8)
                 {
                     if (sd.isFriendMode())
                     {
@@ -1418,7 +1405,7 @@ namespace ui
                         s_editorSubMenu.setSelected(curRank - 1);
                     }
                 }
-                else if (sel == 9) // 卸下滤镜
+                else if (sel == 9)
                 {
                     nlpp::g_saveMgr.removeCameraFilter(s_editorSlot);
                     refreshEditorPageMenu();
@@ -1440,7 +1427,7 @@ namespace ui
 
         const auto &sd = nlpp::g_saveMgr.getSlotData(s_editorSlot);
 
-        if (s_editorPage == 0) // 1. 玩家信息
+        if (s_editorPage == 0)
         {
             std::string bdayStr = formatBirthday(sd.profile.birthMonth, sd.profile.birthDay);
             char buf[256];
@@ -1453,7 +1440,7 @@ namespace ui
                      getTxt("出身地"), nlpp::Dict::getPrefectureName(sd.profile.prefecture));
             gfx::drawText(buf, 20, 36, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
         }
-        else if (s_editorPage == 1) // 2. 玩家读音
+        else if (s_editorPage == 1)
         {
             char buf[512];
             snprintf(buf, sizeof(buf),
@@ -1471,7 +1458,7 @@ namespace ui
                      getTxt("4 特殊读音"), nlpp::Dict::getReadingDisplay(sd.stats.readings[4]).c_str());
             gfx::drawText(buf, 20, 36, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
         }
-        else if (s_editorPage == 2) // 3. 女友发型
+        else if (s_editorPage == 2)
         {
             std::string curStyleName = nlpp::getCleanStyleName(sd.girlfriend.heroine, sd.girlfriend.hairLength, sd.girlfriend.hairStyleId);
             std::string curColorName = nlpp::getCleanColorName(sd.girlfriend.heroine, sd.girlfriend.hairColorId);
@@ -1505,7 +1492,7 @@ namespace ui
             nlpp::portraitDrawStyle(36, 54);
             nlpp::portraitDrawColor(218, 54);
         }
-        else if (s_editorPage == 3) // 4. 其他
+        else if (s_editorPage == 3)
         {
             char buf[512];
             bool hasFilter = (sd.stats.cameraFilter != -1) && ((sd.stats.equipMask & 0x04) != 0);
@@ -1535,7 +1522,7 @@ namespace ui
                      "%s: %d %s\n"
                      "%s: %s\n"
                      "%s: %s",
-                     getTxt("总天数"), (int)sd.timeline.timelineDays, getTxt("日"),
+                     getTxt("总天数"), (int)sd.timeline.timelineDays, getTxt("天"),
                      getTxt("上线天数"), (int)sd.timeline.datingDays, getTxt("天"),
                      getTxt("运动属性值"), (int)sd.stats.fitness,
                      getTxt("知识属性值"), (int)sd.stats.knowledge,

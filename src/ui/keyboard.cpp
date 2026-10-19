@@ -763,13 +763,13 @@ namespace ui
                     {
                         if (mode != KBD_MODE_SYM) { flushPinyinToText(); mode = KBD_MODE_SYM; }
                     }
-                    else if (focus.col == 4) // 退格 (Backspace)
+                    else if (focus.col == 4) // Backspace
                     {
                         if (!pinyinBuf.empty()) { pinyinBuf.pop_back(); refreshCandidates(); }
                         else if (!curText.empty()) popUtf8Char(curText);
                     }
-                    else if (focus.col == 5) return -1; // 取消
-                    else if (focus.col == 6) // 完成
+                    else if (focus.col == 5) return -1; // Cancel
+                    else if (focus.col == 6) // Done
                     {
                         flushPinyinToText();
                         outText = curText;
@@ -835,9 +835,9 @@ namespace ui
                     else if (mode == KBD_MODE_KANA)
                     {
                         if (focus.col == 0) katakana = !katakana;
-                        else if (focus.col == 1) applyKanaModifier(curText, 0); // 浊点
-                        else if (focus.col == 2) applyKanaModifier(curText, 1); // 半浊点
-                        else if (focus.col == 3) applyKanaModifier(curText, 2); // 小文字
+                        else if (focus.col == 1) applyKanaModifier(curText, 0); // Dakuten
+                        else if (focus.col == 2) applyKanaModifier(curText, 1); // Handakuten
+                        else if (focus.col == 3) applyKanaModifier(curText, 2); // Small kana
                     }
                 }
                 else if (focus.area == FOCUS_GRID)
@@ -855,16 +855,14 @@ namespace ui
                         }
                         else if (focus.row == 3)
                         {
-                            if (focus.col == 0) // 清空
+                            if (focus.col == 0) // Clear
                             {
                                 if (!pinyinBuf.empty()) { pinyinBuf.clear(); refreshCandidates(); }
                                 else curText.clear();
                             }
-                            else if (focus.col == 1) // 空格 Space
+                            else if (focus.col == 1) // Space
                             {
-                                // Rule 10: If candidates exist, commit 1st candidate.
-                                // If NO candidates but pinyinBuf has text, commit pinyinBuf directly as English text!
-                                // If pinyinBuf is empty, insert regular space.
+                                // Commit first candidate if available, otherwise direct input or space
                                 if (!candidates.empty())
                                 {
                                     const std::string &ch = candidates[0];
@@ -901,15 +899,15 @@ namespace ui
                         }
                         else if (focus.row == 3)
                         {
-                            if (focus.col == 0) // 清空
+                            if (focus.col == 0) // Clear
                             {
                                 curText.clear();
                             }
-                            else if (focus.col == 1) // 空格 Space
+                            else if (focus.col == 1) // Space
                             {
                                 if (curText.length() + 1 <= maxBytes) curText += " ";
                             }
-                            else if (focus.col == 2) // 大写 / 小写 (Caps Toggle)
+                            else if (focus.col == 2) // Caps Toggle
                             {
                                 shift = !shift;
                             }
@@ -948,12 +946,11 @@ namespace ui
 
             if (down & KEY_B)
             {
-                return false; // Rule 9: B strictly cancels, no backspace on B
+                return false;
             }
 
             if (down & KEY_X)
             {
-                // Rule 9: X strictly backspaces
                 if (!pinyinBuf.empty())
                 {
                     pinyinBuf.pop_back();
@@ -1071,7 +1068,7 @@ namespace ui
             uint32_t candBtnTxt     = gfx::txtCont;
             uint32_t candSlotBg     = light ? 0xFFFFFFFF : 0xFF2D2D2D;
             uint32_t candNumTxt     = light ? 0xFF888888 : 0xFFAAAAAA;
-            uint32_t candCharTxt    = gfx::txtCont; // Rule 1: Clean, harmonious text color (no dark orange)
+            uint32_t candCharTxt    = gfx::txtCont;
 
             uint32_t barBtnBg       = gfx::btnClr;
             uint32_t barBtnTxt      = gfx::txtCont;
@@ -1110,7 +1107,6 @@ namespace ui
             {
                 ui::drawUIBar(TITLE_TEXT + " - " + hint, ui::SCREEN_TOP, true);
             }
-            // Rule 1: START text prompt. Circle pad is \ue01A\ue077\ue019.
             drawTopBottomBar(getTxt("\ue000 确定  \ue001 取消  \ue002 退格  START 完成  \ue01A\ue077\ue019 模式"));
 
             // -----------------------------------------------------------------
@@ -1229,7 +1225,6 @@ namespace ui
                     }
 
                     C2D_DrawRectSolid(k.x, k.y, GFX_DEPTH_DEFAULT, k.w, k.h, bg);
-                    // Rule 6: Draw global dynamic blue highlight
                     if (focus.area == FOCUS_GRID && focus.row == r && focus.col == (int)c)
                     {
                         gfx::drawBoundingBox(k.x, k.y, k.w, k.h, GFX_DEPTH_DEFAULT, rectClr);
@@ -1257,24 +1252,23 @@ namespace ui
                     bg = active ? tabActiveBg : tabInactiveBg;
                     tc = active ? tabActiveTxt : tabInactiveTxt;
                 }
-                else if (i == 4) // 退格
+                else if (i == 4) // Backspace
                 {
                     bg = keyBsBg;
                     tc = keyBsTxt;
                 }
-                else if (i == 5) // 取消
+                else if (i == 5) // Cancel
                 {
                     bg = btnCancelBg;
                     tc = btnCancelTxt;
                 }
-                else if (i == 6) // 完成
+                else if (i == 6) // Done
                 {
                     bg = btnDoneBg;
                     tc = btnDoneTxt;
                 }
 
                 C2D_DrawRectSolid(b.x, b.y, GFX_DEPTH_DEFAULT, b.w, b.h, bg);
-                // Rule 6: Draw global dynamic blue highlight
                 if (focus.area == FOCUS_BOTTOM_BAR && focus.col == (int)i)
                 {
                     gfx::drawBoundingBox(b.x, b.y, b.w, b.h, GFX_DEPTH_DEFAULT, rectClr);

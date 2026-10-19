@@ -314,7 +314,7 @@ namespace nlpp
 
         std::unordered_set<uint16_t> seenIds;
 
-        // Phase 1: Candidate 0 (首假名延长音) for base readings (Slot 0 / Slot 1)
+        // Phase 1: Candidate 0 (prolonged sound) for base readings (Slot 0 / Slot 1)
         if ((slotMask & 0x03) != 0)
         {
             std::string firstChar;
@@ -356,7 +356,7 @@ namespace nlpp
             }
         }
 
-        // Phase 2: Exact matches (完全匹配: text, kana normalized, romaji, or cleanRomaji)
+        // Phase 2: Exact matches (text, normalized kana, or romaji)
         for (const auto &entry : s_readings)
         {
             if (slotMask && !(entry.slot_mask & slotMask)) continue;
@@ -378,7 +378,7 @@ namespace nlpp
             }
         }
 
-        // Phase 3: Prefix matches (前缀匹配)
+        // Phase 3: Prefix matches
         for (const auto &entry : s_readings)
         {
             if (slotMask && !(entry.slot_mask & slotMask)) continue;
@@ -402,7 +402,7 @@ namespace nlpp
             }
         }
 
-        // Phase 4: Substring matches (模糊包含匹配)
+        // Phase 4: Substring matches
         for (const auto &entry : s_readings)
         {
             if (slotMask && !(entry.slot_mask & slotMask)) continue;
@@ -544,10 +544,7 @@ namespace nlpp
     std::string Dict::getHairLengthName(HeroineID heroine, uint8_t stage)
     {
         (void)heroine;
-        // Physical savedata18[0x466]:
-        // 2: 长发 (Long)
-        // 1: 中长发 (Medium)
-        // 0: 短发 (Short)
+        // Savedata 0x466 stages: 2 = Long, 1 = Medium, 0 = Short
         if (stage >= 2) return getTxt("长发");
         if (stage == 1) return getTxt("中长发");
         return getTxt("短发");

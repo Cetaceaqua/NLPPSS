@@ -26,18 +26,18 @@
 
 namespace ui
 {
-    typedef struct
+    struct menuOptEvent
     {
         funcPtr func = NULL;
         void *args   = NULL;
         uint32_t button = 0;
-    } menuOptEvent;
+    };
 
-    typedef struct
+    struct menuOpt
     {
         std::string txt;
         std::vector<menuOptEvent> events;
-    } menuOpt;
+    };
 
     class menu
     {
