@@ -735,17 +735,11 @@ msgstr "預設存檔類型"
 msgid "称号"
 msgstr "稱號"
 
-msgid "无 (未交往)"
-msgstr "無 (未交往)"
+msgid "无"
+msgstr "無"
 
-msgid "当前槽位处于朋友模式（未告白阶段），无法修改情侣称号！"
-msgstr "當前槽位處於朋友模式（未告白階段），無法修改情侶稱號！"
-
-msgid "自定义经历点数"
-msgstr "自訂經歷點數"
-
-msgid "输入经历点数 (0-99250)"
-msgstr "輸入經歷點數 (0-99250)"
+msgid "当前槽位处于朋友模式，无法修改称号！"
+msgstr "當前槽位處於朋友模式，無法修改稱號！"
 
 msgid "恋爱新手"
 msgstr "戀愛新手"
@@ -762,57 +756,57 @@ msgstr "老手情侶"
 msgid "恋人本格派"
 msgstr "戀人本格派"
 
-msgid "熟练二人组"
-msgstr "熟練二人組"
+msgid "熟练的二人"
+msgstr "熟練的二人"
 
 msgid "资深情侣"
 msgstr "資深情侶"
 
-msgid "恩爱二人组"
-msgstr "恩愛二人組"
+msgid "恩爱的二人"
+msgstr "恩愛的二人"
 
 msgid "最佳拍档"
 msgstr "最佳拍檔"
 
-msgid "永远二人组"
-msgstr "永遠二人組"
+msgid "永远的二人"
+msgstr "永遠的二人"
 
-msgid "究极二人组"
-msgstr "究極二人組"
+msgid "究极的二人"
+msgstr "究極的二人"
 
-msgid "空前绝后二人组"
-msgstr "空前絕後二人組"
+msgid "空前绝后的二人"
+msgstr "空前絕後的二人"
 
-msgid "绝代二人组"
-msgstr "絕代二人組"
+msgid "绝代的二人"
+msgstr "絕代的二人"
 
-msgid "前所未闻二人组"
-msgstr "前所未聞二人組"
+msgid "前所未闻的二人"
+msgstr "前所未聞的二人"
 
-msgid "天下无双二人组"
-msgstr "天下無雙二人組"
+msgid "天下无双的二人"
+msgstr "天下無雙的二人"
 
-msgid "举世瞩目二人组"
-msgstr "舉世矚目二人組"
+msgid "举世瞩目的二人"
+msgstr "舉世矚目的二人"
 
-msgid "太阳系二人组"
-msgstr "太陽系二人組"
+msgid "太阳系的二人"
+msgstr "太陽系的二人"
 
-msgid "银河系二人组"
-msgstr "銀河系二人組"
+msgid "银河系的二人"
+msgstr "銀河系的二人"
 
-msgid "全宇宙二人组"
-msgstr "全宇宙二人組"
+msgid "全宇宙的二人"
+msgstr "全宇宙的二人"
 
-msgid "传说二人组"
-msgstr "傳說二人組"
+msgid "传说的二人"
+msgstr "傳說的二人"
 
-msgid "完美无瑕二人组"
-msgstr "完美無瑕二人組"
+msgid "完美无瑕的二人"
+msgstr "完美無瑕的二人"
 
-msgid "永恒二人组"
-msgstr "永恆二人組"
+msgid "永恒的二人"
+msgstr "永恆的二人"
 
-msgid "最爱二人组 (满级)"
-msgstr "最愛二人組 (滿級)"
+msgid "最爱的二人"
+msgstr "最愛的二人"
 

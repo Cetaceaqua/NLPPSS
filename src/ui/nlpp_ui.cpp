@@ -679,7 +679,7 @@ namespace ui
 
             if (sd.isFriendMode())
             {
-                s_editorMenu.addOpt(std::string(getTxt("称号")) + ": " + getTxt("无 (未交往)"), 300);
+                s_editorMenu.addOpt(std::string(getTxt("称号")) + ": " + getTxt("无"), 300);
             }
             else
             {
@@ -1029,17 +1029,6 @@ namespace ui
                         sd.girlfriend.coupleExp = nlpp::Dict::getCoupleRankExp(sel + 1);
                         s_editorSubMenuOpen = false;
                         s_subAction = ACTION_NONE;
-                        refreshEditorPageMenu();
-                    }
-                    else if (sel == 23) // 自定义经历点数
-                    {
-                        s_editorSubMenuOpen = false;
-                        s_subAction = ACTION_NONE;
-                        int v = util::getInt(getTxt("输入经历点数 (0-99250)"), sd.girlfriend.coupleExp, 99250);
-                        if (v >= 0)
-                        {
-                            sd.girlfriend.coupleExp = v;
-                        }
                         refreshEditorPageMenu();
                     }
                     return;
@@ -1410,7 +1399,7 @@ namespace ui
                 {
                     if (sd.isFriendMode())
                     {
-                        ui::showMessage(getTxt("当前槽位处于朋友模式（未告白阶段），无法修改情侣称号！"));
+                        ui::showMessage(getTxt("当前槽位处于朋友模式，无法修改称号！"));
                     }
                     else
                     {
@@ -1425,7 +1414,6 @@ namespace ui
                             snprintf(buf, sizeof(buf), "Lv.%02d %s (%u pt)", r, nlpp::Dict::getCoupleTitleName(r).c_str(), (unsigned int)nlpp::Dict::getCoupleRankExp(r));
                             s_editorSubMenu.addOpt(buf, 300);
                         }
-                        s_editorSubMenu.addOpt(getTxt("自定义经历点数"), 300);
                         int curRank = nlpp::Dict::getCoupleRank(sd.girlfriend.coupleExp);
                         s_editorSubMenu.setSelected(curRank - 1);
                     }
@@ -1526,7 +1514,7 @@ namespace ui
             std::string titleStr;
             if (sd.isFriendMode())
             {
-                titleStr = getTxt("无 (未交往)");
+                titleStr = getTxt("无");
             }
             else
             {

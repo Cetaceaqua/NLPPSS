@@ -735,17 +735,11 @@ msgstr "Default Type"
 msgid "称号"
 msgstr "Couple Title"
 
-msgid "无 (未交往)"
-msgstr "None (Not Dating)"
+msgid "无"
+msgstr "None"
 
-msgid "当前槽位处于朋友模式（未告白阶段），无法修改情侣称号！"
-msgstr "Current slot is in Friend mode (pre-confession), cannot edit Couple Title!"
-
-msgid "自定义经历点数"
-msgstr "Custom Dating EXP"
-
-msgid "输入经历点数 (0-99250)"
-msgstr "Enter Dating EXP (0-99250)"
+msgid "当前槽位处于朋友模式，无法修改称号！"
+msgstr "Current slot is in Friend mode, cannot edit Title!"
 
 msgid "恋爱新手"
 msgstr "Love Beginner"
@@ -762,57 +756,57 @@ msgstr "Veteran Couple"
 msgid "恋人本格派"
 msgstr "Authentic Lovers"
 
-msgid "熟练二人组"
+msgid "熟练的二人"
 msgstr "Seasoned Pair"
 
 msgid "资深情侣"
 msgstr "Senior Couple"
 
-msgid "恩爱二人组"
+msgid "恩爱的二人"
 msgstr "Lovey-Dovey Pair"
 
 msgid "最佳拍档"
 msgstr "Best Partners"
 
-msgid "永远二人组"
+msgid "永远的二人"
 msgstr "Forever Pair"
 
-msgid "究极二人组"
+msgid "究极的二人"
 msgstr "Ultimate Pair"
 
-msgid "空前绝后二人组"
+msgid "空前绝后的二人"
 msgstr "Unprecedented Pair"
 
-msgid "绝代二人组"
+msgid "绝代的二人"
 msgstr "Matchless Pair"
 
-msgid "前所未闻二人组"
+msgid "前所未闻的二人"
 msgstr "Unheard-of Pair"
 
-msgid "天下无双二人组"
+msgid "天下无双的二人"
 msgstr "Peerless Pair"
 
-msgid "举世瞩目二人组"
+msgid "举世瞩目的二人"
 msgstr "World-Class Pair"
 
-msgid "太阳系二人组"
+msgid "太阳系的二人"
 msgstr "Solar System Pair"
 
-msgid "银河系二人组"
+msgid "银河系的二人"
 msgstr "Galactic Pair"
 
-msgid "全宇宙二人组"
+msgid "全宇宙的二人"
 msgstr "Universal Pair"
 
-msgid "传说二人组"
+msgid "传说的二人"
 msgstr "Legendary Pair"
 
-msgid "完美无瑕二人组"
+msgid "完美无瑕的二人"
 msgstr "Flawless Pair"
 
-msgid "永恒二人组"
+msgid "永恒的二人"
 msgstr "Eternal Pair"
 
-msgid "最爱二人组 (满级)"
-msgstr "Beloved Pair (Max)"
+msgid "最爱的二人"
+msgstr "Beloved Pair"
 
