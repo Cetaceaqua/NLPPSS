@@ -472,6 +472,67 @@ namespace nlpp
         }
     }
 
+    uint8_t Dict::matchClosestColorId(uint8_t r, uint8_t g, uint8_t b)
+    {
+        uint8_t bestId = 1;
+        uint32_t bestDist = UINT32_MAX;
+        for (int i = 1; i <= 19; ++i)
+        {
+            const auto &p = s_hairColors[i];
+            int dr = (int)r - (int)p.r;
+            int dg = (int)g - (int)p.g;
+            int db = (int)b - (int)p.b;
+            uint32_t dist = (uint32_t)(2 * dr * dr + 4 * dg * dg + 3 * db * db);
+            if (dist < bestDist)
+            {
+                bestDist = dist;
+                bestId = (uint8_t)i;
+            }
+        }
+        return bestId;
+    }
+
+    std::string Dict::getColorHighlightDesc(uint8_t colorId)
+    {
+        switch (colorId)
+        {
+            case 0:
+            case 1:
+                return getTxt("纯白自然反光高光");
+            case 2:
+            case 3:
+                return getTxt("金色冷光/淡黄高光");
+            case 4:
+            case 5:
+                return getTxt("暖淡紫粉反射高光");
+            case 6:
+            case 7:
+                return getTxt("冷灰银白高光");
+            case 8:
+            case 9:
+            case 12:
+            case 13:
+                return getTxt("柔和栗茶琥珀高光");
+            case 10:
+            case 11:
+                return getTxt("深赤茶/酒红高光");
+            case 14:
+                return getTxt("艳丽粉红反射高光");
+            case 15:
+                return getTxt("宝石蓝/天蓝反光高光");
+            case 16:
+                return getTxt("翡翠绿/草绿反光高光");
+            case 17:
+                return getTxt("魅惑紫/紫罗兰高光");
+            case 18:
+                return getTxt("明艳珊瑚橙反光高光");
+            case 19:
+                return getTxt("深青/墨绿反光高光");
+            default:
+                return getTxt("标准中性反射高光");
+        }
+    }
+
     const std::vector<HairStyleDef> &Dict::getAvailableStyles(HeroineID heroine, uint8_t hairLength)
     {
         static std::vector<HairStyleDef> cached;

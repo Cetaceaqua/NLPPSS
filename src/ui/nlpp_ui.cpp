@@ -576,7 +576,15 @@ namespace ui
 
     // Slot Editor
     static int s_editorSlot = 0;
-    static int s_editorPage = 0; // 0: Profile, 1: Readings, 2: Hairstyle, 3: Misc
+    static int s_editorPage = 0; // 0: Profile, 1: Readings, 2: Hairstyle, 3: Custom Hair Color, 4: Misc
+
+    // Custom hair color state (Page 3)
+    static uint8_t s_customR = 38;
+    static uint8_t s_customG = 38;
+    static uint8_t s_customB = 41;
+    static int s_customChannelSel = 0; // 0: R, 1: G, 2: B, 3: HEX btn, 4: RGB btn, 5: Apply btn, 6: Reset btn
+    static int s_activeSliderDrag = -1;
+    static int s_dpadRepeatCount = 0;
 
     static ui::menu s_editorMenu;
     static bool s_editorSubMenuOpen = false;
@@ -673,7 +681,12 @@ namespace ui
             nlpp::portraitLoadByStyle(sd.girlfriend.heroine, sd.girlfriend.hairLength, sd.girlfriend.hairStyleId);
             nlpp::portraitLoadByColor(sd.girlfriend.heroine, sd.girlfriend.hairColorId);
         }
-        else if (s_editorPage == 3) // 4. 其他
+        else if (s_editorPage == 3) // 4. 自定义发色
+        {
+            // Custom hair color page uses custom touch controls; ensure hairstyle portrait is loaded
+            nlpp::portraitLoadByStyle(sd.girlfriend.heroine, sd.girlfriend.hairLength, sd.girlfriend.hairStyleId);
+        }
+        else if (s_editorPage == 4) // 5. 其他
         {
             char numBuf[96];
             snprintf(numBuf, sizeof(numBuf), "%s: %d %s", getTxt("总天数"), (int)sd.timeline.timelineDays, getTxt("天"));
@@ -778,8 +791,15 @@ namespace ui
         s_editorSubMenu.setPaging(true);
         s_editorSubMenu.setMaxVisible(10);
 
-        nlpp::portraitInit();
         const auto &sd = nlpp::g_saveMgr.getSlotData(slot);
+        s_customR = sd.girlfriend.hairR;
+        s_customG = sd.girlfriend.hairG;
+        s_customB = sd.girlfriend.hairB;
+        s_customChannelSel = 0;
+        s_activeSliderDrag = -1;
+        s_dpadRepeatCount = 0;
+
+        nlpp::portraitInit();
         nlpp::portraitLoadByStyle(sd.girlfriend.heroine, sd.girlfriend.hairLength, sd.girlfriend.hairStyleId);
         nlpp::portraitLoadByColor(sd.girlfriend.heroine, sd.girlfriend.hairColorId);
         refreshEditorPageMenu(0);
@@ -805,6 +825,9 @@ namespace ui
             const auto &sd = nlpp::g_saveMgr.getSlotData(s_editorSlot);
             nlpp::portraitLoadByStyle(sd.girlfriend.heroine, sd.girlfriend.hairLength, sd.girlfriend.hairStyleId);
             nlpp::portraitLoadByColor(sd.girlfriend.heroine, sd.girlfriend.hairColorId);
+            s_customR = sd.girlfriend.hairR;
+            s_customG = sd.girlfriend.hairG;
+            s_customB = sd.girlfriend.hairB;
             refreshSlotMenu();
             refreshEditorPageMenu(s_editorLastSel);
             ui::showMessage(getTxt("修改保存成功！"));
@@ -836,6 +859,9 @@ namespace ui
         const auto &sd = nlpp::g_saveMgr.getSlotData(s_editorSlot);
         nlpp::portraitLoadByStyle(sd.girlfriend.heroine, sd.girlfriend.hairLength, sd.girlfriend.hairStyleId);
         nlpp::portraitLoadByColor(sd.girlfriend.heroine, sd.girlfriend.hairColorId);
+        s_customR = sd.girlfriend.hairR;
+        s_customG = sd.girlfriend.hairG;
+        s_customB = sd.girlfriend.hairB;
         refreshSlotMenu();
         refreshEditorPageMenu(s_editorLastSel);
         ui::showMessage(getTxt("已重新加载当前存档数据！"));
@@ -882,6 +908,10 @@ namespace ui
         sd.girlfriend.hairColorActive = 0xFF; // 0xFF = default initial state (unactivated dyeing)
         sd.girlfriend.reservedStyleId = 0xFF; // 0xFF = unreserved
 
+        s_customR = r;
+        s_customG = g;
+        s_customB = b;
+
         refreshEditorPageMenu();
         ui::showMessage(getTxt("已将女友的发型和发色重置为默认值！"));
         t->finished = true;
@@ -897,6 +927,455 @@ namespace ui
         s_slotMenu.setSelected(s_editorSlot);
         ui::state = SAVE_SELECT;
         t->finished = true;
+    }
+
+    static bool parseHexColor(const std::string &str, uint8_t &r, uint8_t &g, uint8_t &b)
+    {
+        std::string s = str;
+        if (!s.empty() && s[0] == '#') s = s.substr(1);
+        std::string clean;
+        for (char c : s)
+        {
+            if (!isspace((unsigned char)c)) clean += c;
+        }
+        if (clean.length() != 6) return false;
+        for (char c : clean)
+        {
+            if (!isxdigit((unsigned char)c)) return false;
+        }
+        unsigned long val = std::strtoul(clean.c_str(), nullptr, 16);
+        r = (uint8_t)((val >> 16) & 0xFF);
+        g = (uint8_t)((val >> 8) & 0xFF);
+        b = (uint8_t)(val & 0xFF);
+        return true;
+    }
+
+    static void promptHexInput()
+    {
+        char hexBuf[16];
+        snprintf(hexBuf, sizeof(hexBuf), "%02X%02X%02X", s_customR, s_customG, s_customB);
+        std::string in;
+        bool ok = false;
+        if (cfg::config["use_builtinkbd"])
+        {
+            ok = ui::showKeyboard(getTxt("输入HEX颜色代码 (如 #D8335B 或 D8335B)"), hexBuf, 10, in, ui::editorDrawTop, ui::KBD_MODE_EN);
+        }
+        else
+        {
+            in = util::getString(getTxt("输入HEX颜色代码 (如 #D8335B 或 D8335B)"), false);
+            ok = !in.empty();
+        }
+        if (ok)
+        {
+            uint8_t r = 0, g = 0, b = 0;
+            if (parseHexColor(in, r, g, b))
+            {
+                s_customR = r;
+                s_customG = g;
+                s_customB = b;
+            }
+            else
+            {
+                ui::showMessage(getTxt("无效的 HEX 颜色代码！\n格式应为 6 位十六进制，例如 #D8335B"));
+            }
+        }
+    }
+
+    static void promptRgbInput()
+    {
+        int r = util::getInt(getTxt("输入红色通道 (R: 0-255)"), s_customR, 255);
+        if (r < 0) return;
+        int g = util::getInt(getTxt("输入绿色通道 (G: 0-255)"), s_customG, 255);
+        if (g < 0) return;
+        int b = util::getInt(getTxt("输入蓝色通道 (B: 0-255)"), s_customB, 255);
+        if (b < 0) return;
+
+        s_customR = (uint8_t)r;
+        s_customG = (uint8_t)g;
+        s_customB = (uint8_t)b;
+    }
+
+    static void applyCustomHairColor()
+    {
+        auto &sd = nlpp::g_saveMgr.getSlotData(s_editorSlot);
+        uint8_t matchedId = nlpp::Dict::matchClosestColorId(s_customR, s_customG, s_customB);
+
+        sd.girlfriend.hairColorId = matchedId;
+        sd.girlfriend.nextHairColorId = matchedId;
+        sd.girlfriend.hairR = s_customR;
+        sd.girlfriend.hairG = s_customG;
+        sd.girlfriend.hairB = s_customB;
+        sd.girlfriend.nextHairR = s_customR;
+        sd.girlfriend.nextHairG = s_customG;
+        sd.girlfriend.nextHairB = s_customB;
+        sd.girlfriend.hairColorActive = 0x00; // 0x00 = activate dyeing
+
+        nlpp::portraitLoadByColor(sd.girlfriend.heroine, sd.girlfriend.hairColorId);
+        refreshEditorPageMenu();
+        ui::showMessage(getTxt("已应用自定义发色并匹配最佳高光！\n请记得在菜单中保存修改。"));
+    }
+
+    static void onConfirmResetCustomColor_t(void *a)
+    {
+        threadInfo *t = (threadInfo *)a;
+        auto &sd = nlpp::g_saveMgr.getSlotData(s_editorSlot);
+        uint8_t defR = 38, defG = 38, defB = 41;
+        nlpp::Dict::getDefaultHairRGB(sd.girlfriend.heroine, defR, defG, defB);
+        s_customR = defR;
+        s_customG = defG;
+        s_customB = defB;
+
+        sd.girlfriend.hairColorId = 0;
+        sd.girlfriend.nextHairColorId = 0;
+        sd.girlfriend.hairR = defR;
+        sd.girlfriend.hairG = defG;
+        sd.girlfriend.hairB = defB;
+        sd.girlfriend.nextHairR = defR;
+        sd.girlfriend.nextHairG = defG;
+        sd.girlfriend.nextHairB = defB;
+        sd.girlfriend.hairColorActive = 0xFF; // 0xFF = default initial state (unactivated)
+
+        nlpp::portraitLoadByColor(sd.girlfriend.heroine, 0);
+        refreshEditorPageMenu();
+        ui::showMessage(getTxt("已恢复女友的默认发色！\n请记得在菜单中保存修改。"));
+        t->finished = true;
+    }
+
+    static void editorDrawCustomColorBot()
+    {
+        gfx::drawText(getTxt("RGB 滑块微调与数值输入"), 14, 12, GFX_DEPTH_DEFAULT, 0.48f, gfx::txtCont);
+
+        static const struct { const char *txt; int x; int delta; } steppers[] = {
+            {"-10", 214, -10},
+            {"-1",  239, -1},
+            {"+1",  264, +1},
+            {"+10", 289, +10}
+        };
+
+        for (int i = 0; i < 3; ++i)
+        {
+            int y = 34 + i * 34;
+            uint8_t val = (i == 0) ? s_customR : (i == 1) ? s_customG : s_customB;
+
+            if (s_customChannelSel == i)
+            {
+                C2D_DrawRectSolid(10, y - 2, GFX_DEPTH_DEFAULT, 300, 26, C2D_Color32(255, 255, 255, 25));
+            }
+
+            const char *cLabel = (i == 0) ? "R" : (i == 1) ? "G" : "B";
+            u32 cColor = (i == 0) ? C2D_Color32(255, 110, 110, 255) : (i == 1) ? C2D_Color32(110, 255, 110, 255) : C2D_Color32(120, 170, 255, 255);
+            gfx::drawText(cLabel, 14, y + 2, GFX_DEPTH_DEFAULT, 0.5f, (s_customChannelSel == i) ? cColor : gfx::txtCont);
+
+            // Track background
+            C2D_DrawRectSolid(34, y + 3, GFX_DEPTH_DEFAULT, 140, 16, C2D_Color32(50, 50, 50, 255));
+
+            // Filled track
+            int fillW = (int)((val / 255.0f) * 140.0f);
+            u32 fillCol = (i == 0) ? C2D_Color32(val, 30, 30, 255) : (i == 1) ? C2D_Color32(30, val, 30, 255) : C2D_Color32(30, 30, val, 255);
+            if (fillW > 0)
+            {
+                C2D_DrawRectSolid(34, y + 3, GFX_DEPTH_DEFAULT, fillW, 16, fillCol);
+            }
+
+            // Outline
+            C2D_DrawRectSolid(34, y + 3, GFX_DEPTH_DEFAULT, 140, 1, C2D_Color32(90, 90, 90, 255));
+            C2D_DrawRectSolid(34, y + 18, GFX_DEPTH_DEFAULT, 140, 1, C2D_Color32(90, 90, 90, 255));
+
+            // Thumb knob
+            int knobX = 34 + fillW - 2;
+            if (knobX < 34) knobX = 34;
+            if (knobX > 170) knobX = 170;
+            C2D_DrawRectSolid(knobX, y + 1, GFX_DEPTH_DEFAULT, 4, 20, C2D_Color32(255, 255, 255, 255));
+
+            // Value text
+            char vBuf[16];
+            snprintf(vBuf, sizeof(vBuf), "%3d", (int)val);
+            gfx::drawText(vBuf, 180, y + 2, GFX_DEPTH_DEFAULT, 0.45f, gfx::txtCont);
+
+            // Stepper buttons
+            for (int s = 0; s < 4; ++s)
+            {
+                C2D_DrawRectSolid(steppers[s].x, y + 1, GFX_DEPTH_DEFAULT, 23, 20, C2D_Color32(70, 70, 80, 255));
+                C2D_DrawRectSolid(steppers[s].x, y + 1, GFX_DEPTH_DEFAULT, 23, 1, C2D_Color32(110, 110, 120, 255));
+                gfx::drawText(steppers[s].txt, steppers[s].x + (s == 0 || s == 3 ? 2 : 4), y + 3, GFX_DEPTH_DEFAULT, 0.38f, gfx::txtCont);
+            }
+        }
+
+        // Utility Buttons
+        u32 bgHex = (s_customChannelSel == 3) ? C2D_Color32(65, 95, 145, 255) : C2D_Color32(45, 55, 70, 255);
+        C2D_DrawRectSolid(14, 138, GFX_DEPTH_DEFAULT, 140, 26, bgHex);
+        if (s_customChannelSel == 3)
+        {
+            C2D_DrawRectSolid(14, 138, GFX_DEPTH_DEFAULT, 140, 1, C2D_Color32(140, 180, 255, 255));
+        }
+        gfx::drawText(getTxt("\ue003 HEX 键盘输入"), 24, 143, GFX_DEPTH_DEFAULT, 0.44f, gfx::txtCont);
+
+        u32 bgRgb = (s_customChannelSel == 4) ? C2D_Color32(65, 95, 145, 255) : C2D_Color32(45, 55, 70, 255);
+        C2D_DrawRectSolid(166, 138, GFX_DEPTH_DEFAULT, 140, 26, bgRgb);
+        if (s_customChannelSel == 4)
+        {
+            C2D_DrawRectSolid(166, 138, GFX_DEPTH_DEFAULT, 140, 1, C2D_Color32(140, 180, 255, 255));
+        }
+        gfx::drawText(getTxt("RGB 数值输入"), 196, 143, GFX_DEPTH_DEFAULT, 0.44f, gfx::txtCont);
+
+        // Action Buttons
+        u32 bgApp = (s_customChannelSel == 5) ? C2D_Color32(40, 140, 70, 255) : C2D_Color32(30, 95, 50, 255);
+        C2D_DrawRectSolid(14, 172, GFX_DEPTH_DEFAULT, 140, 28, bgApp);
+        if (s_customChannelSel == 5)
+        {
+            C2D_DrawRectSolid(14, 172, GFX_DEPTH_DEFAULT, 140, 1, C2D_Color32(100, 255, 150, 255));
+        }
+        gfx::drawText(getTxt("\ue000 应用发色"), 36, 178, GFX_DEPTH_DEFAULT, 0.46f, gfx::txtCont);
+
+        u32 bgRst = (s_customChannelSel == 6) ? C2D_Color32(150, 50, 50, 255) : C2D_Color32(100, 35, 35, 255);
+        C2D_DrawRectSolid(166, 172, GFX_DEPTH_DEFAULT, 140, 28, bgRst);
+        if (s_customChannelSel == 6)
+        {
+            C2D_DrawRectSolid(166, 172, GFX_DEPTH_DEFAULT, 140, 1, C2D_Color32(255, 130, 130, 255));
+        }
+        gfx::drawText(getTxt("\ue002 恢复默认色"), 188, 178, GFX_DEPTH_DEFAULT, 0.46f, gfx::txtCont);
+    }
+
+    static void handleCustomColorUpdate(uint32_t down, uint32_t held, const touchPosition &touch)
+    {
+        if (!(held & KEY_TOUCH))
+        {
+            s_activeSliderDrag = -1;
+        }
+
+        // Slider dragging while touch is held
+        if (s_activeSliderDrag >= 0)
+        {
+            float frac = (float)(touch.px - 34) / 140.0f;
+            int v = (int)(frac * 255.0f + 0.5f);
+            if (v < 0) v = 0;
+            if (v > 255) v = 255;
+            if (s_activeSliderDrag == 0) s_customR = (uint8_t)v;
+            else if (s_activeSliderDrag == 1) s_customG = (uint8_t)v;
+            else if (s_activeSliderDrag == 2) s_customB = (uint8_t)v;
+        }
+
+        // Touch pressed
+        if (down & KEY_TOUCH)
+        {
+            for (int i = 0; i < 3; ++i)
+            {
+                int ry = 34 + i * 34;
+                if (touch.py >= ry - 2 && touch.py <= ry + 24)
+                {
+                    // Track area
+                    if (touch.px >= 30 && touch.px <= 178)
+                    {
+                        s_activeSliderDrag = i;
+                        s_customChannelSel = i;
+                        float frac = (float)(touch.px - 34) / 140.0f;
+                        int v = (int)(frac * 255.0f + 0.5f);
+                        if (v < 0) v = 0;
+                        if (v > 255) v = 255;
+                        if (i == 0) s_customR = (uint8_t)v;
+                        else if (i == 1) s_customG = (uint8_t)v;
+                        else if (i == 2) s_customB = (uint8_t)v;
+                        return;
+                    }
+                    // Value text area -> direct channel number input
+                    else if (touch.px >= 179 && touch.px <= 210)
+                    {
+                        s_customChannelSel = i;
+                        int cur = (i == 0) ? s_customR : (i == 1) ? s_customG : s_customB;
+                        const char *promptTxt = (i == 0) ? getTxt("输入红色通道 (R: 0-255)") : (i == 1) ? getTxt("输入绿色通道 (G: 0-255)") : getTxt("输入蓝色通道 (B: 0-255)");
+                        int nv = util::getInt(promptTxt, cur, 255);
+                        if (nv >= 0)
+                        {
+                            if (i == 0) s_customR = (uint8_t)nv;
+                            else if (i == 1) s_customG = (uint8_t)nv;
+                            else s_customB = (uint8_t)nv;
+                        }
+                        return;
+                    }
+                    // Stepper [-10]
+                    else if (touch.px >= 212 && touch.px <= 237)
+                    {
+                        s_customChannelSel = i;
+                        if (i == 0) s_customR = (s_customR > 10) ? s_customR - 10 : 0;
+                        else if (i == 1) s_customG = (s_customG > 10) ? s_customG - 10 : 0;
+                        else s_customB = (s_customB > 10) ? s_customB - 10 : 0;
+                        return;
+                    }
+                    // Stepper [-1]
+                    else if (touch.px >= 238 && touch.px <= 262)
+                    {
+                        s_customChannelSel = i;
+                        if (i == 0) s_customR = (s_customR > 0) ? s_customR - 1 : 0;
+                        else if (i == 1) s_customG = (s_customG > 0) ? s_customG - 1 : 0;
+                        else s_customB = (s_customB > 0) ? s_customB - 1 : 0;
+                        return;
+                    }
+                    // Stepper [+1]
+                    else if (touch.px >= 263 && touch.px <= 287)
+                    {
+                        s_customChannelSel = i;
+                        if (i == 0) s_customR = (s_customR < 255) ? s_customR + 1 : 255;
+                        else if (i == 1) s_customG = (s_customG < 255) ? s_customG + 1 : 255;
+                        else s_customB = (s_customB < 255) ? s_customB + 1 : 255;
+                        return;
+                    }
+                    // Stepper [+10]
+                    else if (touch.px >= 288 && touch.px <= 316)
+                    {
+                        s_customChannelSel = i;
+                        if (i == 0) s_customR = (s_customR < 245) ? s_customR + 10 : 255;
+                        else if (i == 1) s_customG = (s_customG < 245) ? s_customG + 10 : 255;
+                        else s_customB = (s_customB < 245) ? s_customB + 10 : 255;
+                        return;
+                    }
+                }
+            }
+
+            // Utility buttons
+            if (touch.py >= 136 && touch.py <= 166)
+            {
+                if (touch.px >= 14 && touch.px <= 154)
+                {
+                    s_customChannelSel = 3;
+                    promptHexInput();
+                    return;
+                }
+                else if (touch.px >= 166 && touch.px <= 306)
+                {
+                    s_customChannelSel = 4;
+                    promptRgbInput();
+                    return;
+                }
+            }
+
+            // Action buttons
+            if (touch.py >= 170 && touch.py <= 202)
+            {
+                if (touch.px >= 14 && touch.px <= 154)
+                {
+                    s_customChannelSel = 5;
+                    applyCustomHairColor();
+                    return;
+                }
+                else if (touch.px >= 166 && touch.px <= 306)
+                {
+                    s_customChannelSel = 6;
+                    ui::confirm(getTxt("确定要恢复默认发色吗？"), onConfirmResetCustomColor_t, nullptr, nullptr);
+                    return;
+                }
+            }
+        }
+
+        // Shortcut buttons
+        if (down & KEY_Y)
+        {
+            promptHexInput();
+            return;
+        }
+        if (down & KEY_X)
+        {
+            ui::confirm(getTxt("确定要恢复默认发色吗？"), onConfirmResetCustomColor_t, nullptr, nullptr);
+            return;
+        }
+
+        // D-Pad Navigation
+        if (down & KEY_UP)
+        {
+            if (s_customChannelSel == 0) s_customChannelSel = 5;
+            else if (s_customChannelSel == 1) s_customChannelSel = 0;
+            else if (s_customChannelSel == 2) s_customChannelSel = 1;
+            else if (s_customChannelSel == 3 || s_customChannelSel == 4) s_customChannelSel = 2;
+            else if (s_customChannelSel == 5) s_customChannelSel = 3;
+            else if (s_customChannelSel == 6) s_customChannelSel = 4;
+        }
+        else if (down & KEY_DOWN)
+        {
+            if (s_customChannelSel == 0) s_customChannelSel = 1;
+            else if (s_customChannelSel == 1) s_customChannelSel = 2;
+            else if (s_customChannelSel == 2) s_customChannelSel = 3;
+            else if (s_customChannelSel == 3) s_customChannelSel = 5;
+            else if (s_customChannelSel == 4) s_customChannelSel = 6;
+            else if (s_customChannelSel == 5) s_customChannelSel = 0;
+            else if (s_customChannelSel == 6) s_customChannelSel = 0;
+        }
+        else if (down & KEY_DLEFT)
+        {
+            if (s_customChannelSel == 0 && s_customR > 0) s_customR--;
+            else if (s_customChannelSel == 1 && s_customG > 0) s_customG--;
+            else if (s_customChannelSel == 2 && s_customB > 0) s_customB--;
+            else if (s_customChannelSel == 4) s_customChannelSel = 3;
+            else if (s_customChannelSel == 6) s_customChannelSel = 5;
+        }
+        else if (down & KEY_DRIGHT)
+        {
+            if (s_customChannelSel == 0 && s_customR < 255) s_customR++;
+            else if (s_customChannelSel == 1 && s_customG < 255) s_customG++;
+            else if (s_customChannelSel == 2 && s_customB < 255) s_customB++;
+            else if (s_customChannelSel == 3) s_customChannelSel = 4;
+            else if (s_customChannelSel == 5) s_customChannelSel = 6;
+        }
+
+        // D-Pad Left/Right repeating while held
+        if (held & (KEY_DLEFT | KEY_DRIGHT))
+        {
+            s_dpadRepeatCount++;
+            if (s_dpadRepeatCount > 16 && (s_dpadRepeatCount % 3 == 0))
+            {
+                int step = (s_dpadRepeatCount > 50) ? 5 : 1;
+                if (held & KEY_DLEFT)
+                {
+                    if (s_customChannelSel == 0) s_customR = (s_customR > step) ? s_customR - step : 0;
+                    else if (s_customChannelSel == 1) s_customG = (s_customG > step) ? s_customG - step : 0;
+                    else if (s_customChannelSel == 2) s_customB = (s_customB > step) ? s_customB - step : 0;
+                }
+                else if (held & KEY_DRIGHT)
+                {
+                    if (s_customChannelSel == 0) s_customR = (s_customR + step < 255) ? s_customR + step : 255;
+                    else if (s_customChannelSel == 1) s_customG = (s_customG + step < 255) ? s_customG + step : 255;
+                    else if (s_customChannelSel == 2) s_customB = (s_customB + step < 255) ? s_customB + step : 255;
+                }
+            }
+        }
+        else
+        {
+            s_dpadRepeatCount = 0;
+        }
+
+        // A Button execution
+        if (down & KEY_A)
+        {
+            if (s_customChannelSel == 0)
+            {
+                int v = util::getInt(getTxt("输入红色通道 (R: 0-255)"), s_customR, 255);
+                if (v >= 0) s_customR = (uint8_t)v;
+            }
+            else if (s_customChannelSel == 1)
+            {
+                int v = util::getInt(getTxt("输入绿色通道 (G: 0-255)"), s_customG, 255);
+                if (v >= 0) s_customG = (uint8_t)v;
+            }
+            else if (s_customChannelSel == 2)
+            {
+                int v = util::getInt(getTxt("输入蓝色通道 (B: 0-255)"), s_customB, 255);
+                if (v >= 0) s_customB = (uint8_t)v;
+            }
+            else if (s_customChannelSel == 3)
+            {
+                promptHexInput();
+            }
+            else if (s_customChannelSel == 4)
+            {
+                promptRgbInput();
+            }
+            else if (s_customChannelSel == 5)
+            {
+                applyCustomHairColor();
+            }
+            else if (s_customChannelSel == 6)
+            {
+                ui::confirm(getTxt("确定要恢复默认发色吗？"), onConfirmResetCustomColor_t, nullptr, nullptr);
+            }
+        }
     }
 
     void editorUpdate()
@@ -1045,6 +1524,10 @@ namespace ui
                         sd.girlfriend.nextHairG = def.g;
                         sd.girlfriend.nextHairB = def.b;
                         sd.girlfriend.hairColorActive = 0x00; // 0x00 = activate dyeing
+
+                        s_customR = def.r;
+                        s_customG = def.g;
+                        s_customB = def.b;
                     }
                     s_editorSubMenuOpen = false;
                     s_subAction = ACTION_NONE;
@@ -1077,14 +1560,23 @@ namespace ui
         // L / R / Circle Pad: Page switching
         if (down & KEY_PAGE_LEFT)
         {
-            s_editorPage = (s_editorPage + 3) % 4;
+            s_editorPage = (s_editorPage + 4) % 5;
             refreshEditorPageMenu(0);
             return;
         }
         else if (down & KEY_PAGE_RIGHT)
         {
-            s_editorPage = (s_editorPage + 1) % 4;
+            s_editorPage = (s_editorPage + 1) % 5;
             refreshEditorPageMenu(0);
+            return;
+        }
+
+        // Custom hair color page (Page 3)
+        if (s_editorPage == 3)
+        {
+            uint32_t held = ui::padKeysHeld();
+            touchPosition touch = ui::getTouchPosition();
+            handleCustomColorUpdate(down, held, touch);
             return;
         }
 
@@ -1406,7 +1898,7 @@ namespace ui
                 else if (sel == 4) { onConfirmReloadSlot(nullptr); }
                 else if (sel == 5) { onConfirmSaveSlot(nullptr); }
             }
-            else if (s_editorPage == 3) // 其他
+            else if (s_editorPage == 4) // 其他
             {
                 if (sel == 0)
                 {
@@ -1464,7 +1956,7 @@ namespace ui
 
     void editorDrawTop()
     {
-        static const char *pageTitles[] = { "玩家信息", "玩家读音", "女友发型", "其他" };
+        static const char *pageTitles[] = { "玩家信息", "玩家读音", "女友发型", "自定义发色", "其他" };
         ui::drawUIBar(TITLE_TEXT + " - " + getTxt(pageTitles[s_editorPage]), ui::SCREEN_TOP, true);
 
         const auto &sd = nlpp::g_saveMgr.getSlotData(s_editorSlot);
@@ -1536,6 +2028,48 @@ namespace ui
         }
         else if (s_editorPage == 3)
         {
+            // Left: Girlfriend hairstyle portrait with header
+            nlpp::portraitDrawStyle(24, 42);
+            gfx::drawText(getTxt("当前发型效果"), 24, 24, GFX_DEPTH_DEFAULT, 0.48f, gfx::txtCont);
+
+            // Right: Custom color swatch preview
+            gfx::drawText(getTxt("自定义颜色预览"), 184, 24, GFX_DEPTH_DEFAULT, 0.48f, gfx::txtCont);
+            C2D_DrawRectSolid(184, 42, GFX_DEPTH_DEFAULT, 76, 44, C2D_Color32(220, 220, 220, 255));
+            C2D_DrawRectSolid(185, 43, GFX_DEPTH_DEFAULT, 74, 42, C2D_Color32(s_customR, s_customG, s_customB, 255));
+
+            char hBuf[32], rgbBuf[32];
+            snprintf(hBuf, sizeof(hBuf), "#%02X%02X%02X", s_customR, s_customG, s_customB);
+            gfx::drawText(hBuf, 268, 44, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
+
+            snprintf(rgbBuf, sizeof(rgbBuf), "%d, %d, %d", s_customR, s_customG, s_customB);
+            gfx::drawText(rgbBuf, 268, 66, GFX_DEPTH_DEFAULT, 0.45f, gfx::txtCont);
+
+            // Perceptually matched Color ID and tone
+            uint8_t matchedId = nlpp::Dict::matchClosestColorId(s_customR, s_customG, s_customB);
+            const auto &cDef = nlpp::Dict::getHairColor(matchedId);
+
+            char buf[256];
+            snprintf(buf, sizeof(buf), "%s: %s (ID: %d)", getTxt("匹配发色"), getTxt(cDef.tone), (int)matchedId);
+            gfx::drawText(buf, 184, 94, GFX_DEPTH_DEFAULT, 0.45f, gfx::txtCont);
+
+            // Specular highlight description
+            std::string hlDesc = nlpp::Dict::getColorHighlightDesc(matchedId);
+            snprintf(buf, sizeof(buf), "%s: %s", getTxt("高光类型"), hlDesc.c_str());
+            gfx::drawTextWrap(buf, 184, 114, GFX_DEPTH_DEFAULT, 0.42f, 206, gfx::txtCont);
+
+            // Dyeing status & saved state
+            bool isAct = (sd.girlfriend.hairColorActive == 0x00);
+            snprintf(buf, sizeof(buf), "%s: %s", getTxt("染色状态"), isAct ? getTxt("激活 (0x00)") : getTxt("未激活 (0xFF)"));
+            gfx::drawText(buf, 184, 152, GFX_DEPTH_DEFAULT, 0.42f, gfx::txtCont);
+
+            snprintf(buf, sizeof(buf), "%s: %d, %d, %d", getTxt("当前存档RGB"), (int)sd.girlfriend.hairR, (int)sd.girlfriend.hairG, (int)sd.girlfriend.hairB);
+            gfx::drawText(buf, 184, 172, GFX_DEPTH_DEFAULT, 0.40f, gfx::txtCont);
+
+            snprintf(buf, sizeof(buf), "%s: ID %d", getTxt("当前存档色号"), (int)sd.girlfriend.hairColorId);
+            gfx::drawText(buf, 184, 190, GFX_DEPTH_DEFAULT, 0.40f, gfx::txtCont);
+        }
+        else if (s_editorPage == 4)
+        {
             char buf[512];
             bool hasFilter = (sd.stats.cameraFilter != -1) && ((sd.stats.equipMask & 0x04) != 0);
             std::string fStr = hasFilter ? getTxt("使用中") : getTxt("无滤镜");
@@ -1584,6 +2118,13 @@ namespace ui
         {
             s_editorSubMenu.draw(10, 16, gfx::txtCont, 300, true);
             ui::drawUIBar(getTxt("\ue000 确定  \ue001 取消"), ui::SCREEN_BOT, true);
+            return;
+        }
+
+        if (s_editorPage == 3)
+        {
+            editorDrawCustomColorBot();
+            ui::drawUIBar(getTxt("\ue000 应用  \ue003 HEX输入  \ue002 恢复默认  \ue01A\ue077\ue019 切换页面"), ui::SCREEN_BOT, true);
             return;
         }
 

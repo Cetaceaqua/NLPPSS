@@ -824,3 +824,115 @@ msgstr "Beloved Pair"
 
 msgid "游戏卡带已拔出！"
 msgstr "Game cartridge was removed!"
+
+msgid "自定义发色"
+msgstr "Custom Hair Color"
+
+msgid "当前发型效果"
+msgstr "Current Hairstyle"
+
+msgid "自定义颜色预览"
+msgstr "Custom Color Preview"
+
+msgid "匹配发色"
+msgstr "Matched Tone"
+
+msgid "高光类型"
+msgstr "Specular Highlight"
+
+msgid "染色状态"
+msgstr "Dyeing Status"
+
+msgid "激活 (0x00)"
+msgstr "Active (0x00)"
+
+msgid "未激活 (0xFF)"
+msgstr "Inactive (0xFF)"
+
+msgid "当前存档RGB"
+msgstr "Save Hair RGB"
+
+msgid "当前存档色号"
+msgstr "Save Color ID"
+
+msgid "RGB 滑块微调与数值输入"
+msgstr "RGB Sliders & Numerical Input"
+
+msgid "\ue003 HEX 键盘输入"
+msgstr "\ue003 HEX Input"
+
+msgid "RGB 数值输入"
+msgstr "RGB Input"
+
+msgid "\ue000 应用发色"
+msgstr "\ue000 Apply Color"
+
+msgid "\ue002 恢复默认色"
+msgstr "\ue002 Reset Default"
+
+msgid "\ue000 应用  \ue003 HEX输入  \ue002 恢复默认  \ue01A\ue077\ue019 切换页面"
+msgstr "\ue000 Apply  \ue003 HEX  \ue002 Reset  \ue01A\ue077\ue019 Switch Page"
+
+msgid "输入HEX颜色代码 (如 #D8335B 或 D8335B)"
+msgstr "Enter HEX Color Code (e.g. #D8335B or D8335B)"
+
+msgid "无效的 HEX 颜色代码！\n格式应为 6 位十六进制，例如 #D8335B"
+msgstr "Invalid HEX color code!\nExpected 6-digit hex, e.g. #D8335B"
+
+msgid "输入红色通道 (R: 0-255)"
+msgstr "Enter Red Channel (R: 0-255)"
+
+msgid "输入绿色通道 (G: 0-255)"
+msgstr "Enter Green Channel (G: 0-255)"
+
+msgid "输入蓝色通道 (B: 0-255)"
+msgstr "Enter Blue Channel (B: 0-255)"
+
+msgid "已应用自定义发色并匹配最佳高光！\n请记得在菜单中保存修改。"
+msgstr "Custom hair color applied with matched highlight!\nPlease remember to save changes."
+
+msgid "确定要恢复默认发色吗？"
+msgstr "Reset girlfriend's hair color to default?"
+
+msgid "已恢复女友的默认发色！\n请记得在菜单中保存修改。"
+msgstr "Restored girlfriend's hair color to default!\nPlease remember to save changes."
+
+msgid "纯白自然反光高光"
+msgstr "Pure White Natural Specular"
+
+msgid "金色冷光/淡黄高光"
+msgstr "Golden Cool / Pale Yellow Specular"
+
+msgid "暖淡紫粉反射高光"
+msgstr "Warm Pale Violet-Pink Specular"
+
+msgid "冷灰银白高光"
+msgstr "Cool Gray Silver-White Specular"
+
+msgid "柔和栗茶琥珀高光"
+msgstr "Soft Chestnut Amber Specular"
+
+msgid "深赤茶/酒红高光"
+msgstr "Deep Wine Red / Crimson Specular"
+
+msgid "艳丽粉红反射高光"
+msgstr "Vivid Pink Specular"
+
+msgid "宝石蓝/天蓝反光高光"
+msgstr "Sapphire / Sky Blue Specular"
+
+msgid "翡翠绿/草绿反光高光"
+msgstr "Emerald / Grass Green Specular"
+
+msgid "魅惑紫/紫罗兰高光"
+msgstr "Glamour Violet Specular"
+
+msgid "明艳珊瑚橙反光高光"
+msgstr "Vivid Coral Orange Specular"
+
+msgid "深青/墨绿反光高光"
+msgstr "Dark Cyan / Deep Green Specular"
+
+msgid "标准中性反射高光"
+msgstr "Standard Neutral Specular"
+
