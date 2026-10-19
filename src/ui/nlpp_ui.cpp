@@ -134,16 +134,8 @@ namespace ui
     {
         nlpp::g_saveMgr.detectSources();
         s_lastCardInserted = nlpp::g_saveMgr.hasGameCard();
-        nlpp::SaveSource preferred = (cfg::config["default_type"] == 1) ? nlpp::SOURCE_GAMECARD : nlpp::SOURCE_SD;
-        if (preferred == nlpp::SOURCE_GAMECARD && !nlpp::g_saveMgr.hasGameCard() && nlpp::g_saveMgr.hasSD())
-        {
-            preferred = nlpp::SOURCE_SD;
-        }
-        else if (preferred == nlpp::SOURCE_SD && !nlpp::g_saveMgr.hasSD() && nlpp::g_saveMgr.hasGameCard())
-        {
-            preferred = nlpp::SOURCE_GAMECARD;
-        }
-        s_currentSource = preferred;
+        nlpp::SaveSource defaultSrc = (cfg::config["default_type"] == 1) ? nlpp::SOURCE_GAMECARD : nlpp::SOURCE_SD;
+        s_currentSource = defaultSrc;
         nlpp::g_saveMgr.switchSource(s_currentSource);
 
         s_mediaMenu.reset();
@@ -168,18 +160,31 @@ namespace ui
         // Auto-load on boot logic if enabled
         if (cfg::config["autoload"] == 1)
         {
-            nlpp::SaveSource defaultSrc = (cfg::config["default_type"] == 1) ? nlpp::SOURCE_GAMECARD : nlpp::SOURCE_SD;
             bool srcAvailable = (defaultSrc == nlpp::SOURCE_GAMECARD) ? nlpp::g_saveMgr.hasGameCard() : nlpp::g_saveMgr.hasSD();
 
-            if (srcAvailable)
+            if (!srcAvailable)
             {
-                nlpp::g_saveMgr.switchSource(defaultSrc);
+                // 版本不可用，自动留在/回到版本选择菜单，不切换到另一个版本
+                s_slotSelectOpen = false;
+                s_mediaMenu.setSelected((defaultSrc == nlpp::SOURCE_GAMECARD) ? 1 : 0);
+            }
+            else
+            {
                 int defaultSlot = cfg::config["default_slot"];
-                if (defaultSlot < 0 || defaultSlot >= 3) defaultSlot = 0;
+                if (defaultSlot < 0 || defaultSlot >= nlpp::NUM_SLOTS) defaultSlot = 0;
 
                 const auto &slotData = nlpp::g_saveMgr.getSlotData(defaultSlot);
-                if (!slotData.empty)
+                if (slotData.empty)
                 {
+                    // 槽位不可用（为空），自动进入当前版本的槽位选择菜单，而不是选择另一个版本
+                    s_slotSelectOpen = true;
+                    s_slotMenu.setSelected(defaultSlot);
+                }
+                else
+                {
+                    // 版本与槽位均可用，自动加载进入槽位编辑器
+                    s_slotSelectOpen = true;
+                    s_slotMenu.setSelected(defaultSlot);
                     nlpp::g_saveMgr.selectSlot(defaultSlot);
                     ui::editorInit(defaultSlot);
                     ui::state = SLOT_EDITOR;
