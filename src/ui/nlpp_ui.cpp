@@ -745,11 +745,11 @@ namespace ui
     static void onConfirmSaveSlot_t(void *a)
     {
         threadInfo *t = (threadInfo *)a;
-        nlpp::g_saveMgr.serializeSlot(s_editorSlot);
         if (cfg::config["autobackup"])
         {
             nlpp::g_saveMgr.createAutoBackup(nullptr);
         }
+        nlpp::g_saveMgr.serializeSlot(s_editorSlot);
         if (nlpp::g_saveMgr.commitChanges())
         {
             nlpp::g_saveMgr.reloadAll();

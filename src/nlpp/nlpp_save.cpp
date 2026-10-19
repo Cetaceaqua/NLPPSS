@@ -278,10 +278,12 @@ namespace nlpp
         // 0. Primary Empty Slot Detection: Check Slot Info Card (savedata6/31/56, 115B)
         bool cardEmpty = false;
         bool cardDetermined = false;
+        int32_t cardHeroine = -1;
         if (m_fileLoaded[cardFile] && m_files[cardFile].size() >= 12)
         {
             uint8_t activeFlag = m_files[cardFile][0x04];
             int32_t heroineTarget = *(const int32_t *)&m_files[cardFile][0x08];
+            cardHeroine = heroineTarget;
             if (activeFlag == 0x00 && heroineTarget == -1)
             {
                 cardEmpty = true;
@@ -357,10 +359,31 @@ namespace nlpp
         {
             const uint8_t *gbuf = m_files[gfFile].data();
             sd.girlfriend.mode = gbuf[0x04];
-            // If cardFile was absent/unspecified, fallback to savedata18 lover state heroine at 0x221
-            if (sd.girlfriend.heroine == HEROINE_NONE && sd.girlfriend.mode == 2 && gbuf[0x221] <= 2)
+
+            // Section 1.4 & 7.9: Physical Lover Object cross-validation & determination
+            // In Lover mode (mode == 2 or 3), savedata18 offset 0x221 holds the physical ground truth
+            // of the Lover Data object. If cardFile has a desynchronized or corrupted heroine,
+            // savedata18[0x221] takes authoritative precedence and heals it.
+            if ((sd.girlfriend.mode == 2 || sd.girlfriend.mode == 3) && gbuf[0x221] <= 2)
             {
                 sd.girlfriend.heroine = (HeroineID)gbuf[0x221];
+            }
+            else if (sd.girlfriend.mode == 1 || cardHeroine == -1)
+            {
+                sd.girlfriend.heroine = HEROINE_NONE; // Friend mode (未告白阶段)
+            }
+            else if (cardHeroine >= 0 && cardHeroine <= 2)
+            {
+                sd.girlfriend.heroine = (HeroineID)cardHeroine;
+            }
+            else
+            {
+                sd.girlfriend.heroine = HEROINE_NONE;
+            }
+
+            if (cardEmpty)
+            {
+                sd.girlfriend.heroine = HEROINE_NONE;
             }
             sd.girlfriend.affection = gbuf[0x243];
             sd.girlfriend.coupleExp = *(const uint32_t *)&gbuf[0x2AC];
@@ -636,6 +659,29 @@ namespace nlpp
         memset(&tbuf[0x4D], 0, 256);
         m_fileDirty[timeFile] = true;
 
+        // Section 1.5: Most Recently Played slot timestamp update (savedata7/32/57 at 0x18 ~ 0x1F)
+        int ctxFile = getSlotFile(FILE_BASE_PROFILE_CARD, slot);
+        if (m_fileLoaded[ctxFile] && m_files[ctxFile].size() >= 0x20)
+        {
+            uint8_t *ctxBuf = m_files[ctxFile].data();
+            uint64_t maxTs = 0;
+            for (int s = 0; s < NUM_SLOTS; ++s)
+            {
+                int otherCtx = getSlotFile(FILE_BASE_PROFILE_CARD, s);
+                if (m_fileLoaded[otherCtx] && m_files[otherCtx].size() >= 0x20)
+                {
+                    uint64_t ts = *(const uint64_t *)&m_files[otherCtx][0x18];
+                    if (ts > maxTs) maxTs = ts;
+                }
+            }
+            uint64_t currentTs = *(const uint64_t *)&ctxBuf[0x18];
+            if (currentTs <= maxTs && maxTs > 0)
+            {
+                *(uint64_t *)&ctxBuf[0x18] = maxTs + 1;
+                m_fileDirty[ctxFile] = true;
+            }
+        }
+
         // Sync appellations to savedata3 and savedata21
         syncAppellations(slot);
         return true;
@@ -663,6 +709,11 @@ namespace nlpp
                 {
                     memcpy(&g3[offset], &sbuf[0x281], 24);
                 }
+            }
+            // Section 10.4: Global gallery option pointer sync (savedata3 0x3A5A ~ 0x3A5C)
+            if (h >= 0 && h <= 2 && m_files[FILE_GLOBAL_GALLERY].size() >= 0x3A5D)
+            {
+                g3[0x3A5A + h] = (uint8_t)slot;
             }
             m_fileDirty[FILE_GLOBAL_GALLERY] = true;
         }
