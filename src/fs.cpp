@@ -462,7 +462,7 @@ void fs::dirList::reassign(const FS_Archive& arch, const std::u16string& p, bool
 void fs::copyFile(const FS_Archive& _srcArch, const std::u16string& _src, const FS_Archive& _dstArch, const std::u16string& _dst, bool commit, bool isPxi, threadInfo *t)
 {
     if(t)
-        t->status->setStatus(getTxt("正在复制 ") + util::toUtf8(_src) +"...");
+        t->status->setStatus(std::string(getTxt("正在复制")) + " " + util::toUtf8(_src) +"...");
 
     fs::fsfile src(_srcArch, _src, FS_OPEN_READ);
 

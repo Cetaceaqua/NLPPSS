@@ -87,9 +87,9 @@ static std::string getUILangMessage(const int& g)
 static std::string getDeflateLevelText(const int& g)
 {
     std::string s = std::string(getTxt("ZIP 压缩等级")) + ": " + std::to_string(g);
-    if (g == 1) s += getTxt(" (最快速度)");
-    else if (g == 6) s += getTxt(" (标准压缩)");
-    else if (g == 9) s += getTxt(" (极限压缩)");
+    if (g == 1) s += " " + std::string(getTxt("(最快速度)"));
+    else if (g == 6) s += " " + std::string(getTxt("(标准压缩)"));
+    else if (g == 9) s += " " + std::string(getTxt("(极限压缩)"));
     return s;
 }
 
@@ -269,7 +269,7 @@ void ui::setUpdate()
 void ui::setDrawTop()
 {
     ui::drawUIBar(std::string(TITLE_TEXT) + " - " + getTxt("设置"), ui::SCREEN_TOP, true);
-    setMenu.draw(0, 22, gfx::txtCont, 400);
+    setMenu.draw(0, 22, gfx::txtCont, 400, true);
 }
 
 void ui::setDrawBottom()

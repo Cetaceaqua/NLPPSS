@@ -6,11 +6,20 @@ msgstr ""
 msgid "(最快速度)"
 msgstr "(最快速度)"
 
+msgid " (最快速度)"
+msgstr " (最快速度)"
+
 msgid "(极限压缩)"
 msgstr "(最高壓縮)"
 
+msgid " (极限压缩)"
+msgstr " (最高壓縮)"
+
 msgid "(标准压缩)"
 msgstr "(標準壓縮)"
+
+msgid " (标准压缩)"
+msgstr " (標準壓縮)"
 
 msgid "(空)"
 msgstr "(空)"
@@ -431,6 +440,9 @@ msgstr "正在儲存設定..."
 
 msgid "正在复制"
 msgstr "正在複製"
+
+msgid "正在复制 "
+msgstr "正在複製 "
 
 msgid "派对 (清纯)"
 msgstr "派對 (清純)"
