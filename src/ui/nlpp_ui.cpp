@@ -652,16 +652,17 @@ namespace ui
         }
         else if (s_editorPage == 1) // 2. 玩家读音
         {
+            int curIdx = sd.stats.currentSelector < 5 ? sd.stats.currentSelector : 0;
             char curCallBuf[96];
             snprintf(curCallBuf, sizeof(curCallBuf), "%s: %d %s", getTxt("当前使用"), (int)sd.stats.currentSelector,
-                     nlpp::Dict::getReadingDisplay(sd.stats.readings[sd.stats.currentSelector < 5 ? sd.stats.currentSelector : 0]).c_str());
+                     nlpp::Dict::getReadingSlotDisplay(curIdx, sd.stats.readings[curIdx]).c_str());
             s_editorMenu.addOpt(curCallBuf, 300);
 
-            s_editorMenu.addOpt(std::string(getTxt("0 姓氏读音")) + ": " + nlpp::Dict::getReadingDisplay(sd.stats.readings[0]), 300);
-            s_editorMenu.addOpt(std::string(getTxt("1 名字读音")) + ": " + nlpp::Dict::getReadingDisplay(sd.stats.readings[1]), 300);
-            s_editorMenu.addOpt(std::string(getTxt("2 后缀读音")) + ": " + nlpp::Dict::getReadingDisplay(sd.stats.readings[2]), 300);
-            s_editorMenu.addOpt(std::string(getTxt("3 预设读音")) + ": " + nlpp::Dict::getReadingDisplay(sd.stats.readings[3]), 300);
-            s_editorMenu.addOpt(std::string(getTxt("4 特殊读音")) + ": " + nlpp::Dict::getReadingDisplay(sd.stats.readings[4]), 300);
+            s_editorMenu.addOpt(std::string(getTxt("0 姓氏读音")) + ": " + nlpp::Dict::getReadingSlotDisplay(0, sd.stats.readings[0]), 300);
+            s_editorMenu.addOpt(std::string(getTxt("1 名字读音")) + ": " + nlpp::Dict::getReadingSlotDisplay(1, sd.stats.readings[1]), 300);
+            s_editorMenu.addOpt(std::string(getTxt("2 后缀读音")) + ": " + nlpp::Dict::getReadingSlotDisplay(2, sd.stats.readings[2]), 300);
+            s_editorMenu.addOpt(std::string(getTxt("3 预设读音")) + ": " + nlpp::Dict::getReadingSlotDisplay(3, sd.stats.readings[3]), 300);
+            s_editorMenu.addOpt(std::string(getTxt("4 特殊读音")) + ": " + nlpp::Dict::getReadingSlotDisplay(4, sd.stats.readings[4]), 300);
 
             s_editorMenu.addOpt(getTxt("★ 重新加载"), 300);
             s_editorMenu.addOpt(getTxt("♥ 保存修改"), 300);
@@ -1796,12 +1797,12 @@ namespace ui
                      "%s: %s\n"
                      "%s: %s\n"
                      "%s: %s",
-                     getTxt("当前使用"), (int)sd.stats.currentSelector, nlpp::Dict::getReadingDisplay(sd.stats.readings[sd.stats.currentSelector < 5 ? sd.stats.currentSelector : 0]).c_str(),
-                     getTxt("0 姓氏读音"), nlpp::Dict::getReadingDisplay(sd.stats.readings[0]).c_str(),
-                     getTxt("1 名字读音"), nlpp::Dict::getReadingDisplay(sd.stats.readings[1]).c_str(),
-                     getTxt("2 后缀读音"), nlpp::Dict::getReadingDisplay(sd.stats.readings[2]).c_str(),
-                     getTxt("3 预设读音"), nlpp::Dict::getReadingDisplay(sd.stats.readings[3]).c_str(),
-                     getTxt("4 特殊读音"), nlpp::Dict::getReadingDisplay(sd.stats.readings[4]).c_str());
+                     getTxt("当前使用"), (int)sd.stats.currentSelector, nlpp::Dict::getReadingSlotDisplay(sd.stats.currentSelector < 5 ? sd.stats.currentSelector : 0, sd.stats.readings[sd.stats.currentSelector < 5 ? sd.stats.currentSelector : 0]).c_str(),
+                     getTxt("0 姓氏读音"), nlpp::Dict::getReadingSlotDisplay(0, sd.stats.readings[0]).c_str(),
+                     getTxt("1 名字读音"), nlpp::Dict::getReadingSlotDisplay(1, sd.stats.readings[1]).c_str(),
+                     getTxt("2 后缀读音"), nlpp::Dict::getReadingSlotDisplay(2, sd.stats.readings[2]).c_str(),
+                     getTxt("3 预设读音"), nlpp::Dict::getReadingSlotDisplay(3, sd.stats.readings[3]).c_str(),
+                     getTxt("4 特殊读音"), nlpp::Dict::getReadingSlotDisplay(4, sd.stats.readings[4]).c_str());
             gfx::drawText(buf, 20, 36, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
         }
         else if (s_editorPage == 2)

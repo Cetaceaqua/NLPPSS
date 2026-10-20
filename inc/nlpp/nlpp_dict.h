@@ -17,6 +17,7 @@ namespace nlpp
         static const ReadingEntry *getReadingById(uint16_t id);
         static std::string getReadingText(uint16_t id);
         static std::string getReadingDisplay(uint16_t id);
+        static std::string getReadingSlotDisplay(uint8_t slotIndex, uint16_t id);
         static std::vector<const ReadingEntry *> filterReadings(uint8_t slotMask, uint8_t heroineMask, const std::string &search = "");
 
         // Prefectures (0..46)

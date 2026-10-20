@@ -211,6 +211,19 @@ namespace nlpp
         return std::string(buf);
     }
 
+    std::string Dict::getReadingSlotDisplay(uint8_t slotIndex, uint16_t id)
+    {
+        if ((slotIndex == 2 || slotIndex == 4) && id == 0)
+        {
+            return getTxt("未设定");
+        }
+        if (slotIndex == 3 && id == 0)
+        {
+            return getTxt("未设定");
+        }
+        return getReadingDisplay(id);
+    }
+
     static std::string cleanSearchStr(const std::string &s)
     {
         std::string res;
