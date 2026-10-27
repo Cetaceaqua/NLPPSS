@@ -672,7 +672,7 @@ namespace ui
             s_editorMenu.addOpt(std::string(getTxt("发长")) + ": " + nlpp::Dict::getHairLengthName(sd.girlfriend.heroine, sd.girlfriend.hairLength), 300);
             s_editorMenu.addOpt(std::string(getTxt("发型")) + ": " + nlpp::getCleanStyleName(sd.girlfriend.heroine, sd.girlfriend.hairLength, sd.girlfriend.hairStyleId), 300);
             s_editorMenu.addOpt(std::string(getTxt("发色")) + ": " + (nlpp::Dict::isCustomHairColor(sd.girlfriend.heroine, sd.girlfriend.hairR, sd.girlfriend.hairG, sd.girlfriend.hairB, sd.girlfriend.hairColorActive)
-                     ? getTxt("自定义发色")
+                     ? getTxt("自定义")
                      : nlpp::getCleanColorName(sd.girlfriend.heroine, sd.girlfriend.hairColorId)), 300);
             s_editorMenu.addOpt(getTxt("重置为初始发型"), 300);
 
@@ -1822,7 +1822,7 @@ namespace ui
         {
             std::string curStyleName = nlpp::getCleanStyleName(sd.girlfriend.heroine, sd.girlfriend.hairLength, sd.girlfriend.hairStyleId);
             std::string curColorName = nlpp::Dict::isCustomHairColor(sd.girlfriend.heroine, sd.girlfriend.hairR, sd.girlfriend.hairG, sd.girlfriend.hairB, sd.girlfriend.hairColorActive)
-                                       ? getTxt("自定义发色")
+                                       ? getTxt("自定义")
                                        : nlpp::getCleanColorName(sd.girlfriend.heroine, sd.girlfriend.hairColorId);
 
             if (s_editorSubMenuOpen && s_subAction == ACTION_HAIR_STYLE)

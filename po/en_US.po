@@ -825,6 +825,9 @@ msgstr "Beloved Pair"
 msgid "游戏卡带已拔出！"
 msgstr "Game cartridge was removed!"
 
+msgid "自定义"
+msgstr "Custom"
+
 msgid "自定义发色"
 msgstr "Custom Hair Color"
 

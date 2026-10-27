@@ -825,6 +825,9 @@ msgstr "最愛的二人"
 msgid "游戏卡带已拔出！"
 msgstr "遊戲卡帶已拔出！"
 
+msgid "自定义"
+msgstr "自訂"
+
 msgid "自定义发色"
 msgstr "自訂髮色"
 
