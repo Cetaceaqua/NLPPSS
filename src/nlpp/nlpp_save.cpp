@@ -418,7 +418,7 @@ namespace nlpp
             sd.girlfriend.reservedStyleId = gbuf[0x469];
             sd.girlfriend.hairTasteTarget = gbuf[0x46A];
 
-            sd.girlfriend.hairColorId = gbuf[0x50A];
+            uint8_t raw50a = gbuf[0x50A];
             sd.girlfriend.nextHairColorId = gbuf[0x50B];
             sd.girlfriend.hairR = gbuf[0x4B3];
             sd.girlfriend.hairG = gbuf[0x4B4];
@@ -427,6 +427,13 @@ namespace nlpp
             sd.girlfriend.nextHairG = gbuf[0x4B7];
             sd.girlfriend.nextHairB = gbuf[0x4B8];
             sd.girlfriend.hairColorActive = gbuf[0x54C];
+            sd.girlfriend.hairColorId = Dict::resolveHairColorId(
+                sd.girlfriend.heroine,
+                sd.girlfriend.hairR, sd.girlfriend.hairG, sd.girlfriend.hairB,
+                sd.girlfriend.hairColorActive,
+                sd.girlfriend.nextHairColorId,
+                raw50a
+            );
 
             // Personality coordinates at 0x2D0 ~ 0x2D3
             sd.girlfriend.sliderX = *(const uint16_t *)&gbuf[0x2D0];
@@ -611,15 +618,26 @@ namespace nlpp
         }
 
         // Hair color synchronization
-        gbuf[0x50A] = sd.girlfriend.hairColorId;
-        gbuf[0x50B] = sd.girlfriend.nextHairColorId;
+        if (sd.girlfriend.hairColorId == 0)
+        {
+            gbuf[0x50A] = 0;
+            gbuf[0x50B] = 0;
+            gbuf[0x54C] = 0xFF;
+        }
+        else
+        {
+            gbuf[0x50A] = sd.girlfriend.hairColorId;
+            gbuf[0x50B] = (sd.girlfriend.nextHairColorId != 0) ? sd.girlfriend.nextHairColorId : sd.girlfriend.hairColorId;
+            gbuf[0x54C] = (sd.girlfriend.hairColorActive <= 0x64) ? sd.girlfriend.hairColorActive : 0x00;
+        }
+
         gbuf[0x4B3] = sd.girlfriend.hairR;
         gbuf[0x4B4] = sd.girlfriend.hairG;
         gbuf[0x4B5] = sd.girlfriend.hairB;
-        gbuf[0x4B6] = sd.girlfriend.nextHairR;
-        gbuf[0x4B7] = sd.girlfriend.nextHairG;
-        gbuf[0x4B8] = sd.girlfriend.nextHairB;
-        gbuf[0x54C] = sd.girlfriend.hairColorActive;
+        gbuf[0x4B6] = sd.girlfriend.hairR;
+        gbuf[0x4B7] = sd.girlfriend.hairG;
+        gbuf[0x4B8] = sd.girlfriend.hairB;
+
 
         // Hair RGB cache mirror
         gbuf[0x2DE] = sd.girlfriend.hairR;

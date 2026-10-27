@@ -3,7 +3,7 @@ NLPPSS - NEWラブプラス+ Save Studio
 
 <p align="left">
 <a href="http://www.gnu.org/copyleft/gpl.html"><img alt="license" src="https://img.shields.io/badge/license-GPL%20V3-blue.svg?style=flat"/></a>
-<a href="https://github.com/Cetaceaqua/NLPPSS/releases/latest"><img alt="release" src="https://img.shields.io/badge/release-v1.3.1-brightgreen.svg?style=flat"/></a>
+<a href="https://github.com/Cetaceaqua/NLPPSS/releases/latest"><img alt="release" src="https://img.shields.io/badge/release-v1.3.2-brightgreen.svg?style=flat"/></a>
 <a href="https://github.com/Cetaceaqua/NLPPSS"><img alt="platform" src="https://img.shields.io/badge/platform-Nintendo%203DS-red.svg?style=flat"/></a>
 </p>
 

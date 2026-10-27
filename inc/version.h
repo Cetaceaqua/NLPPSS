@@ -6,7 +6,7 @@
 #endif
 
 #ifndef APP_VERSION
-#define APP_VERSION "v1.3.1"
+#define APP_VERSION "v1.3.2"
 #endif
 
 #ifndef APP_DESCRIPTION

@@ -33,6 +33,11 @@ namespace nlpp
         static void getDefaultHairRGB(HeroineID heroine, uint8_t &r, uint8_t &g, uint8_t &b);
         static uint8_t matchClosestColorId(uint8_t r, uint8_t g, uint8_t b);
         static std::string getColorHighlightDesc(uint8_t colorId);
+        static bool isHairDyed(HeroineID heroine, uint8_t r, uint8_t g, uint8_t b, uint8_t val54c);
+        static int reverseLookupHairColorId(HeroineID heroine, uint8_t r, uint8_t g, uint8_t b);
+        static uint8_t resolveHairColorId(HeroineID heroine, uint8_t r, uint8_t g, uint8_t b,
+                                           uint8_t val54c, uint8_t val50b, uint8_t val50a);
+        static bool isCustomHairColor(HeroineID heroine, uint8_t r, uint8_t g, uint8_t b, uint8_t val54c);
 
         // Hair styles
         static const std::vector<HairStyleDef> &getAvailableStyles(HeroineID heroine, uint8_t hairLength);

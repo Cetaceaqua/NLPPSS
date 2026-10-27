@@ -505,6 +505,115 @@ namespace nlpp
         return bestId;
     }
 
+    bool Dict::isHairDyed(HeroineID heroine, uint8_t r, uint8_t g, uint8_t b, uint8_t val54c)
+    {
+        uint8_t defR = 0, defG = 0, defB = 0;
+        getDefaultHairRGB(heroine, defR, defG, defB);
+        if (val54c != 0xFF) return true;
+        if (r != defR || g != defG || b != defB) return true;
+        return false;
+    }
+
+    int Dict::reverseLookupHairColorId(HeroineID heroine, uint8_t r, uint8_t g, uint8_t b)
+    {
+        uint8_t defR = 0, defG = 0, defB = 0;
+        getDefaultHairRGB(heroine, defR, defG, defB);
+        if (abs((int)r - (int)defR) <= 1 && abs((int)g - (int)defG) <= 1 && abs((int)b - (int)defB) <= 1)
+        {
+            return 0;
+        }
+        for (int i = 1; i <= 19; ++i)
+        {
+            const auto &p = s_hairColors[i];
+            if (abs((int)r - (int)p.r) <= 1 && abs((int)g - (int)p.g) <= 1 && abs((int)b - (int)p.b) <= 1)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    uint8_t Dict::resolveHairColorId(HeroineID heroine, uint8_t r, uint8_t g, uint8_t b,
+                                     uint8_t val54c, uint8_t val50b, uint8_t val50a)
+    {
+        uint8_t defR = 0, defG = 0, defB = 0;
+        getDefaultHairRGB(heroine, defR, defG, defB);
+
+        // Step 1: Default hair color verification
+        if (r == defR && g == defG && b == defB)
+        {
+            if (heroine == HEROINE_NENE)
+            {
+                // Nene's default RGB (76, 51, 43) is identical to Color ID 8.
+                // If val50b == 8 or (val50a == 8 && val54c != 0xFF), dyed to Color 8.
+                if (val50b == 8 || (val50a == 8 && val54c != 0xFF))
+                {
+                    return 8;
+                }
+                if (val54c == 0xFF || val50b == 0)
+                {
+                    return 0;
+                }
+            }
+            else
+            {
+                if (val54c == 0xFF || val50b == 0)
+                {
+                    return 0;
+                }
+            }
+        }
+
+        // Step 2: 19-preset palette reverse lookup (highest priority)
+        if (val50b >= 1 && val50b <= 19)
+        {
+            const auto &p = s_hairColors[val50b];
+            if (abs((int)r - (int)p.r) <= 1 && abs((int)g - (int)p.g) <= 1 && abs((int)b - (int)p.b) <= 1)
+            {
+                return val50b;
+            }
+        }
+
+        for (int k = 1; k <= 19; ++k)
+        {
+            const auto &p = s_hairColors[k];
+            if (abs((int)r - (int)p.r) <= 1 && abs((int)g - (int)p.g) <= 1 && abs((int)b - (int)p.b) <= 1)
+            {
+                return (uint8_t)k;
+            }
+        }
+
+        // Step 3: Custom RGB fallback
+        if (val50b >= 1 && val50b <= 19) return val50b;
+        if (val50a >= 1 && val50a <= 19) return val50a;
+        return matchClosestColorId(r, g, b);
+    }
+
+    bool Dict::isCustomHairColor(HeroineID heroine, uint8_t r, uint8_t g, uint8_t b, uint8_t val54c)
+    {
+        uint8_t defR = 0, defG = 0, defB = 0;
+        getDefaultHairRGB(heroine, defR, defG, defB);
+
+        if (r == defR && g == defG && b == defB)
+        {
+            if (heroine != HEROINE_NENE || val54c == 0xFF)
+            {
+                return false;
+            }
+        }
+
+        for (int k = 1; k <= 19; ++k)
+        {
+            const auto &p = s_hairColors[k];
+            if (abs((int)r - (int)p.r) <= 1 && abs((int)g - (int)p.g) <= 1 && abs((int)b - (int)p.b) <= 1)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     std::string Dict::getColorHighlightDesc(uint8_t colorId)
     {
         switch (colorId)

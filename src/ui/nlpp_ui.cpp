@@ -671,7 +671,9 @@ namespace ui
         {
             s_editorMenu.addOpt(std::string(getTxt("发长")) + ": " + nlpp::Dict::getHairLengthName(sd.girlfriend.heroine, sd.girlfriend.hairLength), 300);
             s_editorMenu.addOpt(std::string(getTxt("发型")) + ": " + nlpp::getCleanStyleName(sd.girlfriend.heroine, sd.girlfriend.hairLength, sd.girlfriend.hairStyleId), 300);
-            s_editorMenu.addOpt(std::string(getTxt("发色")) + ": " + nlpp::getCleanColorName(sd.girlfriend.heroine, sd.girlfriend.hairColorId), 300);
+            s_editorMenu.addOpt(std::string(getTxt("发色")) + ": " + (nlpp::Dict::isCustomHairColor(sd.girlfriend.heroine, sd.girlfriend.hairR, sd.girlfriend.hairG, sd.girlfriend.hairB, sd.girlfriend.hairColorActive)
+                     ? getTxt("自定义发色")
+                     : nlpp::getCleanColorName(sd.girlfriend.heroine, sd.girlfriend.hairColorId)), 300);
             s_editorMenu.addOpt(getTxt("重置为初始发型"), 300);
 
             s_editorMenu.addOpt(getTxt("★ 重新加载"), 300);
@@ -1006,17 +1008,28 @@ namespace ui
     static void saveCustomHairColor()
     {
         auto &sd = nlpp::g_saveMgr.getSlotData(s_editorSlot);
-        uint8_t matchedId = nlpp::Dict::matchClosestColorId(s_customR, s_customG, s_customB);
+        uint8_t defR = 0, defG = 0, defB = 0;
+        nlpp::Dict::getDefaultHairRGB(sd.girlfriend.heroine, defR, defG, defB);
+        if (s_customR == defR && s_customG == defG && s_customB == defB)
+        {
+            sd.girlfriend.hairColorId = 0;
+            sd.girlfriend.nextHairColorId = 0;
+            sd.girlfriend.hairColorActive = 0xFF;
+        }
+        else
+        {
+            uint8_t matchedId = nlpp::Dict::matchClosestColorId(s_customR, s_customG, s_customB);
+            sd.girlfriend.hairColorId = matchedId;
+            sd.girlfriend.nextHairColorId = matchedId;
+            sd.girlfriend.hairColorActive = 0x00;
+        }
 
-        sd.girlfriend.hairColorId = matchedId;
-        sd.girlfriend.nextHairColorId = matchedId;
         sd.girlfriend.hairR = s_customR;
         sd.girlfriend.hairG = s_customG;
         sd.girlfriend.hairB = s_customB;
         sd.girlfriend.nextHairR = s_customR;
         sd.girlfriend.nextHairG = s_customG;
         sd.girlfriend.nextHairB = s_customB;
-        sd.girlfriend.hairColorActive = 0x00; // 0x00 = activate dyeing
 
         nlpp::portraitLoadByColor(sd.girlfriend.heroine, sd.girlfriend.hairColorId);
         onConfirmSaveSlot(nullptr);
@@ -1808,7 +1821,9 @@ namespace ui
         else if (s_editorPage == 2)
         {
             std::string curStyleName = nlpp::getCleanStyleName(sd.girlfriend.heroine, sd.girlfriend.hairLength, sd.girlfriend.hairStyleId);
-            std::string curColorName = nlpp::getCleanColorName(sd.girlfriend.heroine, sd.girlfriend.hairColorId);
+            std::string curColorName = nlpp::Dict::isCustomHairColor(sd.girlfriend.heroine, sd.girlfriend.hairR, sd.girlfriend.hairG, sd.girlfriend.hairB, sd.girlfriend.hairColorActive)
+                                       ? getTxt("自定义发色")
+                                       : nlpp::getCleanColorName(sd.girlfriend.heroine, sd.girlfriend.hairColorId);
 
             if (s_editorSubMenuOpen && s_subAction == ACTION_HAIR_STYLE)
             {
