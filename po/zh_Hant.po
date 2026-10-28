@@ -3,23 +3,23 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Language: zh_Hant\n"
 
-msgid "(最快速度)"
-msgstr "(最快速度)"
-
 msgid " (最快速度)"
 msgstr " (最快速度)"
-
-msgid "(极限压缩)"
-msgstr "(最高壓縮)"
 
 msgid " (极限压缩)"
 msgstr " (最高壓縮)"
 
-msgid "(标准压缩)"
-msgstr "(標準壓縮)"
-
 msgid " (标准压缩)"
 msgstr " (標準壓縮)"
+
+msgid "(最快速度)"
+msgstr "(最快速度)"
+
+msgid "(极限压缩)"
+msgstr "(最高壓縮)"
+
+msgid "(标准压缩)"
+msgstr "(標準壓縮)"
 
 msgid "(空)"
 msgstr "(空)"
@@ -47,6 +47,9 @@ msgstr "A型"
 
 msgid "B型"
 msgstr "B型"
+
+msgid "HEX"
+msgstr "HEX"
 
 msgid "NEW (可爱)"
 msgstr "NEW (可愛)"
@@ -87,6 +90,9 @@ msgstr "\uE000 選擇 \uE002 刪除 \uE003 恢復 \uE001 關閉"
 msgid "\uE000 选择 \uE002 删除 \uE003 恢复 \uE005 上传 \uE001 关闭"
 msgstr "\uE000 選擇 \uE002 刪除 \uE003 恢復 \uE005 上傳 \uE001 關閉"
 
+msgid "\ue000 修改/执行  \ue001 返回  \ue01A\ue077\ue019 切换页面"
+msgstr "\ue000 修改/執行  \ue001 返回  \ue01A\ue077\ue019 切換頁面"
+
 msgid "★ 重新加载"
 msgstr "★ 重新載入"
 
@@ -102,8 +108,14 @@ msgstr "上線天數"
 msgid "东京都"
 msgstr "東京都"
 
+msgid "中坚情侣"
+msgstr "中堅情侶"
+
 msgid "中长发"
 msgstr "中長髮"
+
+msgid "举世瞩目的二人"
+msgstr "舉世矚目的二人"
 
 msgid "京都府"
 msgstr "京都府"
@@ -116,6 +128,9 @@ msgstr "休閒 B"
 
 msgid "休闲 C"
 msgstr "休閒 C"
+
+msgid "传说的二人"
+msgstr "傳說的二人"
 
 msgid "佐贺县"
 msgstr "佐賀縣"
@@ -134,6 +149,9 @@ msgstr "修改儲存成功！"
 
 msgid "假名"
 msgstr "假名"
+
+msgid "全宇宙的二人"
+msgstr "全宇宙的二人"
 
 msgid "关"
 msgstr "關"
@@ -159,8 +177,17 @@ msgstr "沖繩縣"
 msgid "出身地"
 msgstr "出身地"
 
+msgid "前所未闻的二人"
+msgstr "前所未聞的二人"
+
 msgid "北海道"
 msgstr "北海道"
+
+msgid "匹配发色"
+msgstr "匹配髮色"
+
+msgid "匹配高光"
+msgstr "匹配高光"
 
 msgid "千叶县"
 msgstr "千葉縣"
@@ -207,6 +234,9 @@ msgstr "啟動時預設載入的存檔類型。"
 msgid "和歌山县"
 msgstr "和歌山縣"
 
+msgid "咱 (Ore)"
+msgstr "咱 (Ore)"
+
 msgid "哥特萝莉 (可爱)"
 msgstr "哥德蘿莉 (可愛)"
 
@@ -215,6 +245,9 @@ msgstr "基本 (休閒)"
 
 msgid "埼玉县"
 msgstr "埼玉縣"
+
+msgid "墨绿色"
+msgstr "墨綠色"
 
 msgid "备份"
 msgstr "備份"
@@ -245,6 +278,15 @@ msgstr "大阪府"
 
 msgid "天"
 msgstr "天"
+
+msgid "天下无双的二人"
+msgstr "天下無雙的二人"
+
+msgid "天蓝色"
+msgstr "天藍色"
+
+msgid "太阳系的二人"
+msgstr "太陽系的二人"
 
 msgid "奈良县"
 msgstr "奈良縣"
@@ -281,6 +323,9 @@ msgstr "存檔恢復成功！"
 
 msgid "完成"
 msgstr "完成"
+
+msgid "完美无瑕的二人"
+msgstr "完美無瑕的二人"
 
 msgid "实体版"
 msgstr "實體版"
@@ -336,8 +381,14 @@ msgstr "已成功移除相機濾鏡！"
 msgid "已重新加载当前存档数据！"
 msgstr "已重新載入目前的存檔資料！"
 
+msgid "已重新加载预设发色的 RGB！"
+msgstr "已重新載入預設髮色的 RGB！"
+
 msgid "平假名"
 msgstr "平假名"
+
+msgid "平凡情侣"
+msgstr "平凡情侶"
 
 msgid "广岛县"
 msgstr "廣島縣"
@@ -351,11 +402,20 @@ msgstr "當前使用"
 msgid "当前存档槽位处于朋友模式。\n修改功能主要为恋人模式设计，\n确定要继续编辑吗？"
 msgstr "當前存檔槽位處於朋友模式。\n修改功能主要為戀人模式設計，\n確定要繼續編輯嗎？"
 
+msgid "当前槽位处于朋友模式，无法修改称号！"
+msgstr "當前槽位處於朋友模式，無法修改稱號！"
+
 msgid "德岛县"
 msgstr "德島縣"
 
 msgid "总天数"
 msgstr "總天數"
+
+msgid "恋人本格派"
+msgstr "戀人本格派"
+
+msgid "恋爱新手"
+msgstr "戀愛新手"
 
 msgid "恢复到实体版"
 msgstr "恢復到卡匣版"
@@ -363,8 +423,14 @@ msgstr "恢復到卡匣版"
 msgid "恢复到数字版"
 msgstr "恢復到數位版"
 
+msgid "恩爱的二人"
+msgstr "恩愛的二人"
+
 msgid "感性属性值"
 msgstr "感性屬性值"
+
+msgid "我 (Boku)"
+msgstr "我 (Boku)"
 
 msgid "找不到匹配的读音！"
 msgstr "找不到相符的讀音！"
@@ -380,6 +446,12 @@ msgstr "數位版"
 
 msgid "新潟县"
 msgstr "新潟縣"
+
+msgid "无"
+msgstr "無"
+
+msgid "无效的 HEX 值！"
+msgstr "無效的 HEX 值！"
 
 msgid "无滤镜"
 msgstr "無濾鏡"
@@ -408,6 +480,12 @@ msgstr "明亮色／黑 B"
 msgid "是 \ue000"
 msgstr "是 \ue000"
 
+msgid "最佳拍档"
+msgstr "最佳拍檔"
+
+msgid "最爱的二人"
+msgstr "最愛的二人"
+
 msgid "月"
 msgstr "月"
 
@@ -426,6 +504,9 @@ msgstr "未設定"
 msgid "栃木县"
 msgstr "栃木縣"
 
+msgid "标准色"
+msgstr "標準色"
+
 msgid "槽位"
 msgstr "槽位"
 
@@ -434,6 +515,9 @@ msgstr "槽位複製成功！"
 
 msgid "槽位已重置为空槽！"
 msgstr "槽位已重置為空槽！"
+
+msgid "橙色"
+msgstr "橙色"
 
 msgid "正在保存设置..."
 msgstr "正在儲存設定..."
@@ -444,11 +528,26 @@ msgstr "正在複製"
 msgid "正在复制 "
 msgstr "正在複製 "
 
+msgid "永恒的二人"
+msgstr "永恆的二人"
+
+msgid "永远的二人"
+msgstr "永遠的二人"
+
 msgid "派对 (清纯)"
 msgstr "派對 (清純)"
 
+msgid "浅棕色"
+msgstr "淺棕色"
+
+msgid "浅粉色"
+msgstr "淺粉色"
+
 msgid "浅色系"
 msgstr "淺色系"
+
+msgid "浅金色"
+msgstr "淺金色"
 
 msgid "深色系"
 msgstr "深色系"
@@ -465,6 +564,9 @@ msgstr "清純 B"
 msgid "清纯 C"
 msgstr "清純 C"
 
+msgid "游戏卡带已拔出！"
+msgstr "遊戲卡帶已拔出！"
+
 msgid "滋贺县"
 msgstr "滋賀縣"
 
@@ -479,6 +581,9 @@ msgstr "點"
 
 msgid "熊本县"
 msgstr "熊本縣"
+
+msgid "熟练的二人"
+msgstr "熟練的二人"
 
 msgid "爱媛县"
 msgstr "愛媛縣"
@@ -522,6 +627,9 @@ msgstr "介面主題色"
 msgid "界面语言"
 msgstr "介面語言"
 
+msgid "白色"
+msgstr "白色"
+
 msgid "盘发 [泳装·和服] (清纯)"
 msgstr "盤髮 [泳裝·和服] (清純)"
 
@@ -564,6 +672,9 @@ msgstr "確定要清空槽位 %d 嗎？"
 msgid "确定要退出存档编辑吗？"
 msgstr "確定要退出存檔編輯嗎？"
 
+msgid "确定要重新加载预设发色吗？"
+msgstr "確定要重新載入預設髮色嗎？"
+
 msgid "神奈川县"
 msgstr "神奈川縣"
 
@@ -579,17 +690,41 @@ msgstr "福島縣"
 msgid "秋田县"
 msgstr "秋田縣"
 
+msgid "称号"
+msgstr "稱號"
+
 msgid "移除滤镜"
 msgstr "移除濾鏡"
+
+msgid "究极的二人"
+msgstr "究極的二人"
+
+msgid "空前绝后的二人"
+msgstr "空前絕後的二人"
 
 msgid "空格"
 msgstr "空格"
 
+msgid "紫色"
+msgstr "紫色"
+
+msgid "绝代的二人"
+msgstr "絕代的二人"
+
 msgid "群马县"
 msgstr "群馬縣"
 
+msgid "老手情侣"
+msgstr "老手情侶"
+
 msgid "自动备份存档"
 msgstr "自動備份存檔"
+
+msgid "自定义"
+msgstr "自訂"
+
+msgid "自定义发色"
+msgstr "自訂髮色"
 
 msgid "自然 (清纯)"
 msgstr "自然 (清純)"
@@ -612,8 +747,14 @@ msgstr "自然茶色／黑 A"
 msgid "自然茶色／黑 B"
 msgstr "自然茶色／黑 B"
 
+msgid "自称"
+msgstr "自稱"
+
 msgid "茨城县"
 msgstr "茨城縣"
+
+msgid "草绿色"
+msgstr "草綠色"
 
 msgid "血型"
 msgstr "血型"
@@ -635,6 +776,21 @@ msgstr "此槽位已為空槽！"
 
 msgid "请选择恢复目标类型："
 msgstr "請選擇恢復目標類型："
+
+msgid "资深情侣"
+msgstr "資深情侶"
+
+msgid "输入 B 值 (0-255)"
+msgstr "輸入 B 值 (0-255)"
+
+msgid "输入 G 值 (0-255)"
+msgstr "輸入 G 值 (0-255)"
+
+msgid "输入 HEX 值 (#39C5BB 或 39C5BB)"
+msgstr "輸入 HEX 值 (#39C5BB 或 39C5BB)"
+
+msgid "输入 R 值 (0-255)"
+msgstr "輸入 R 值 (0-255)"
 
 msgid "输入TODO点数 (0-9999)"
 msgstr "輸入TODO點數 (0-9999)"
@@ -690,6 +846,12 @@ msgstr "選擇目標槽位"
 msgid "通讯昵称(HN)"
 msgstr "通訊暱稱(HN)"
 
+msgid "酒红色"
+msgstr "酒紅色"
+
+msgid "重新加载预设发色"
+msgstr "重新載入預設髮色"
+
 msgid "重置为初始发型"
 msgstr "重置為初始髮型"
 
@@ -698,6 +860,12 @@ msgstr "重置槽位失敗！"
 
 msgid "金钱"
 msgstr "金錢"
+
+msgid "银河系的二人"
+msgstr "銀河系的二人"
+
+msgid "银灰色"
+msgstr "銀灰色"
 
 msgid "长发"
 msgstr "長髮"
@@ -726,6 +894,9 @@ msgstr "高知縣"
 msgid "魅力属性值"
 msgstr "魅力屬性值"
 
+msgid "鲜粉色"
+msgstr "鮮粉色"
+
 msgid "鸟取县"
 msgstr "鳥取縣"
 
@@ -743,166 +914,3 @@ msgstr "預設存檔槽位"
 
 msgid "默认存档类型"
 msgstr "預設存檔類型"
-
-msgid "称号"
-msgstr "稱號"
-
-msgid "无"
-msgstr "無"
-
-msgid "当前槽位处于朋友模式，无法修改称号！"
-msgstr "當前槽位處於朋友模式，無法修改稱號！"
-
-msgid "恋爱新手"
-msgstr "戀愛新手"
-
-msgid "平凡情侣"
-msgstr "平凡情侶"
-
-msgid "中坚情侣"
-msgstr "中堅情侶"
-
-msgid "老手情侣"
-msgstr "老手情侶"
-
-msgid "恋人本格派"
-msgstr "戀人本格派"
-
-msgid "熟练的二人"
-msgstr "熟練的二人"
-
-msgid "资深情侣"
-msgstr "資深情侶"
-
-msgid "恩爱的二人"
-msgstr "恩愛的二人"
-
-msgid "最佳拍档"
-msgstr "最佳拍檔"
-
-msgid "永远的二人"
-msgstr "永遠的二人"
-
-msgid "究极的二人"
-msgstr "究極的二人"
-
-msgid "空前绝后的二人"
-msgstr "空前絕後的二人"
-
-msgid "绝代的二人"
-msgstr "絕代的二人"
-
-msgid "前所未闻的二人"
-msgstr "前所未聞的二人"
-
-msgid "天下无双的二人"
-msgstr "天下無雙的二人"
-
-msgid "举世瞩目的二人"
-msgstr "舉世矚目的二人"
-
-msgid "太阳系的二人"
-msgstr "太陽系的二人"
-
-msgid "银河系的二人"
-msgstr "銀河系的二人"
-
-msgid "全宇宙的二人"
-msgstr "全宇宙的二人"
-
-msgid "传说的二人"
-msgstr "傳說的二人"
-
-msgid "完美无瑕的二人"
-msgstr "完美無瑕的二人"
-
-msgid "永恒的二人"
-msgstr "永恆的二人"
-
-msgid "最爱的二人"
-msgstr "最愛的二人"
-
-msgid "游戏卡带已拔出！"
-msgstr "遊戲卡帶已拔出！"
-
-msgid "自定义"
-msgstr "自訂"
-
-msgid "自定义发色"
-msgstr "自訂髮色"
-
-msgid "匹配发色"
-msgstr "匹配髮色"
-
-msgid "匹配高光"
-msgstr "匹配高光"
-
-msgid "HEX"
-msgstr "HEX"
-
-msgid "重新加载预设发色"
-msgstr "重新載入預設髮色"
-
-msgid "\ue000 修改/执行  \ue001 返回  \ue01A\ue077\ue019 切换页面"
-msgstr "\ue000 修改/執行  \ue001 返回  \ue01A\ue077\ue019 切換頁面"
-
-msgid "输入 HEX 值 (#39C5BB 或 39C5BB)"
-msgstr "輸入 HEX 值 (#39C5BB 或 39C5BB)"
-
-msgid "无效的 HEX 值！"
-msgstr "無效的 HEX 值！"
-
-msgid "输入 R 值 (0-255)"
-msgstr "輸入 R 值 (0-255)"
-
-msgid "输入 G 值 (0-255)"
-msgstr "輸入 G 值 (0-255)"
-
-msgid "输入 B 值 (0-255)"
-msgstr "輸入 B 值 (0-255)"
-
-msgid "确定要重新加载预设发色吗？"
-msgstr "確定要重新載入預設髮色嗎？"
-
-msgid "已重新加载预设发色的 RGB！"
-msgstr "已重新載入預設髮色的 RGB！"
-
-msgid "白色"
-msgstr "白色"
-
-msgid "浅金色"
-msgstr "淺金色"
-
-msgid "浅粉色"
-msgstr "淺粉色"
-
-msgid "银灰色"
-msgstr "銀灰色"
-
-msgid "浅棕色"
-msgstr "淺棕色"
-
-msgid "酒红色"
-msgstr "酒紅色"
-
-msgid "鲜粉色"
-msgstr "鮮粉色"
-
-msgid "天蓝色"
-msgstr "天藍色"
-
-msgid "草绿色"
-msgstr "草綠色"
-
-msgid "紫色"
-msgstr "紫色"
-
-msgid "橙色"
-msgstr "橙色"
-
-msgid "墨绿色"
-msgstr "墨綠色"
-
-msgid "标准色"
-msgstr "標準色"
-

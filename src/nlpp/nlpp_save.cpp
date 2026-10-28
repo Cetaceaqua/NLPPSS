@@ -367,6 +367,7 @@ namespace nlpp
                 sd.stats.readings[r] = *(const uint32_t *)&sbuf[0x281 + r * 4];
             }
             sd.stats.currentSelector = *(const uint32_t *)&sbuf[0x295];
+            sd.stats.firstPersonPronoun = (sbuf[0x299] != 0) ? 1 : 0;
 
             sd.stats.cameraBody      = *(const int16_t *)&sbuf[0x300];
             sd.stats.cameraLens      = *(const int16_t *)&sbuf[0x302];
@@ -579,6 +580,7 @@ namespace nlpp
             *(uint32_t *)&sbuf[0x281 + r * 4] = sd.stats.readings[r];
         }
         *(uint32_t *)&sbuf[0x295] = sd.stats.currentSelector;
+        sbuf[0x299] = (sd.stats.firstPersonPronoun != 0) ? 1 : 0;
 
         *(int16_t *)&sbuf[0x300] = sd.stats.cameraBody;
         *(int16_t *)&sbuf[0x302] = sd.stats.cameraLens;
@@ -747,6 +749,22 @@ namespace nlpp
             if (h >= 0 && h <= 2 && m_files[FILE_GLOBAL_GALLERY].size() >= 0x3A5D)
             {
                 g3[0x3A5A + h] = (uint8_t)slot;
+            }
+            // Synchronize first-person pronoun to active gallery memories for this heroine
+            if (h >= 0 && h <= 2)
+            {
+                for (int s = 0; s < 6; ++s)
+                {
+                    int i = h * 6 + s;
+                    uint32_t base = 0x0416 + i * 770;
+                    if (base + 0x2F8 <= m_files[FILE_GLOBAL_GALLERY].size())
+                    {
+                        if (g3[base] != 0)
+                        {
+                            g3[base + 0x2F7] = (sd.stats.firstPersonPronoun != 0) ? 1 : 0;
+                        }
+                    }
+                }
             }
             m_fileDirty[FILE_GLOBAL_GALLERY] = true;
         }

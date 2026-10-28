@@ -3,7 +3,7 @@ NLPPSS - NEWラブプラス+ Save Studio
 
 <p align="left">
 <a href="http://www.gnu.org/copyleft/gpl.html"><img alt="license" src="https://img.shields.io/badge/license-GPL%20V3-blue.svg?style=flat"/></a>
-<a href="https://github.com/Cetaceaqua/NLPPSS/releases/latest"><img alt="release" src="https://img.shields.io/badge/release-v1.3.2-brightgreen.svg?style=flat"/></a>
+<a href="https://github.com/Cetaceaqua/NLPPSS/releases/latest"><img alt="release" src="https://img.shields.io/badge/release-v1.3.3-brightgreen.svg?style=flat"/></a>
 <a href="https://github.com/Cetaceaqua/NLPPSS"><img alt="platform" src="https://img.shields.io/badge/platform-Nintendo%203DS-red.svg?style=flat"/></a>
 </p>
 
@@ -29,7 +29,7 @@ NLPPSS - NEWラブプラス+ Save Studio
 * 支持多语言用户界面，提供简体中文、英文和繁体中文。
 * 支持多种存档修改功能：
   - 修改姓氏、名字和通讯昵称（HN）。
-  - 修改生日、血型和出身地。
+  - 修改生日、血型、出身地和自称（咱/我）。
   - 修改姓氏读音、名字读音、后缀读音、预设读音和特殊读音，快捷搜索所有可用读音。
   - 修改发长、发型和发色，提供图片实时预览；支持自定义 RGB 与 HEX 发色并自动匹配发丝高光。
   - 修改总天数与上线天数。

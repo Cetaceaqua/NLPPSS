@@ -598,6 +598,7 @@ namespace ui
         ACTION_BIRTH_DAY,
         ACTION_BLOOD_TYPE,
         ACTION_PREFECTURE,
+        ACTION_PRONOUN,
         ACTION_CALL_SELECTOR,
         ACTION_READING_PICKER,
         ACTION_HAIR_LENGTH,
@@ -646,6 +647,8 @@ namespace ui
             s_editorMenu.addOpt(std::string(getTxt("血型")) + ": " + nlpp::Dict::getBloodTypeName(sd.profile.blood), 300);
 
             s_editorMenu.addOpt(std::string(getTxt("出身地")) + ": " + nlpp::Dict::getPrefectureName(sd.profile.prefecture), 300);
+
+            s_editorMenu.addOpt(std::string(getTxt("自称")) + ": " + (sd.stats.firstPersonPronoun == 0 ? getTxt("咱 (Ore)") : getTxt("我 (Boku)")), 300);
 
             s_editorMenu.addOpt(getTxt("★ 重新加载"), 300);
             s_editorMenu.addOpt(getTxt("♥ 保存修改"), 300);
@@ -1290,6 +1293,17 @@ namespace ui
                     refreshEditorPageMenu();
                     return;
                 }
+                else if (s_subAction == ACTION_PRONOUN)
+                {
+                    if (sel >= 0 && sel < 2)
+                    {
+                        sd.stats.firstPersonPronoun = (uint8_t)sel;
+                    }
+                    s_editorSubMenuOpen = false;
+                    s_subAction = ACTION_NONE;
+                    refreshEditorPageMenu();
+                    return;
+                }
                 else if (s_subAction == ACTION_CALL_SELECTOR)
                 {
                     sd.stats.currentSelector = sel;
@@ -1503,8 +1517,19 @@ namespace ui
                     }
                     s_editorSubMenu.setSelected(std::min((int)sd.profile.prefecture, nlpp::Dict::getPrefectureCount() - 1));
                 }
-                else if (sel == 6) { onConfirmReloadSlot(nullptr); }
-                else if (sel == 7) { onConfirmSaveSlot(nullptr); }
+                else if (sel == 6) // 自称
+                {
+                    s_subAction = ACTION_PRONOUN;
+                    s_editorSubMenuOpen = true;
+                    s_editorSubMenu.reset();
+                    s_editorSubMenu.setPaging(false);
+                    s_editorSubMenu.setMaxVisible(10);
+                    s_editorSubMenu.addOpt(getTxt("咱 (Ore)"), 300);
+                    s_editorSubMenu.addOpt(getTxt("我 (Boku)"), 300);
+                    s_editorSubMenu.setSelected(sd.stats.firstPersonPronoun != 0 ? 1 : 0);
+                }
+                else if (sel == 7) { onConfirmReloadSlot(nullptr); }
+                else if (sel == 8) { onConfirmSaveSlot(nullptr); }
             }
             else if (s_editorPage == 1) // 玩家读音
             {
@@ -1790,14 +1815,16 @@ namespace ui
         if (s_editorPage == 0)
         {
             std::string bdayStr = formatBirthday(sd.profile.birthMonth, sd.profile.birthDay);
-            char buf[256];
+            std::string pronounStr = (sd.stats.firstPersonPronoun == 0) ? getTxt("咱 (Ore)") : getTxt("我 (Boku)");
+            char buf[320];
             snprintf(buf, sizeof(buf),
-                     "%s: %s %s\n%s: %s\n%s: %s\n%s: %s\n%s: %s",
+                     "%s: %s %s\n%s: %s\n%s: %s\n%s: %s\n%s: %s\n%s: %s",
                      getTxt("姓名"), sd.profile.lastName.c_str(), sd.profile.firstName.c_str(),
                      getTxt("通讯昵称(HN)"), sd.profile.hn.c_str(),
                      getTxt("生日"), bdayStr.c_str(),
                      getTxt("血型"), nlpp::Dict::getBloodTypeName(sd.profile.blood),
-                     getTxt("出身地"), nlpp::Dict::getPrefectureName(sd.profile.prefecture));
+                     getTxt("出身地"), nlpp::Dict::getPrefectureName(sd.profile.prefecture),
+                     getTxt("自称"), pronounStr.c_str());
             gfx::drawText(buf, 20, 36, GFX_DEPTH_DEFAULT, 0.5f, gfx::txtCont);
         }
         else if (s_editorPage == 1)

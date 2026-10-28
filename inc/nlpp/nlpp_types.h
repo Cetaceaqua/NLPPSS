@@ -126,6 +126,7 @@ namespace nlpp
         // Reading containers (0x281..0x294)
         uint32_t readings[5] = {2935, 470, 750, 958, 0};
         uint32_t currentSelector = 0; // 0..4 (0x295)
+        uint8_t firstPersonPronoun = 0; // 0=俺/咱 (Ore), 1=僕/我 (Boku) (0x299)
 
         // Camera Equipments (0x2FC..0x337)
         int16_t cameraBody = -1;      // Slot 0 (0x300)
